@@ -1,0 +1,40 @@
+Top level: [[obj.val]]<br>
+Hello, World! <div val=[[prop]] attr="foo [[prop]]" .prop=[[prop]]>prop = [[prop]]<b>x</b>[[val]][[prop]].</div>
+<div>
+	obj.val: [[obj.val]]
+</div>
+<div>empty prop: [[z.y.z]]</div>
+Binding in slot: <slot name=sl>[[prop]]</slot>
+<br>
+
+<div>Static val: [['hey']]</div>
+
+<div>Call: [[prop]] [[add(prop, obj.val)]] [[prop]] [[add(prop, obj.val)]]</div>
+
+<button on-click="[[increment]]">Increment</button>
+
+<div>
+	Contenteditable: <span contenteditable>[[prop]]</span>
+</div>
+
+Slot: <slot>Default slot value [[prop]]</slot>
+
+<br>
+<br>
+<button on-click="[[unbox]]">Unbox template</button>
+<div id=content>default</div>
+<template id=template>
+	<div val=[[prop]]>content from template [[prop]]</div>
+</template>
+<br>
+
+<div>dom-if:</div>
+<dom-if .if="[[isEven(obj.val)]]">
+	<template>
+		Content [[x]]
+	</template>
+</dom-if>
+<br>
+<br>
+
+<button on-click="[[duplicate]]">Duplicate</button>
