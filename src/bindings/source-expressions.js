@@ -73,22 +73,6 @@ export class PathSourceExpression {
 	}
 }
 
-// export class FunctionSourceExpression {
-// 	functionName = ''
-
-// 	setValue(state, value) {
-// 		state[this.functionName] = value
-// 	}
-
-// 	getValue(state) {
-// 		return state[this.functionName]
-// 	}
-
-// 	isPropRelated(prop) {
-// 		return prop == this.functionName
-// 	}
-// }
-
 export class CallSourceExpression {
 	functionName = ''
 	args = [] // [SourceExpression]

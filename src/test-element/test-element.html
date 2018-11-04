@@ -28,6 +28,10 @@ Slot: <slot>Default slot value [[prop]]</slot>
 </template>
 <br>
 
+<div show-if="[[isEven(obj.val)]]">Show If</div>
+<div hide-if="[[isEven(obj.val)]]">Hide If</div>
+<br>
+
 <div>dom-if:</div>
 <dom-if .if="[[isEven(obj.val)]]">
 	<template>

@@ -79,3 +79,27 @@ export class EventTargetExpression {
 
 	getValue() {}
 }
+
+
+export class ShowHideTargetExpression {
+	element = null
+	type = ''
+
+	constructor({element, type} = {}) {
+		this.element = element
+		this.type = type
+	}
+
+	setValue(value) {
+		let show = this.type == 'show' ? !!value : !value
+
+		if (show) {
+			this.element.style.removeProperty('display')
+		}
+		else {
+			this.element.style.setProperty('display', 'none', 'important')
+		}
+	}
+
+	getValue() {}
+}

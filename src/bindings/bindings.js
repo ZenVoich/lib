@@ -11,9 +11,10 @@ import {
 
 import {
 	PropertyTargetExpression,
-	EventTargetExpression,
 	AttributeTargetExpression,
 	NodeTargetExpression,
+	EventTargetExpression,
+	ShowHideTargetExpression,
 } from './target-expressions.js'
 
 export class Bindings {
@@ -80,6 +81,12 @@ export class Bindings {
 					binding.target.element = el
 					binding.target.eventName = attr.slice(3)
 					binding.target.functionName = binding.source.propertyName
+				}
+				// show/hide target
+				else if (['show-if', 'hide-if'].includes(attr)) {
+					binding.target = new ShowHideTargetExpression
+					binding.target.element = el
+					binding.target.type = attr.slice(0, -3)
 				}
 				// attr target
 				else {
