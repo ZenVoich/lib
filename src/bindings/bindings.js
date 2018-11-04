@@ -11,6 +11,7 @@ import {
 
 import {
 	PropertyTargetExpression,
+	EventTargetExpression,
 	AttributeTargetExpression,
 	NodeTargetExpression,
 } from './target-expressions.js'
@@ -68,6 +69,17 @@ export class Bindings {
 					binding.target = new PropertyTargetExpression
 					binding.target.element = el
 					binding.target.propertyName = attr.slice(1)
+				}
+				// event target
+				else if (attr.startsWith('on-')) {
+					if (!(binding.source instanceof PropertySourceExpression)) {
+						console.error('Provide function name expression for "on-" binding')
+						return
+					}
+					binding.target = new EventTargetExpression
+					binding.target.element = el
+					binding.target.eventName = attr.slice(3)
+					binding.target.functionName = binding.source.propertyName
 				}
 				// attr target
 				else {

@@ -11,7 +11,7 @@ export default class Binding {
 
 	pushValue(state) {
 		if (state && this.type !== 'upward') {
-			this.target.setValue(this.source.getValue(state))
+			this.target.setValue(this.source.getValue(state), state)
 		}
 	}
 

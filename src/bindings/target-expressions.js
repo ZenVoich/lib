@@ -56,20 +56,25 @@ export class NodeTargetExpression {
 
 export class EventTargetExpression {
 	element = null
-	eventName = ''
+	functionName = ''
 	#currentHandler = null
 
-	constructor({element, eventName} = {}) {
+	constructor({element, eventName, functionName} = {}) {
 		this.element = element
 		this.eventName = eventName
+		this.functionName = functionName
 	}
 
-	setValue(handler) {
+	setValue(handler, state) {
 		if (this.#currentHandler) {
 			this.element.removeEventListener(this.eventName, this.#currentHandler)
 		}
-		this.element.addEventListener(this.eventName, handler)
-		this.#currentHandler = handler
+		if (typeof handler != 'function') {
+			console.error(`Trying to add '${this.functionName}' listener that doesn't exist on '${state.localName}' element`)
+			return
+		}
+		this.#currentHandler = handler.bind(state)
+		this.element.addEventListener(this.eventName, this.#currentHandler)
 	}
 
 	getValue() {}
