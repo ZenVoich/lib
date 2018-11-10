@@ -1,0 +1,10 @@
+<button on-click="[[addOne]]">Add 1 item to end</button>
+<button on-click="[[addThousand]]">Add 1000 items to end</button>
+
+<dom-repeat .items="[[items]]" as="item" key="key">
+	<template>
+		<div>Item: [[item.value]]</div>
+		<!-- <br>
+		<button on-click="[[increment]]">dom-repeat increment</button> -->
+	</template>
+</dom-repeat>

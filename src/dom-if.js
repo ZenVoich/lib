@@ -5,9 +5,8 @@ import PropertyObserver from './mixins/property-observer.js'
 import {Bindings} from './bindings/bindings.js'
 
 
-// todo: listeners
 @define('dom-if')
-class TestElement extends PropertyObserver(Template(Initial(HTMLElement))) {
+class DomIf extends PropertyObserver(Template(Initial(HTMLElement))) {
 	static template = '<style>:host {display: contents;}</style><slot></slot>'
 	static observedProperties = ['if']
 
@@ -44,6 +43,7 @@ class TestElement extends PropertyObserver(Template(Initial(HTMLElement))) {
 			} else {
 				this.innerHTML = ''
 				this.#bindings.disconnect()
+				this.#bindings = null
 			}
 		// })
 	}

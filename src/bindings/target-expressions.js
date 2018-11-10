@@ -67,6 +67,7 @@ export class EventTargetExpression {
 
 	setValue(handler, state) {
 		if (this.#currentHandler) {
+			console.log('unsub')
 			this.element.removeEventListener(this.eventName, this.#currentHandler)
 		}
 		if (typeof handler != 'function') {

@@ -2,17 +2,17 @@ import define from '../decorators/class/define.js'
 import Element from '../element.js'
 import {Bindings} from '../bindings/bindings.js'
 
-import testElementTemplate from './test-element.html'
+import template from './test-element.html'
 import styles from './test-element.css'
 
 
 @define('test-element')
 class TestElement extends Element {
-	static template = testElementTemplate
+	static template = template
 	static styles = styles
 
-	x = 1
-	prop = 1
+	x = 2
+	prop = 3
 	obj = {val: 5}
 
 	constructor() {

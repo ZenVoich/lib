@@ -122,11 +122,20 @@ export class Bindings {
 		})
 	}
 
+	// todo: refactor
 	parseSourceExpression(text) {
+		let start = `\\[\\[`
+		let end = `\\]\\]`
+
+		let string = `'([^']*)'`
+		let arg = `([a-z_]+(?:\\.[a-z_]+)*|'[^']*'|[0-9]+)`
+
 		let regExps = {
-			call: /\[\[(\w+)\((\w+(?:\.\w+)*)(?:\s*,\s*(\w+(?:\.\w+)*))*\)\]\]/g,
-			path: /\[\[(\w+(?:\.\w+)+)\]\]/g,
-			prop: /\[\[(\w+)\]\]/g,
+			call: new RegExp(`\\[\\[([a-z_]+)\\(${arg}(?:\\s*,\\s*${arg})*\\)\\]\\]`, 'ig'),
+			path: /\[\[([a-z_]+(?:\.[a-z_]+)+)\]\]/ig,
+			prop: /\[\[([a-z_]+)\]\]/ig,
+			string: new RegExp(`\\[\\[${string}\\]\\]`, 'ig'),
+			number: /\[\[([0-9]+)\]\]/ig,
 		}
 		let expressions = []
 		let tempText = text
@@ -164,6 +173,11 @@ export class Bindings {
 					let [_, fn, ...args] = match;
 					args = args.map((arg) => this.parseSourceExpression(`[[${arg}]]`))
 					expressions.push(new CallSourceExpression({functionName: fn, args: args}))
+				}
+				// static value
+				else if (type == 'string' || type == 'number') {
+					let value = type == 'number' ? parseFloat(match[1]) : match[1]
+					expressions.push(new ValueSourceExpression({value: value}))
 				}
 			}
 			text = tempText
@@ -269,36 +283,9 @@ export class Bindings {
 	}
 
 	getAllRelatedProps() {
-		let getProps = (source) => {
-			let props = new Set
-
-			if (source instanceof PropertySourceExpression) {
-				props.add(source.propertyName)
-			}
-			else if (source instanceof PathSourceExpression) {
-				props.add(source.path[0])
-			}
-			else if (source instanceof CallSourceExpression) {
-				source.args.forEach((source) => {
-					getProps(source).forEach((prop) => {
-						props.add(prop)
-					})
-				})
-			}
-			else if (source instanceof CompoundSourceExpression) {
-				source.chunks.forEach((source) => {
-					getProps(source).forEach((prop) => {
-						props.add(prop)
-					})
-				})
-			}
-
-			return props
-		}
-
 		let props = new Set
 		this.bindings.forEach((binding) => {
-			getProps(binding.source).forEach((prop) => {
+			binding.source.getRelatedProps().forEach((prop) => {
 				props.add(prop)
 			})
 		})

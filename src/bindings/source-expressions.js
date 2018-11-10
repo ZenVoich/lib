@@ -13,6 +13,10 @@ export class ValueSourceExpression {
 		return this.value
 	}
 
+	getRelatedProps() {
+		return new Set
+	}
+
 	isPropRelated(prop) {
 		return false
 	}
@@ -31,6 +35,10 @@ export class PropertySourceExpression {
 
 	getValue(state) {
 		return state[this.propertyName]
+	}
+
+	getRelatedProps() {
+		return new Set([this.propertyName])
 	}
 
 	isPropRelated(prop) {
@@ -68,6 +76,10 @@ export class PathSourceExpression {
 		return value
 	}
 
+	getRelatedProps() {
+		return new Set([this.path[0]])
+	}
+
 	isPropRelated(prop) {
 		return prop == this.path[0]
 	}
@@ -86,6 +98,16 @@ export class CallSourceExpression {
 		return state[this.functionName](...this.args.map(expr => expr.getValue(state)))
 	}
 
+	getRelatedProps() {
+		let props = new Set
+		this.args.forEach((expr) => {
+			expr.getRelatedProps().forEach((prop) => {
+				props.add(prop)
+			})
+		})
+		return props
+	}
+
 	isPropRelated(prop) {
 		return this.args.some((expr) => {
 			return expr.isPropRelated(prop)
@@ -102,6 +124,16 @@ export class CompoundSourceExpression {
 
 	getValue(state) {
 		return this.chunks.map(expr => expr.getValue(state)).join('')
+	}
+
+	getRelatedProps() {
+		let props = new Set
+		this.chunks.forEach((expr) => {
+			expr.getRelatedProps().forEach((prop) => {
+				props.add(prop)
+			})
+		})
+		return props
 	}
 
 	isPropRelated(prop) {
