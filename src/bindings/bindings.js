@@ -9,16 +9,22 @@ import {
 	CompoundSourceExpression,
 } from './source-expressions.js'
 
-import {
-	PropertyTargetExpression,
-	AttributeTargetExpression,
-	NodeTargetExpression,
-	EventTargetExpression,
-	ShowHideTargetExpression,
-} from './target-expressions.js'
+import AttributeTargetExpression from './target-expressions/attribute-target-expression.js'
+import EventTargetExpression from './target-expressions/event-target-expression.js'
+import NodeTargetExpression from './target-expressions/node-target-expression.js'
+import PropertyTargetExpression from './target-expressions/property-target-expression.js'
+import ShowHideTargetExpression from './target-expressions/show-hide-target-expression.js'
+
 
 export class Bindings {
 	bindings = [] // [Binding]
+	targetExpressions = [
+		PropertyTargetExpression,
+		AttributeTargetExpression,
+		NodeTargetExpression,
+		EventTargetExpression,
+		ShowHideTargetExpression,
+	]
 	#propertiesObserver = (prop) => {
 		this.updateProp(prop, this[prop])
 	}
@@ -36,6 +42,9 @@ export class Bindings {
 			return
 		}
 
+		let targetExpressions = this.targetExpressions.sort((a, b) => {
+			return b.parsePriority - a.parsePriority
+		})
 		this.bindings = []
 
 		// text node target
@@ -44,11 +53,23 @@ export class Bindings {
 			if (!source) {
 				return
 			}
+
+			let target
+			targetExpressions.find((exprClass) => {
+				if (exprClass.parseType == 'node') {
+					target = exprClass.parse(node)
+					return target
+				}
+			})
+
+			if (!target) {
+				return
+			}
+
 			let binding = new Binding
 			binding.direction = 'downward'
 			binding.source = source
-			binding.target = new NodeTargetExpression
-			binding.target.node = node
+			binding.target = target
 
 			this.bindings.push(binding)
 			node.textContent = ''
@@ -61,40 +82,22 @@ export class Bindings {
 				if (!source) {
 					return
 				}
+
+				let target
+				targetExpressions.find((exprClass) => {
+					if (exprClass.parseType == 'attribute') {
+						target = exprClass.parse(el, attr, source)
+						return target
+					}
+				})
+				if (!target) {
+					return
+				}
+
 				let binding = new Binding
 				binding.direction = 'downward'
 				binding.source = source
-
-				// prop target
-				if (attr.startsWith('.')) {
-					binding.target = new PropertyTargetExpression
-					binding.target.element = el
-					binding.target.propertyName = attr.slice(1)
-				}
-				// event target
-				else if (attr.startsWith('on-')) {
-					if (!(binding.source instanceof PropertySourceExpression)) {
-						console.error('Provide function name expression for "on-" binding')
-						return
-					}
-					binding.target = new EventTargetExpression
-					binding.target.element = el
-					binding.target.eventName = attr.slice(3)
-					binding.target.functionName = binding.source.propertyName
-				}
-				// show/hide target
-				else if (['show-if', 'hide-if'].includes(attr)) {
-					binding.target = new ShowHideTargetExpression
-					binding.target.element = el
-					binding.target.type = attr.slice(0, -3)
-				}
-				// attr target
-				else {
-					binding.target = new AttributeTargetExpression
-					binding.target.element = el
-					binding.target.attributeName = attr
-				}
-
+				binding.target = target
 				this.bindings.push(binding)
 				el.removeAttribute(attr)
 			})
@@ -215,7 +218,7 @@ export class Bindings {
 		// prop target bindings update by microtask
 		this.#updateDebouncer = debouncer.microtask(this.#updateDebouncer, () => {
 			this.bindings.forEach((binding) => {
-				if (binding.target instanceof PropertyTargetExpression) {
+				if (binding.target.constructor.updatePhase == 'microtask') {
 					binding.pushValue(this.host)
 				}
 			})
@@ -229,7 +232,7 @@ export class Bindings {
 		requestAnimationFrame(() => {
 			this.isComponenInRenderQueue = false
 			this.bindings.forEach((binding) => {
-				if (!(binding.target instanceof PropertyTargetExpression)) {
+				if (binding.target.constructor.updatePhase == 'rAF') {
 					binding.pushValue(this.host)
 				}
 			})
@@ -243,7 +246,7 @@ export class Bindings {
 			let relatedBindings = new Set
 			this.propsInRenderQueue.forEach((prop) => {
 				this.bindings.forEach((binding) => {
-					if (binding.isPropRelated(prop) && binding.target instanceof PropertyTargetExpression) {
+					if (binding.isPropRelated(prop) && binding.target.constructor.updatePhase == 'microtask') {
 						relatedBindings.add(binding)
 					}
 				})
@@ -269,7 +272,7 @@ export class Bindings {
 			let relatedBindings = new Set
 			this.propsInRenderQueue.forEach((prop) => {
 				this.bindings.forEach((binding) => {
-					if (binding.isPropRelated(prop) && !(binding.target instanceof PropertyTargetExpression)) {
+					if (binding.isPropRelated(prop) && binding.target.constructor.updatePhase == 'rAF') {
 						relatedBindings.add(binding)
 					}
 				})
