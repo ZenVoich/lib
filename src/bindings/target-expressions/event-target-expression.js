@@ -23,15 +23,15 @@ export default class EventTargetExpression extends TargetExpression {
 	functionName = ''
 	#currentHandler = null
 
-	setValue(handler, state) {
+	setValue(handler, state, host) {
 		if (this.#currentHandler) {
 			this.element.removeEventListener(this.eventName, this.#currentHandler)
 		}
 		if (typeof handler != 'function') {
-			console.error(`Trying to add '${this.functionName}' listener that doesn't exist on '${state.localName}' element`)
+			console.error(`Trying to add '${this.functionName}' listener that doesn't exist on '${host.localName}' element`)
 			return
 		}
-		this.#currentHandler = handler.bind(state)
+		this.#currentHandler = handler.bind(host)
 		this.element.addEventListener(this.eventName, this.#currentHandler)
 	}
 

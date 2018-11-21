@@ -23,14 +23,17 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 
 	render() {
 		this.innerHTML = ''
+		let host = this.getRootNode().host
 		this.items.forEach((item) => {
-			this.shadowRoot.querySe
-			this.key
+			// this.shadowRoot.querySe
+			// this.key
 
 			let content = this.template.content.cloneNode(true)
 
 			let bindings = new Bindings(content)
-			bindings.connect(this.getRootNode().host)
+			// bindings.connect(this)
+			bindings.host = this.getRootNode().host
+			bindings.state = {item}
 			bindings.update()
 			console.log(bindings)
 
@@ -40,26 +43,5 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 
 	propertyChangedCallback(prop, old) {
 		this.render()
-		// if (Boolean(this[prop]) === Boolean(old)) {
-		// 	return
-		// }
-		// // cancelAnimationFrame(this.#raf)
-		// // this.#raf = requestAnimationFrame(() => {
-		// 	if (this[prop]) {
-		// 		let content = this.template.content.cloneNode(true)
-
-		// 		let bindings = new Bindings(content)
-		// 		bindings.connect(this.getRootNode().host)
-		// 		bindings.update()
-
-		// 		this.innerHTML = ''
-		// 		this.appendChild(content)
-		// 		this.#bindings = bindings
-		// 	} else {
-		// 		this.innerHTML = ''
-		// 		this.#bindings.disconnect()
-		// 		this.#bindings = null
-		// 	}
-		// // })
 	}
 }

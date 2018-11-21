@@ -17,14 +17,21 @@ import ShowHideTargetExpression from './target-expressions/show-hide-target-expr
 
 
 export class Bindings {
+	host = null
+	state = null
+
 	bindings = [] // [Binding]
-	targetExpressions = [
+
+	#targetExpressions = [
 		PropertyTargetExpression,
 		AttributeTargetExpression,
 		NodeTargetExpression,
 		EventTargetExpression,
 		ShowHideTargetExpression,
 	]
+
+	#isComponenInRenderQueue = false
+	#propsInRenderQueue = new Set
 	#propertiesObserver = (prop) => {
 		this.updateProp(prop, this[prop])
 	}
@@ -33,8 +40,6 @@ export class Bindings {
 
 	constructor(template) {
 		this.parse(template)
-		this.isComponenInRenderQueue = false
-		this.propsInRenderQueue = new Set
 	}
 
 	parse(template) {
@@ -42,7 +47,7 @@ export class Bindings {
 			return
 		}
 
-		let targetExpressions = this.targetExpressions.sort((a, b) => {
+		let targetExpressions = this.#targetExpressions.sort((a, b) => {
 			return b.parsePriority - a.parsePriority
 		})
 		this.bindings = []
@@ -203,6 +208,7 @@ export class Bindings {
 
 	connect(host) {
 		this.host = host
+		this.state = host
 		this.getAllRelatedProps().forEach((prop) => {
 			this.host.observeProperty(prop)
 		})
@@ -219,32 +225,32 @@ export class Bindings {
 		this.#updateDebouncer = debouncer.microtask(this.#updateDebouncer, () => {
 			this.bindings.forEach((binding) => {
 				if (binding.target.constructor.updatePhase == 'microtask') {
-					binding.pushValue(this.host)
+					binding.pushValue(this.state, this.host)
 				}
 			})
 		})
 
-		if (this.isComponenInRenderQueue) {
+		if (this.#isComponenInRenderQueue) {
 			return
 		}
 
 		// other bindings update by rAF
 		requestAnimationFrame(() => {
-			this.isComponenInRenderQueue = false
+			this.#isComponenInRenderQueue = false
 			this.bindings.forEach((binding) => {
 				if (binding.target.constructor.updatePhase == 'rAF') {
-					binding.pushValue(this.host)
+					binding.pushValue(this.state, this.host)
 				}
 			})
 		})
-		this.isComponenInRenderQueue = true
+		this.#isComponenInRenderQueue = true
 	}
 
 	updateProp(prop) {
 		// prop target bindings update by microtask
 		this.#updatePropDebouncer = debouncer.microtask(this.#updatePropDebouncer, () => {
 			let relatedBindings = new Set
-			this.propsInRenderQueue.forEach((prop) => {
+			this.#propsInRenderQueue.forEach((prop) => {
 				this.bindings.forEach((binding) => {
 					if (binding.isPropRelated(prop) && binding.target.constructor.updatePhase == 'microtask') {
 						relatedBindings.add(binding)
@@ -252,16 +258,16 @@ export class Bindings {
 				})
 			})
 			relatedBindings.forEach((binding) => {
-				binding.pushValue(this.host)
+				binding.pushValue(this.state, this.host)
 			})
 		})
 
 		// no need to queue the prop if entire component is invalidated
-		if (this.isComponenInRenderQueue) {
+		if (this.#isComponenInRenderQueue) {
 			return
 		}
-		let queued = this.propsInRenderQueue.size
-		this.propsInRenderQueue.add(prop)
+		let queued = this.#propsInRenderQueue.size
+		this.#propsInRenderQueue.add(prop)
 
 		if (queued) {
 			return
@@ -270,17 +276,17 @@ export class Bindings {
 		// other bindings update by rAF
 		requestAnimationFrame(() => {
 			let relatedBindings = new Set
-			this.propsInRenderQueue.forEach((prop) => {
+			this.#propsInRenderQueue.forEach((prop) => {
 				this.bindings.forEach((binding) => {
 					if (binding.isPropRelated(prop) && binding.target.constructor.updatePhase == 'rAF') {
 						relatedBindings.add(binding)
 					}
 				})
 			})
-			this.propsInRenderQueue.clear()
+			this.#propsInRenderQueue.clear()
 
 			relatedBindings.forEach((binding) => {
-				binding.pushValue(this.host)
+				binding.pushValue(this.state, this.host)
 			})
 		})
 	}

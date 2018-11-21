@@ -33,8 +33,8 @@ export class PropertySourceExpression {
 		state[this.propertyName] = value
 	}
 
-	getValue(state) {
-		return state[this.propertyName]
+	getValue(state, host) {
+		return state[this.propertyName] || host[this.propertyName]
 	}
 
 	getRelatedProps() {
@@ -122,8 +122,8 @@ export class CompoundSourceExpression {
 		this.chunks = chunks
 	}
 
-	getValue(state) {
-		return this.chunks.map(expr => expr.getValue(state)).join('')
+	getValue(state, host) {
+		return this.chunks.map(expr => expr.getValue(state, host)).join('')
 	}
 
 	getRelatedProps() {

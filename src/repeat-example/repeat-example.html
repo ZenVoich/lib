@@ -3,7 +3,7 @@
 
 <dom-repeat .items="[[items]]" as="item" key="key">
 	<template>
-		<div>Item: [[item.value]]</div>
+		<div on-click="[[onClick]]">Item: [[item.value]] (parent binding: [[pi]])</div>
 		<!-- <br>
 		<button on-click="[[increment]]">dom-repeat increment</button> -->
 	</template>

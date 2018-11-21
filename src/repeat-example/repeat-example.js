@@ -11,9 +11,15 @@ class RepeatExample extends Element {
 	static template = template
 	static styles = styles
 
+	pi = Math.PI
+
 	constructor() {
 		super()
 		this.items = []
+	}
+
+	onClick() {
+		console.info('onClick')
 	}
 
 	add(count) {
