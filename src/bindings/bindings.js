@@ -21,6 +21,7 @@ export class Bindings {
 	state = null
 
 	bindings = [] // [Binding]
+	notRelatedProps = []
 
 	#targetExpressions = [
 		PropertyTargetExpression,
@@ -28,7 +29,9 @@ export class Bindings {
 		NodeTargetExpression,
 		EventTargetExpression,
 		ShowHideTargetExpression,
-	]
+	].sort((a, b) => {
+		return b.parsePriority - a.parsePriority
+	})
 
 	#isComponenInRenderQueue = false
 	#propsInRenderQueue = new Set
@@ -47,9 +50,6 @@ export class Bindings {
 			return
 		}
 
-		let targetExpressions = this.#targetExpressions.sort((a, b) => {
-			return b.parsePriority - a.parsePriority
-		})
 		this.bindings = []
 
 		// text node target
@@ -60,7 +60,7 @@ export class Bindings {
 			}
 
 			let target
-			targetExpressions.find((exprClass) => {
+			this.#targetExpressions.find((exprClass) => {
 				if (exprClass.parseType == 'node') {
 					target = exprClass.parse(node)
 					return target
@@ -89,7 +89,7 @@ export class Bindings {
 				}
 
 				let target
-				targetExpressions.find((exprClass) => {
+				this.#targetExpressions.find((exprClass) => {
 					if (exprClass.parseType == 'attribute') {
 						target = exprClass.parse(el, attr, source)
 						return target
@@ -247,6 +247,15 @@ export class Bindings {
 	}
 
 	updateProp(prop) {
+		// no need to queue the prop if entire component is invalidated
+		if (this.#isComponenInRenderQueue) {
+			return
+		}
+
+		if (this.notRelatedProps.includes(prop)) {
+			return
+		}
+
 		// prop target bindings update by microtask
 		this.#updatePropDebouncer = debouncer.microtask(this.#updatePropDebouncer, () => {
 			let relatedBindings = new Set
@@ -257,15 +266,17 @@ export class Bindings {
 					}
 				})
 			})
+
+			// if (!relatedBindings.size) {
+			// 	this.notRelatedProps.push(prop)
+			// 	if (this.notRelatedProps.length > 3) {
+			// 		this.notRelatedProps.shift()
+			// 	}
+			// }
 			relatedBindings.forEach((binding) => {
 				binding.pushValue(this.state, this.host)
 			})
 		})
-
-		// no need to queue the prop if entire component is invalidated
-		if (this.#isComponenInRenderQueue) {
-			return
-		}
 		let queued = this.#propsInRenderQueue.size
 		this.#propsInRenderQueue.add(prop)
 

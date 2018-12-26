@@ -3,3 +3,7 @@
 	margin-right: 30px;
 	color: red;
 }
+
+.item {
+	display: block;
+}

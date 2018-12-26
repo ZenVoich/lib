@@ -1,7 +1,7 @@
 export default (Class) => {
 	return class extends Class {
 		#observedProps = new Set
-		#propertiesObservers = new Set
+		_propertiesObservers = new Set
 
 		ready() {
 			super.ready()
@@ -38,18 +38,18 @@ export default (Class) => {
 		}
 
 		addPropertiesObserver(fn) {
-			this.#propertiesObservers.add(fn)
+			this._propertiesObservers.add(fn)
 		}
 
 		removePropertiesObserver(fn) {
-			this.#propertiesObservers.delete(fn)
+			this._propertiesObservers.delete(fn)
 		}
 
 		propertyChangedCallback(prop, oldVal, newVal) {
 			if (super.propertyChangedCallback) {
 				super.propertyChangedCallback(prop, oldVal, newVal)
 			}
-			this.#propertiesObservers.forEach((fn) => {
+			this._propertiesObservers.forEach((fn) => {
 				fn(prop, oldVal, newVal)
 			})
 		}

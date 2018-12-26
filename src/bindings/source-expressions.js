@@ -34,7 +34,7 @@ export class PropertySourceExpression {
 	}
 
 	getValue(state, host) {
-		return state[this.propertyName] || host[this.propertyName]
+		return state[this.propertyName] || host && host[this.propertyName]
 	}
 
 	getRelatedProps() {
