@@ -1,7 +1,7 @@
 export default (...props) => {
 	return (def) => {
 		if (def.kind !== 'method') {
-			throw '@watch descorator can be applied to method'
+			throw '@watch decorator can only be applied to a method'
 		}
 
 		let propsInfo = []
