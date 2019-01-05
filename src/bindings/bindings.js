@@ -229,6 +229,10 @@ export class Bindings {
 	update() {
 		// prop target bindings update by microtask
 		this.#updateDebouncer = debouncer.microtask(this.#updateDebouncer, () => {
+			if (!this.host) {
+				return
+			}
+
 			this.bindings.forEach((binding) => {
 				if (binding.target.constructor.updatePhase == 'microtask') {
 					binding.pushValue(this.state, this.host)
@@ -242,6 +246,10 @@ export class Bindings {
 
 		// other bindings update by rAF
 		requestAnimationFrame(() => {
+			if (!this.host) {
+				return
+			}
+
 			this.#isComponenInRenderQueue = false
 			this.bindings.forEach((binding) => {
 				if (binding.target.constructor.updatePhase == 'rAF') {
@@ -264,6 +272,10 @@ export class Bindings {
 
 		// prop target bindings update by microtask
 		this.#updatePropDebouncer = debouncer.microtask(this.#updatePropDebouncer, () => {
+			if (!this.host) {
+				return
+			}
+
 			let relatedBindings = new Set
 			this.#propsInRenderQueue.forEach((prop) => {
 				this.bindings.forEach((binding) => {
@@ -292,6 +304,10 @@ export class Bindings {
 
 		// other bindings update by rAF
 		requestAnimationFrame(() => {
+			if (!this.host) {
+				return
+			}
+
 			let relatedBindings = new Set
 			this.#propsInRenderQueue.forEach((prop) => {
 				this.bindings.forEach((binding) => {

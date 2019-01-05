@@ -1,4 +1,5 @@
 import define from './decorators/class/define.js'
+import watch from './decorators/method/watch.js'
 import Initial from './mixins/initial.js'
 import Template from './mixins/template.js'
 import PropertyObserver from './mixins/property-observer.js'
@@ -8,11 +9,10 @@ import {Bindings} from './bindings/bindings.js'
 @define('dom-if')
 class DomIf extends PropertyObserver(Template(Initial(HTMLElement))) {
 	static template = '<style>:host {display: contents;}</style><slot></slot>'
-	static observedProperties = ['if']
 
 	if = false
-	#bindings;
-	#raf;
+	_bindings
+	_raf
 
 	constructor() {
 		super()
@@ -20,17 +20,15 @@ class DomIf extends PropertyObserver(Template(Initial(HTMLElement))) {
 		this.template.remove()
 	}
 
-	// @observe('if')
-	// ifObserver(old) {
-	// }
-
-	propertyChangedCallback(prop, old) {
-		if (Boolean(this[prop]) === Boolean(old)) {
+	@watch('if')
+	render() {
+		if (Boolean(this.if) === Boolean(this._oldIf)) {
 			return
 		}
-		// cancelAnimationFrame(this.#raf)
-		// this.#raf = requestAnimationFrame(() => {
-			if (this[prop]) {
+		this._oldIf = this.if
+		cancelAnimationFrame(this._raf)
+		this._raf = requestAnimationFrame(() => {
+			if (this.if) {
 				let content = this.template.content.cloneNode(true)
 
 				let bindings = new Bindings(content)
@@ -39,12 +37,12 @@ class DomIf extends PropertyObserver(Template(Initial(HTMLElement))) {
 
 				this.innerHTML = ''
 				this.appendChild(content)
-				this.#bindings = bindings
+				this._bindings = bindings
 			} else {
 				this.innerHTML = ''
-				this.#bindings.disconnect()
-				this.#bindings = null
+				this._bindings.disconnect()
+				this._bindings = null
 			}
-		// })
+		})
 	}
 }

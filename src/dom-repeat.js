@@ -1,4 +1,5 @@
 import define from './decorators/class/define.js'
+import watch from './decorators/method/watch.js'
 import Initial from './mixins/initial.js'
 import Template from './mixins/template.js'
 import PropertyObserver from './mixins/property-observer.js'
@@ -8,25 +9,17 @@ import {Bindings} from './bindings/bindings.js'
 @define('dom-repeat')
 class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 	static template = '<style>:host {display: contents;}</style><slot></slot>'
-	static observedProperties = ['items', 'as', 'key']
 
-	items = null;
-	as = 'item';
-	key = '';
-	_physicalElementsByKey = new Map;
-	#raf;
+	items = null
+	as = 'item'
+	key
+	_physicalElementsByKey = new Map
+	_raf
 
 	constructor() {
 		super()
 		this.template = this.querySelector('template')
 		this.template.remove()
-	}
-
-	propertyChangedCallback(prop, old) {
-		if (!this.items || !this.as || !this.key) {
-			return
-		}
-		this.render()
 	}
 
 	_createElement(key, item) {
@@ -58,6 +51,7 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 		}
 	}
 
+	@watch('items', 'as', 'key')
 	render() {
 		if (this.key) {
 			this.renderSorted()
