@@ -8,13 +8,14 @@
 <br>
 <button on-click="[[removeFirst]]">Remove first</button>
 <button on-click="[[removeLast]]">Remove last</button>
+<button on-click="[[removeAll]]">Remove all</button>
 <br><br>
 <button on-click="[[updateProp]]">Update parent prop</button>
 <br><br>
 
-<dom-repeat .items="[[items]]" .as="item" .key="key">
+<dom-repeat .items="[[items]]" .key="key">
 	<template>
-		<div class="item" .item="[[item]]" on-click="[[onClick]]">Item: [[item.value]] (parent binding: <span>[[pi]]</span>) R: <random-number></random-number></div>
+		<div class="item" .item="[[item]]" on-click="[[onClick]]">Item: [[item.value]] (nested [[item.nested.val]]) (parent binding: <span>[[pi]]</span> nested: [[nested.val]]) R: <random-number></random-number></div>
 		<!-- <br>
 		<button on-click="[[increment]]">dom-repeat increment</button> -->
 	</template>

@@ -8,9 +8,11 @@ import {Bindings} from './bindings/bindings.js'
 @define('dom-repeat')
 class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 	static template = '<style>:host {display: contents;}</style><slot></slot>'
-	static observedProperties = ['items', 'as']
+	static observedProperties = ['items', 'as', 'key']
 
-	if = false;
+	items = null;
+	as = 'item';
+	key = '';
 	_physicalElementsByKey = new Map;
 	#raf;
 
@@ -21,6 +23,9 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 	}
 
 	propertyChangedCallback(prop, old) {
+		if (!this.items || !this.as || !this.key) {
+			return
+		}
 		this.render()
 	}
 
@@ -29,11 +34,11 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 		let bindings = new Bindings(content)
 		bindings.connect(this.getRootNode().host)
 		// bindings.host = this.getRootNode().host
-		bindings.state = {item}
+		bindings.state = {[this.as]: item}
 		bindings.update()
 		// console.log(bindings)
 		let element = content.firstElementChild
-		this._physicalElementsByKey.set(item.key, {element, bindings})
+		this._physicalElementsByKey.set(item[this.key], {element, bindings})
 		return element
 	}
 
@@ -49,16 +54,44 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 		if (child) {
 			child.insertAdjacentElement('beforeBegin', element)
 		} else {
-			this.appendChild(element)
+			this.append(element)
 		}
 	}
 
 	render() {
+		if (this.key) {
+			this.renderSorted()
+		} else {
+			this.renderPlain()
+		}
+	}
+
+	// // ensure elements count and update bindings
+	// renderPlain() {
+	// 	// ensure elements
+	// 	let diff = this.items.length - this.childElementCount
+	// 	if (diff > 0) {
+	// 		for (let i = 0; i < diff; i++) {
+	// 			let item = this.childElementCount + i
+	// 			let element = this._createElement(item[this.key], item)
+	// 			this.append(element)
+	// 		}
+	// 	} else if (diff < 0) {
+	// 		for (let i = 0; i > diff; i--) {
+	// 			this.lastElementChild.remove()
+	// 		}
+	// 	}
+
+	// 	// update bindings
+	// }
+
+	// sort existing elements by key
+	renderSorted() {
 		// remove elements
 		let removedElements = []
 		let currentKeys = new Set(this._physicalElementsByKey.keys())
 		this.items.forEach((item) => {
-			currentKeys.delete(item.key)
+			currentKeys.delete(item[this.key])
 		})
 		currentKeys.forEach((key) => {
 			this._removeElement(key)
@@ -66,11 +99,11 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 
 		// add/update elements
 		this.items.forEach((item, index) => {
-			let physical = this._physicalElementsByKey.get(item.key)
+			let physical = this._physicalElementsByKey.get(item[this.key])
 			if (physical) {
 				physical.bindings.update()
 			} else {
-				let element = this._createElement(item.key, item)
+				let element = this._createElement(item[this.key], item)
 				this._placeElement(element, index)
 			}
 		})
@@ -79,7 +112,7 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 		let sort = () => {
 			let children = [...this.children]
 			let itemsInfo = this.items.map((item, newIndex) => {
-				let physical = this._physicalElementsByKey.get(item.key)
+				let physical = this._physicalElementsByKey.get(item[this.key])
 				let oldIndex = children.indexOf(physical.element)
 				return {
 					item,

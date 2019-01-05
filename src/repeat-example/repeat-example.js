@@ -14,6 +14,7 @@ class RepeatExample extends Element {
 	static styles = styles
 
 	pi = Math.PI
+	nested = {val: 'ppp'}
 
 	constructor() {
 		super()
@@ -29,7 +30,11 @@ class RepeatExample extends Element {
 	add(count, toStart) {
 		for (let i = 0; i < count; i++) {
 			let rand = Math.random()
-			this.items[toStart ? 'unshift' : 'push']({key: rand, value: rand})
+			this.items[toStart ? 'unshift' : 'push']({
+				key: rand,
+				value: rand,
+				nested: {val: 'aaa'},
+			})
 		}
 		this.items = this.items
 	}
@@ -66,6 +71,10 @@ class RepeatExample extends Element {
 	removeLast() {
 		this.items.pop()
 		this.items = this.items
+	}
+
+	removeAll() {
+		this.items = []
 	}
 
 	updateProp() {

@@ -84,9 +84,6 @@ export class Bindings {
 			// attributes
 			el.getAttributeNames().forEach((attr) => {
 				let source = this.parseSourceExpression(el.getAttribute(attr))
-				if (!source) {
-					return
-				}
 
 				let target
 				this.#targetExpressions.find((exprClass) => {
@@ -97,6 +94,15 @@ export class Bindings {
 				})
 				if (!target) {
 					return
+				}
+
+				if (!source) {
+					if (target instanceof PropertyTargetExpression) {
+						source = new ValueSourceExpression({value: el.getAttribute(attr)})
+					}
+					else {
+						return
+					}
 				}
 
 				let binding = new Binding
