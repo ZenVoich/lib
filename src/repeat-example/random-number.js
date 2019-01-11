@@ -1,8 +1,8 @@
 import define from '../decorators/class/define.js'
-import Element from '../element.js'
+import Component from '../component.js'
 
 @define('random-number')
-class RepeatExample extends Element {
+class RepeatExample extends Component {
 	static template = `<div on-click="[[generateClick]]">[[num]]</div>`
 	static styles = `:host { display: inline-block; }`
 

@@ -1,5 +1,5 @@
 import define from '../decorators/class/define.js'
-import Element from '../element.js'
+import Component from '../component.js'
 import {Bindings} from '../bindings/bindings.js'
 
 import template from './test-element.html'
@@ -7,7 +7,7 @@ import styles from './test-element.css'
 
 
 @define('test-element')
-class TestElement extends Element {
+class TestElement extends Component {
 	static template = template
 	static styles = styles
 

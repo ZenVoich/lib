@@ -2,7 +2,7 @@ import TargetExpression from './target-expression.js'
 
 export default class NodeTargetExpression extends TargetExpression {
 	static parseType = 'node'
-	static updatePhase = 'rAF'
+	static updatePhase = 'animationFrame'
 
 	static parse(node) {
 		let target = new NodeTargetExpression
@@ -13,7 +13,9 @@ export default class NodeTargetExpression extends TargetExpression {
 	node = null
 
 	setValue(value) {
-		this.node.textContent = value
+		if (this.node.textContent !== value) {
+			this.node.textContent = value
+		}
 	}
 
 	getValue() {

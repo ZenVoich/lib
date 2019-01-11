@@ -3,7 +3,7 @@ import TargetExpression from './target-expression.js'
 export default class AttributeTargetExpression extends TargetExpression {
 	static parseType = 'attribute'
 	static parsePriority = 1
-	static updatePhase = 'rAF'
+	static updatePhase = 'animationFrame'
 
 	static parse(element, attribute) {
 		let target = new AttributeTargetExpression

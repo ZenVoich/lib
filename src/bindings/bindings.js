@@ -1,4 +1,4 @@
-import {getAllChildren, debouncer} from '../helpers.js'
+import {getAllChildren, debounceMicrotask, queueRender} from '../helpers.js'
 import Binding from './binding.js'
 
 import {
@@ -228,7 +228,7 @@ export class Bindings {
 
 	update() {
 		// prop target bindings update by microtask
-		this.#updateDebouncer = debouncer.microtask(this.#updateDebouncer, () => {
+		this.#updateDebouncer = debounceMicrotask(this.#updateDebouncer, () => {
 			if (!this.host) {
 				return
 			}
@@ -245,14 +245,14 @@ export class Bindings {
 		}
 
 		// other bindings update by rAF
-		requestAnimationFrame(() => {
+		queueRender(() => {
 			if (!this.host) {
 				return
 			}
 
 			this.#isComponenInRenderQueue = false
 			this.bindings.forEach((binding) => {
-				if (binding.target.constructor.updatePhase == 'rAF') {
+				if (binding.target.constructor.updatePhase == 'animationFrame') {
 					binding.pushValue(this.state, this.host)
 				}
 			})
@@ -271,7 +271,7 @@ export class Bindings {
 		}
 
 		// prop target bindings update by microtask
-		this.#updatePropDebouncer = debouncer.microtask(this.#updatePropDebouncer, () => {
+		this.#updatePropDebouncer = debounceMicrotask(this.#updatePropDebouncer, () => {
 			if (!this.host) {
 				return
 			}
@@ -303,7 +303,7 @@ export class Bindings {
 		}
 
 		// other bindings update by rAF
-		requestAnimationFrame(() => {
+		queueRender(() => {
 			if (!this.host) {
 				return
 			}
@@ -311,7 +311,7 @@ export class Bindings {
 			let relatedBindings = new Set
 			this.#propsInRenderQueue.forEach((prop) => {
 				this.bindings.forEach((binding) => {
-					if (binding.isPropRelated(prop) && binding.target.constructor.updatePhase == 'rAF') {
+					if (binding.isPropRelated(prop) && binding.target.constructor.updatePhase == 'animationFrame') {
 						relatedBindings.add(binding)
 					}
 				})

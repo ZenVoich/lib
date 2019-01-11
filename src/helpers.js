@@ -6,20 +6,36 @@ export let getAllChildren = (root) => {
 	return children
 }
 
-export let debouncer = {
-	activeDebouncers: new Set,
-	microtask(id, fn) {
-		if (id && this.activeDebouncers.has(id)) {
-			return id
-		}
-		if (!id) {
-			id = Symbol()
-		}
-		this.activeDebouncers.add(id)
-		Promise.resolve().then(() => {
-			fn()
-			this.activeDebouncers.delete(id)
-		})
+let activeDebouncers = new Set
+export let debounceMicrotask = (id, fn) => {
+	if (id && activeDebouncers.has(id)) {
 		return id
 	}
+	if (!id) {
+		id = Symbol()
+	}
+	activeDebouncers.add(id)
+	Promise.resolve().then(() => {
+		fn()
+		activeDebouncers.delete(id)
+	})
+	return id
 }
+
+// export let queueRender = requestAnimationFrame
+
+let queue = []
+export let queueRender = (fn) => {
+	queue.push(fn)
+}
+
+let loop = () => {
+	requestAnimationFrame(() => {
+		queue.forEach((fn) => {
+			fn()
+		})
+		queue = []
+		loop()
+	})
+}
+loop()

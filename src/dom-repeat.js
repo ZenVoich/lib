@@ -14,32 +14,52 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 	as = 'item'
 	key
 	_physicalElementsByKey = new Map
+	_bindingsByElement = new Map
 	_raf
 
 	constructor() {
 		super()
-		this.template = this.querySelector('template')
-		this.template.remove()
+		let template = this.querySelector('template')
+		if (!template) {
+			throw 'dom-repeat must contain \'template\' element';
+		}
+		if (template.content.childElementCount < 1) {
+			throw 'dom-repeat template must contain an element';
+		}
+		if (template.content.childElementCount > 1) {
+			throw 'dom-repeat template must contain only 1 element';
+		}
+		template.remove()
+		this.template = template
 	}
 
 	_createElement(key, item) {
 		let content = this.template.content.cloneNode(true)
 		let bindings = new Bindings(content)
 		bindings.connect(this.getRootNode().host)
-		// bindings.host = this.getRootNode().host
 		bindings.state = {[this.as]: item}
 		bindings.update()
-		// console.log(bindings)
 		let element = content.firstElementChild
-		this._physicalElementsByKey.set(item[this.key], {element, bindings})
+		if (this.key) {
+			this._physicalElementsByKey.set(item[this.key], {element, bindings})
+		} else {
+			this._bindingsByElement.set(element, bindings)
+		}
 		return element
 	}
 
-	_removeElement(key) {
-		let {element, bindings} = this._physicalElementsByKey.get(key)
-		bindings.disconnect()
-		element.remove()
-		this._physicalElementsByKey.delete(key)
+	_removeElement(key, element) {
+		if (this.key) {
+			let {element, bindings} = this._physicalElementsByKey.get(key)
+			bindings.disconnect()
+			element.remove()
+			this._physicalElementsByKey.delete(key)
+		} else {
+			let bindings = this._bindingsByElement.get(element)
+			bindings.disconnect()
+			element.remove()
+			this._bindingsByElement.delete(element)
+		}
 	}
 
 	_placeElement(element, index) {
@@ -51,8 +71,12 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 		}
 	}
 
-	@watch('items', 'as', 'key')
-	render() {
+	@watch('items', 'as', 'key?')
+	async render() {
+		if (!this.template) {
+			return
+		}
+		await Promise.resolve()
 		if (this.key) {
 			this.renderSorted()
 		} else {
@@ -60,24 +84,28 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 		}
 	}
 
-	// // ensure elements count and update bindings
-	// renderPlain() {
-	// 	// ensure elements
-	// 	let diff = this.items.length - this.childElementCount
-	// 	if (diff > 0) {
-	// 		for (let i = 0; i < diff; i++) {
-	// 			let item = this.childElementCount + i
-	// 			let element = this._createElement(item[this.key], item)
-	// 			this.append(element)
-	// 		}
-	// 	} else if (diff < 0) {
-	// 		for (let i = 0; i > diff; i--) {
-	// 			this.lastElementChild.remove()
-	// 		}
-	// 	}
+	// ensure elements count and update bindings
+	renderPlain() {
+		// ensure elements
+		let diff = this.items.length - this.childElementCount
+		if (diff > 0) {
+			for (let i = 0; i < diff; i++) {
+				let item = this.childElementCount + i
+				let element = this._createElement(item[this.key], item)
+				this.append(element)
+			}
+		} else if (diff < 0) {
+			for (let i = 0; i > diff; i--) {
+				this._removeElement(null, this.lastElementChild)
+			}
+		}
 
-	// 	// update bindings
-	// }
+		// update bindings
+		[...this._bindingsByElement.values()].forEach((bindings, i) => {
+			bindings.state = {[this.as]: this.items[i]}
+			bindings.update()
+		})
+	}
 
 	// sort existing elements by key
 	renderSorted() {

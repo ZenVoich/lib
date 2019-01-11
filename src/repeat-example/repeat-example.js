@@ -1,5 +1,5 @@
 import define from '../decorators/class/define.js'
-import Element from '../element.js'
+import Component from '../component.js'
 import {Bindings} from '../bindings/bindings.js'
 
 import template from './repeat-example.html'
@@ -7,9 +7,8 @@ import styles from './repeat-example.css'
 
 import './random-number.js'
 
-
 @define('repeat-example')
-class RepeatExample extends Element {
+class RepeatExample extends Component {
 	static template = template
 	static styles = styles
 
@@ -33,7 +32,13 @@ class RepeatExample extends Element {
 			this.items[toStart ? 'unshift' : 'push']({
 				key: rand,
 				value: rand,
-				nested: {val: 'aaa'},
+				nested: {val: 'aaa', items: [
+					{id: 1, val: 1},
+					{id: 2, val: 2},
+					{id: 3, val: 3},
+					{id: 4, val: 4},
+					{id: 5, val: 5},
+				]},
 			})
 		}
 		this.items = this.items

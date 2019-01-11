@@ -2,7 +2,7 @@ import TargetExpression from './target-expression.js'
 
 export default class ShowHideTargetExpression extends TargetExpression {
 	static parseType = 'attribute'
-	static updatePhase = 'rAF'
+	static updatePhase = 'animationFrame'
 
 	static parse(element, attribute) {
 		if (!['show-if', 'hide-if'].includes(attribute)) {
