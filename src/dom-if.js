@@ -21,11 +21,10 @@ class DomIf extends PropertyObserver(Template(Initial(HTMLElement))) {
 	}
 
 	@watch('if')
-	render() {
-		if (Boolean(this.if) === Boolean(this._oldIf)) {
+	render(oldIf) {
+		if (Boolean(this.if) === oldIf) {
 			return
 		}
-		this._oldIf = this.if
 		cancelAnimationFrame(this._raf)
 		this._raf = requestAnimationFrame(() => {
 			if (this.if) {

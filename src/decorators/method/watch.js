@@ -39,7 +39,15 @@ export default (...props) => {
 					})
 
 					if (canCall) {
-						this[def.key].call(this)
+						if (propsInfo.length === 1) {
+							this[def.key].call(this, oldVal)
+						}
+						else {
+							let oldValues = propsInfo.map((info) => {
+								return info.prop == prop ? oldVal : this[info.prop];
+							})
+							this[def.key].call(this, ...oldValues)
+						}
 					}
 				}
 			}
