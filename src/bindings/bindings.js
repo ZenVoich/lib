@@ -1,19 +1,12 @@
 import {getAllChildren, debounceMicrotask, queueRender} from '../helpers.js'
 import Binding from './binding.js'
 
-import {
-	ValueSourceExpression,
-	PropertySourceExpression,
-	PathSourceExpression,
-	CallSourceExpression,
-	CompoundSourceExpression,
-} from './source-expressions.js'
+import ValueSourceExpression from './source-expressions/value-source-expression.js'
+import CompoundSourceExpression from './source-expressions/compound-source-expression.js'
+import {parse as parseSourceExpression} from './source-expressions/source-expression-parser.js'
 
-import AttributeTargetExpression from './target-expressions/attribute-target-expression.js'
-import EventTargetExpression from './target-expressions/event-target-expression.js'
-import NodeTargetExpression from './target-expressions/node-target-expression.js'
 import PropertyTargetExpression from './target-expressions/property-target-expression.js'
-import ShowHideTargetExpression from './target-expressions/show-hide-target-expression.js'
+import {parse as parseTargetExpression} from './target-expressions/target-expression-parser.js'
 
 
 export class Bindings {
@@ -22,16 +15,6 @@ export class Bindings {
 
 	bindings = [] // [Binding]
 	notRelatedProps = []
-
-	#targetExpressions = [
-		PropertyTargetExpression,
-		AttributeTargetExpression,
-		NodeTargetExpression,
-		EventTargetExpression,
-		ShowHideTargetExpression,
-	].sort((a, b) => {
-		return b.parsePriority - a.parsePriority
-	})
 
 	#isComponenInRenderQueue = false
 	#propsInRenderQueue = new Set
@@ -58,15 +41,7 @@ export class Bindings {
 			if (!source) {
 				return
 			}
-
-			let target
-			this.#targetExpressions.find((exprClass) => {
-				if (exprClass.parseType == 'node') {
-					target = exprClass.parse(node)
-					return target
-				}
-			})
-
+			let target = parseTargetExpression('node', node)
 			if (!target) {
 				return
 			}
@@ -84,18 +59,13 @@ export class Bindings {
 			// attributes
 			el.getAttributeNames().forEach((attr) => {
 				let source = this.parseSourceExpression(el.getAttribute(attr))
+				let target = parseTargetExpression('attribute', el, attr, source)
 
-				let target
-				this.#targetExpressions.find((exprClass) => {
-					if (exprClass.parseType == 'attribute') {
-						target = exprClass.parse(el, attr, source)
-						return target
-					}
-				})
 				if (!target) {
 					return
 				}
 
+				// <div .prop="val">
 				if (!source) {
 					if (target instanceof PropertyTargetExpression) {
 						source = new ValueSourceExpression({value: el.getAttribute(attr)})
@@ -136,78 +106,62 @@ export class Bindings {
 		})
 	}
 
-	// todo: refactor
 	parseSourceExpression(text) {
-		let start = `\\[\\[`
-		let end = `\\]\\]`
+		let chunks = [text]
 
-		let string = `'([^']*)'`
-		let arg = `([a-z_]+(?:\\.[a-z_]+)*|'[^']*'|[0-9]+)`
-
-		let regExps = {
-			call: new RegExp(`\\[\\[([a-z_]+)\\(${arg}(?:\\s*,\\s*${arg})*\\)\\]\\]`, 'ig'),
-			path: /\[\[([a-z_]+(?:\.[a-z_]+)+)\]\]/ig,
-			prop: /\[\[([a-z_]+)\]\]/ig,
-			string: new RegExp(`\\[\\[${string}\\]\\]`, 'ig'),
-			number: /\[\[([0-9]+)\]\]/ig,
-		}
-		let expressions = []
-		let tempText = text
-		let hasMatch = false
-
-		Object.entries(regExps).forEach(([type, regExp]) => {
+		let findAndReplace = () => {
+			let nextChunk
+			let nextChunkIndex
 			let match
-			while (match = regExp.exec(text)) {
-				hasMatch = true
-				let index = tempText.indexOf(match[0])
-				let str = tempText.substr(0, index)
-				// pre text
-				if (str) {
-					tempText = tempText.replace(str, '')
-					let expr = this.parseSourceExpression(str)
-					if (expr) {
-						expressions.push(expr)
-					}
-					else {
-						expressions.push(new ValueSourceExpression({value: str}))
-					}
+
+			for (let [index, chunk] of chunks.entries()) {
+				if (typeof chunk != 'string') {
+					continue
 				}
-				// expr
-				tempText = tempText.replace(match[0], '')
-				// prop
-				if (type == 'prop') {
-					expressions.push(new PropertySourceExpression({propertyName: match[1]}))
-				}
-				// path
-				else if (type == 'path') {
-					expressions.push(new PathSourceExpression({path: match[1].split('.')}))
-				}
-				// call
-				else if (type == 'call') {
-					let [_, fn, ...args] = match;
-					args = args.map((arg) => this.parseSourceExpression(`[[${arg}]]`))
-					expressions.push(new CallSourceExpression({functionName: fn, args: args}))
-				}
-				// static value
-				else if (type == 'string' || type == 'number') {
-					let value = type == 'number' ? parseFloat(match[1]) : match[1]
-					expressions.push(new ValueSourceExpression({value: value}))
+				match = chunk.match(/\[\[(.*?)\]\]/)
+				if (match) {
+					nextChunk = chunk
+					nextChunkIndex = index
+					break
 				}
 			}
-			text = tempText
+
+			if (!match) {
+				return
+			}
+
+			let expr = parseSourceExpression(match[1])
+			if (!expr) {
+				return
+			}
+			let [pre, ...post] = nextChunk.split(match[0])
+			chunks.splice(nextChunkIndex, 1, pre, expr, post.join(match[0]))
+
+			findAndReplace()
+		}
+		findAndReplace()
+
+		chunks = chunks.filter(x => x)
+
+		let noExpressions = !chunks.length || chunks.every((chunk) => {
+			return typeof chunk == 'string'
 		})
-		if (!hasMatch) {
+		if (noExpressions) {
 			return
 		}
-		// post text
-		if (tempText) {
-			expressions.push(new ValueSourceExpression({value: tempText}))
-		}
+
+		let expressions = chunks.filter(x => x).map((chunk) => {
+			if (typeof chunk == 'string') {
+				return new ValueSourceExpression({value: chunk})
+			}
+			return chunk
+		})
 
 		// single expression
 		if (expressions.length == 1) {
-			return expressions[0];
+			return expressions[0]
 		}
+
 		// compound expression
 		return new CompoundSourceExpression({chunks: expressions})
 	}

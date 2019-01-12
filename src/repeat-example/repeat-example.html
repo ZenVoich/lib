@@ -22,7 +22,7 @@
 
 <dom-repeat .items="[[items]]" .key="key">
 	<template>
-		<div item="[[item]]">
+		<div .item="[[item]]">
 			<div class="item" .item="[[item]]" on-click="[[onClick]]">Item: [[item.value]] (nested [[item.nested.val]]) (parent binding: <span>[[pi]]</span> nested: [[nested.val]]) R: <random-number></random-number></div>
 
 			<div class="nested-items">
