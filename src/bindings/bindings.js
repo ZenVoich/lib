@@ -8,6 +8,9 @@ import {parse as parseSourceExpression} from './source-expressions/source-expres
 import PropertyTargetExpression from './target-expressions/property-target-expression.js'
 import {parse as parseTargetExpression} from './target-expressions/target-expression-parser.js'
 
+import perf from '../perf.js'
+
+let sourceExpressionsCache = new Map
 
 export class Bindings {
 	host = null
@@ -37,11 +40,15 @@ export class Bindings {
 
 		// text node target
 		let processNode = (node) => {
-			let source = this.parseSourceExpression(node.textContent)
+			perf.markStart('bindings: parse source')
+			let source = this.memoizedParseSourceExpression(node.textContent)
+			perf.markEnd('bindings: parse source')
 			if (!source) {
 				return
 			}
+			perf.markStart('bindings: parse target')
 			let target = parseTargetExpression('node', node)
+			perf.markEnd('bindings: parse target')
 			if (!target) {
 				return
 			}
@@ -58,8 +65,12 @@ export class Bindings {
 		getAllChildren(template).forEach((el) => {
 			// attributes
 			el.getAttributeNames().forEach((attr) => {
-				let source = this.parseSourceExpression(el.getAttribute(attr))
+				perf.markStart('bindings: parse source')
+				let source = this.memoizedParseSourceExpression(el.getAttribute(attr))
+				perf.markEnd('bindings: parse source')
+				perf.markStart('bindings: parse target')
 				let target = parseTargetExpression('attribute', el, attr, source)
+				perf.markEnd('bindings: parse target')
 
 				if (!target) {
 					return
@@ -104,6 +115,15 @@ export class Bindings {
 				processNode(node)
 			}
 		})
+	}
+
+	memoizedParseSourceExpression(text) {
+		if (sourceExpressionsCache.has(text)) {
+			return sourceExpressionsCache.get(text)
+		}
+		let expr = this.parseSourceExpression(text)
+		sourceExpressionsCache.set(text, expr)
+		return expr
 	}
 
 	parseSourceExpression(text) {

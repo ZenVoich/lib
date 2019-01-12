@@ -1,4 +1,5 @@
 import {Bindings} from '../bindings/bindings.js'
+import perf from '../perf.js'
 
 export default (Class) => {
 	return class extends Class {
@@ -8,15 +9,13 @@ export default (Class) => {
 			if (!this.shadowRoot || !this.shadowRoot.innerHTML) {
 				return
 			}
+			perf.markStart('bindings: parse')
 			this.bindings = new Bindings(this.shadowRoot)
+			perf.markEnd('bindings: parse')
 			this.bindings.connect(this)
+			perf.markStart('bindings: initial update')
 			this.bindings.update()
-
-			// let props = new Set(this.constructor.observedProperties)
-			// this.bindings.getAllRelatedProps().forEach((prop) => {
-			// 	props.add(prop)
-			// })
-			// this.constructor.observedProperties = [...props]
+			perf.markEnd('bindings: initial update')
 		}
 	}
 }

@@ -22,20 +22,22 @@ export let debounceMicrotask = (id, fn) => {
 	return id
 }
 
-// export let queueRender = requestAnimationFrame
-
 let queue = []
+let renderQueued = false
 export let queueRender = (fn) => {
 	queue.push(fn)
+	if (renderQueued) {
+		return
+	}
+	requestAnimationFrame(render)
+	renderQueued = true
 }
 
-let loop = () => {
-	requestAnimationFrame(() => {
-		queue.forEach((fn) => {
-			fn()
-		})
-		queue = []
-		loop()
+let render = () => {
+	let queueCopy = [...queue]
+	queue = []
+	renderQueued = false
+	queueCopy.forEach((fn) => {
+		fn()
 	})
 }
-loop()

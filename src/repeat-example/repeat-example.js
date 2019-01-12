@@ -2,6 +2,8 @@ import define from '../decorators/class/define.js'
 import Component from '../component.js'
 import {Bindings} from '../bindings/bindings.js'
 
+import perf from '../perf.js'
+
 import template from './repeat-example.html'
 import styles from './repeat-example.css'
 
@@ -20,6 +22,18 @@ class RepeatExample extends Component {
 		this.items = []
 	}
 
+	connectedCallback() {
+		super.connectedCallback()
+		document.addEventListener('click', () => {
+			perf.run()
+			setTimeout(() => {
+				requestAnimationFrame(() => {
+					perf.flush()
+				})
+			}, 100)
+		}, {capture: true})
+	}
+
 	onClick(e) {
 		e.currentTarget.item.value += 10
 		this.items = this.items
@@ -27,6 +41,8 @@ class RepeatExample extends Component {
 	}
 
 	add(count, toStart) {
+		perf.markStart('add')
+
 		for (let i = 0; i < count; i++) {
 			let rand = Math.random()
 			this.items[toStart ? 'unshift' : 'push']({
@@ -42,6 +58,10 @@ class RepeatExample extends Component {
 			})
 		}
 		this.items = this.items
+
+		requestAnimationFrame(() => {
+			perf.markEnd('add')
+		})
 	}
 
 	addOneToStart() {
@@ -56,6 +76,10 @@ class RepeatExample extends Component {
 		this.add(1000, true)
 	}
 
+	add10ThousandToStart() {
+		this.add(10000, true)
+	}
+
 	addOneToEnd() {
 		this.add(1, false)
 	}
@@ -66,6 +90,10 @@ class RepeatExample extends Component {
 
 	addThousandToEnd() {
 		this.add(1000, false)
+	}
+
+	add10ThousandToEnd() {
+		this.add(10000, false)
 	}
 
 	removeFirst() {

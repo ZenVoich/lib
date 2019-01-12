@@ -1,4 +1,8 @@
 <style>
+	.item {
+		contain: content;
+	}
+
 	.nested-items {
 		display: flex;
 		margin-left: 10px;
@@ -8,10 +12,12 @@
 <button on-click="[[addOneToStart]]">Add 1 item to the start</button>
 <button on-click="[[addHundredToStart]]">Add 100 items to the start</button>
 <button on-click="[[addThousandToStart]]">Add 1000 items to the start</button>
+<button on-click="[[add10ThousandToStart]]">Add 10000 items to the start</button>
 <br>
 <button on-click="[[addOneToEnd]]">Add 1 item to the end</button>
 <button on-click="[[addHundredToEnd]]">Add 100 items to the end</button>
 <button on-click="[[addThousandToEnd]]">Add 1000 items to the end</button>
+<button on-click="[[add10ThousandToEnd]]">Add 10000 items to the end</button>
 <br>
 <button on-click="[[removeFirst]]">Remove first</button>
 <button on-click="[[removeLast]]">Remove last</button>
@@ -22,8 +28,8 @@
 
 <dom-repeat .items="[[items]]" .key="key">
 	<template>
-		<div .item="[[item]]">
-			<div class="item" .item="[[item]]" on-click="[[onClick]]">Item: [[item.value]] (nested [[item.nested.val]]) (parent binding: <span>[[pi]]</span> nested: [[nested.val]]) R: <random-number></random-number></div>
+		<div class="item" .item="[[item]]">
+			<div .item="[[item]]" on-click="[[onClick]]">Item: [[item.value]] (nested [[item.nested.val]]) (parent binding: <span>[[pi]]</span> nested: [[nested.val]]) R: <random-number></random-number></div>
 
 			<div class="nested-items">
 				<dom-repeat .items="[[item.nested.items]]" .as="itm">

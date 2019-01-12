@@ -13,6 +13,7 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 	items = null
 	as = 'item'
 	key
+
 	_physicalElementsByKey = new Map
 	_bindingsByElement = new Map
 	_raf
