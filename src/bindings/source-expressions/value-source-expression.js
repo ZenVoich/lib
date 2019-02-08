@@ -4,8 +4,8 @@ import {varName} from './regex.js'
 export default class ValueSourceExpression extends SourceExpression {
 	static parse(text) {
 		let value
-		let match
-		match = /^[0-9]+(?:\.[0-9]+)?$/.exec(text)
+		let match = /^[0-9]+(?:\.[0-9]+)?$/.exec(text)
+
 		if (match) {
 			value = parseFloat(text)
 		}
@@ -15,6 +15,7 @@ export default class ValueSourceExpression extends SourceExpression {
 				value = match[1]
 			}
 		}
+
 		if (match) {
 			return new ValueSourceExpression({value: value})
 		}
@@ -28,11 +29,11 @@ export default class ValueSourceExpression extends SourceExpression {
 	}
 
 	setValue(state, value) {
-		this.value = value
+		this.value = this.negateValueIfNeeded(value)
 	}
 
 	getValue(state) {
-		return this.value
+		return this.negateValueIfNeeded(this.value)
 	}
 
 	getRelatedProps() {

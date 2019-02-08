@@ -1,3 +1,4 @@
+import {toCamelCase} from '../../helpers.js'
 import TargetExpression from './target-expression.js'
 
 export default class PropertyTargetExpression extends TargetExpression {
@@ -10,7 +11,11 @@ export default class PropertyTargetExpression extends TargetExpression {
 		}
 		let target = new PropertyTargetExpression
 		target.element = element
-		target.propertyName = attribute.slice(1)
+		target.propertyName = toCamelCase(attribute.slice(1))
+
+		if (target.propertyName === 'innerHtml' || target.propertyName === 'innerhtml') {
+			target.propertyName = 'innerHTML'
+		}
 		return target
 	}
 

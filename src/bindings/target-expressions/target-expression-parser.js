@@ -12,15 +12,19 @@ let exprClasses = [
 	ShowHideTargetExpression,
 ].sort((a, b) => {
 	return b.parsePriority - a.parsePriority
-})
+}).reduce((acc, Class) => {
+	if (!acc[Class.parseType]) {
+		acc[Class.parseType] = []
+	}
+	acc[Class.parseType].push(Class)
+	return acc
+}, {})
 
 export let parse = (parseType, ...args) => {
 	let target
-	exprClasses.find((exprClass) => {
-		if (exprClass.parseType == parseType) {
-			target = exprClass.parse(...args)
-			return target
-		}
+	exprClasses[parseType].find((exprClass) => {
+		target = exprClass.parse(...args)
+		return target
 	})
 	return target
 }

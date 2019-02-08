@@ -3,8 +3,8 @@ import perf from '../perf.js'
 
 export default (Class) => {
 	return class extends Class {
-		ready() {
-			super.ready()
+		init() {
+			super.init()
 
 			if (!this.shadowRoot || !this.shadowRoot.innerHTML) {
 				return

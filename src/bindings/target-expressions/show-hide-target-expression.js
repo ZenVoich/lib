@@ -18,7 +18,7 @@ export default class ShowHideTargetExpression extends TargetExpression {
 	type = ''
 
 	setValue(value) {
-		let show = this.type == 'show' ? !!value : !value
+		let show = this.type === 'show' ? !!value : !value
 
 		if (show) {
 			this.element.style.removeProperty('display')

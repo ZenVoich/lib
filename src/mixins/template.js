@@ -1,7 +1,7 @@
 export default (Class) => {
 	return class extends Class {
-		ready() {
-			super.ready()
+		init() {
+			super.init()
 			this.attachShadow({mode: this.constructor.shadow || 'open'})
 			let template = this.constructor.template || ''
 			if (this.constructor.styles) {

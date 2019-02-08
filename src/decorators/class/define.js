@@ -4,7 +4,7 @@ export default (name) => {
 			customElements.define(name, class extends Class {
 				constructor() {
 					super()
-					this.ready()
+					this.init()
 				}
 			})
 		}

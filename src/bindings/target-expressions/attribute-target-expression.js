@@ -1,11 +1,16 @@
 import TargetExpression from './target-expression.js'
 
 export default class AttributeTargetExpression extends TargetExpression {
-	static parseType = 'attribute'
 	static parsePriority = 1
+	static parseType = 'attribute'
 	static updatePhase = 'animationFrame'
 
 	static parse(element, attribute) {
+		// todo: remove
+		// if (!attribute.endsWith('$')) {
+		// 	return
+		// }
+
 		let target = new AttributeTargetExpression
 		target.element = element
 		target.attributeName = attribute

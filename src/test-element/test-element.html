@@ -7,15 +7,20 @@ Hello, World! <div val=[[prop]] attr="foo [[prop]]" .prop=[[prop]]>prop = [[prop
 Binding in slot: <slot name=sl>[[prop]]</slot>
 <br>
 
-<div .prop="test">Prop target static string (no source expr)</div>
+<div .prop-test="test">Prop target static string (no source expr)</div>
 
 <div>Static val: [['hey']] [[111]]</div>
 
 <div>Same bindings: [[prop]] [[prop]] [[prop]] [[prop]] [[prop]]</div>
+<div>Negate binding: [[prop]] [[!prop]]</div>
 
 <div>Call: [[prop]] [[add(prop, obj.val)]]</div>
+<div>Call with negate arg: [[add(prop, !obj.val)]]</div>
+<div>Negate call: [[!add(prop, !obj.val)]]</div>
 
 <div>Call with static val: [[add(prop, 100)]] [[add('Str', 'ing')]]</div>
+
+<div .inner-html="[[prop]]">.inner-html</div>
 
 <button on-click="[[increment]]">Increment</button>
 
@@ -35,7 +40,7 @@ Slot: <slot>Default slot value [[prop]]</slot>
 <br>
 
 <div show-if="[[isEven(obj.val)]]">Show If</div>
-<div hide-if="[[isEven(obj.val)]]">Hide If</div>
+<div hide-if="[[isEven(prop, obj.val, ', tes, sa')]]">Hide If</div>
 <br>
 
 <div>dom-if:</div>

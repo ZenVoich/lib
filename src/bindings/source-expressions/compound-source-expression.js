@@ -15,11 +15,13 @@ export default class CompoundSourceExpression extends SourceExpression {
 
 	getRelatedProps() {
 		let props = new Set
+
 		this.chunks.forEach((expr) => {
 			expr.getRelatedProps().forEach((prop) => {
 				props.add(prop)
 			})
 		})
+
 		return props
 	}
 

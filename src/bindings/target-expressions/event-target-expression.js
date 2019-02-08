@@ -1,3 +1,4 @@
+import PropertySourceExpression from '../source-expressions/property-source-expression.js';
 import TargetExpression from './target-expression.js'
 
 export default class EventTargetExpression extends TargetExpression {
@@ -8,10 +9,10 @@ export default class EventTargetExpression extends TargetExpression {
 		if (!attribute.startsWith('on-')) {
 			return
 		}
-		// if (!(source instanceof PropertySourceExpression)) {
-		// 	console.error('Provide function name expression for "on-" binding')
-		// 	return
-		// }
+		if (!(source instanceof PropertySourceExpression)) {
+			console.error('Provide function name expression for "on-" binding', source)
+			return
+		}
 		let target = new EventTargetExpression
 		target.element = element
 		target.eventName = attribute.slice(3)
@@ -27,7 +28,7 @@ export default class EventTargetExpression extends TargetExpression {
 		if (this.#currentHandler) {
 			this.element.removeEventListener(this.eventName, this.#currentHandler)
 		}
-		if (typeof handler != 'function') {
+		if (typeof handler !== 'function') {
 			console.error(`Trying to add '${this.functionName}' listener that doesn't exist on '${host.localName}' element`)
 			return
 		}

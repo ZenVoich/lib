@@ -18,7 +18,7 @@ class RepeatExample extends Component {
 	}
 
 	generateClick(e) {
-		e.stopPropagation();
+		e.stopPropagation()
 		this.generate()
 	}
 }

@@ -1,3 +1,5 @@
+import {debounceMicrotask} from '../../helpers.js'
+
 export default (...props) => {
 	return (def) => {
 		if (def.kind !== 'method') {
@@ -16,39 +18,44 @@ export default (...props) => {
 
 		def.finisher = (Class) => {
 			return class extends Class {
+				_watchUpdateDebouncer
+
 				constructor() {
 					super()
 					propsInfo.forEach((info) => {
+						if (!this.observeProperty) {
+							console.log(this)
+						}
 						this.observeProperty(info.prop)
 					})
 				}
 
 				propertyChangedCallback(prop, oldVal, newVal) {
-					let isPropRelated = propsInfo.find((info) => {
-						return prop == info.prop
-					})
-					if (!isPropRelated) {
-						return
-					}
+					this._watchUpdateDebouncer = debounceMicrotask(this._watchUpdateDebouncer, () => {
+						let isPropRelated = propsInfo.find((info) => {
+							return prop === info.prop
+						})
+						let canCall = isPropRelated && propsInfo.every((info) => {
+							if (info.mandatory) {
+								return this[info.prop] !== null
+							}
+							return true
+						})
 
-					let canCall = propsInfo.every((info) => {
-						if (info.mandatory) {
-							return this[info.prop] != null
+						if (canCall) {
+							if (propsInfo.length === 1) {
+								this[def.key].call(this, oldVal)
+							}
+							else {
+								let oldValues = propsInfo.map((info) => {
+									return info.prop === prop ? oldVal : this[info.prop]
+								})
+								this[def.key].call(this, ...oldValues)
+							}
 						}
-						return true
 					})
 
-					if (canCall) {
-						if (propsInfo.length === 1) {
-							this[def.key].call(this, oldVal)
-						}
-						else {
-							let oldValues = propsInfo.map((info) => {
-								return info.prop == prop ? oldVal : this[info.prop];
-							})
-							this[def.key].call(this, ...oldValues)
-						}
-					}
+					super.propertyChangedCallback(prop, oldVal, newVal)
 				}
 			}
 		}

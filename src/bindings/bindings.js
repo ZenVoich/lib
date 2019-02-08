@@ -1,6 +1,8 @@
-import {getAllChildren, debounceMicrotask, queueRender} from '../helpers.js'
+import {getAllChildren, debounceMicrotask, queueRender, debounceRender} from '../helpers.js'
 import Binding from './binding.js'
 
+import PropertySourceExpression from './source-expressions/property-source-expression.js'
+import PathSourceExpression from './source-expressions/path-source-expression.js'
 import ValueSourceExpression from './source-expressions/value-source-expression.js'
 import CompoundSourceExpression from './source-expressions/compound-source-expression.js'
 import {parse as parseSourceExpression} from './source-expressions/source-expression-parser.js'
@@ -17,15 +19,20 @@ export class Bindings {
 	state = null
 
 	bindings = [] // [Binding]
-	notRelatedProps = []
+	notRelatedMicrotaskProps = []
+	notRelatedRenderProps = []
 
+	#isComponenInMicrotaskQueue = false
 	#isComponenInRenderQueue = false
 	#propsInRenderQueue = new Set
+	#propsInMicrotaskQueue = new Set
+	#updateDebouncer;
+	#renderDebouncer;
+	#propsMicrotakDebouncer;
+	#propsRenderDebouncer;
 	#propertiesObserver = (prop) => {
 		this.updateProp(prop, this[prop])
 	}
-	#updateDebouncer;
-	#updatePropDebouncer;
 
 	constructor(template) {
 		this.parse(template)
@@ -41,7 +48,7 @@ export class Bindings {
 		// text node target
 		let processNode = (node) => {
 			perf.markStart('bindings: parse source')
-			let source = this.memoizedParseSourceExpression(node.textContent)
+			let [source, direction] = this.parseSourceExpressionMemoized(node.textContent)
 			perf.markEnd('bindings: parse source')
 			if (!source) {
 				return
@@ -53,10 +60,10 @@ export class Bindings {
 				return
 			}
 
-			let binding = new Binding
-			binding.direction = 'downward'
-			binding.source = source
-			binding.target = target
+			let binding = this.createBinding(direction, source, target)
+			if (!binding) {
+				return
+			}
 
 			this.bindings.push(binding)
 			node.textContent = ''
@@ -66,7 +73,12 @@ export class Bindings {
 			// attributes
 			el.getAttributeNames().forEach((attr) => {
 				perf.markStart('bindings: parse source')
-				let source = this.memoizedParseSourceExpression(el.getAttribute(attr))
+				// todo: remove
+				let value = el.getAttribute(attr)
+				if (attr.startsWith('on-') && !value.startsWith('[')) {
+					value = `[[${value}]]`
+				}
+				let [source, direction] = this.parseSourceExpressionMemoized(value)
 				perf.markEnd('bindings: parse source')
 				perf.markStart('bindings: parse target')
 				let target = parseTargetExpression('attribute', el, attr, source)
@@ -86,10 +98,16 @@ export class Bindings {
 					}
 				}
 
-				let binding = new Binding
-				binding.direction = 'downward'
-				binding.source = source
-				binding.target = target
+				// todo: remove
+				if (!source) {
+					return
+				}
+
+				let binding = this.createBinding(direction, source, target)
+				if (!binding) {
+					return
+				}
+
 				this.bindings.push(binding)
 				el.removeAttribute(attr)
 			})
@@ -117,28 +135,38 @@ export class Bindings {
 		})
 	}
 
-	memoizedParseSourceExpression(text) {
+	createBinding(direction, source, target) {
+		if (direction !== 'downward' && !(target instanceof PropertyTargetExpression)) {
+			console.error('upward and two-way binding can only be property binding')
+			return
+		}
+		return new Binding(direction, source, target)
+	}
+
+	parseSourceExpressionMemoized(text) {
 		if (sourceExpressionsCache.has(text)) {
 			return sourceExpressionsCache.get(text)
 		}
-		let expr = this.parseSourceExpression(text)
-		sourceExpressionsCache.set(text, expr)
-		return expr
+		let result = this.parseSourceExpression(text)
+		sourceExpressionsCache.set(text, result)
+		return result
 	}
 
 	parseSourceExpression(text) {
 		let chunks = [text]
+		let downwardOnly = true
+		let bindingDirection = ''
 
-		let findAndReplace = () => {
+		let findAndReplace = (direction, regex) => {
 			let nextChunk
 			let nextChunkIndex
 			let match
 
 			for (let [index, chunk] of chunks.entries()) {
-				if (typeof chunk != 'string') {
+				if (typeof chunk !== 'string') {
 					continue
 				}
-				match = chunk.match(/\[\[(.*?)\]\]/)
+				match = chunk.match(regex)
 				if (match) {
 					nextChunk = chunk
 					nextChunkIndex = index
@@ -150,40 +178,58 @@ export class Bindings {
 				return
 			}
 
-			let expr = parseSourceExpression(match[1])
+			let expr = parseSourceExpression(match[2], {negate: !!match[1]})
 			if (!expr) {
 				return
 			}
 			let [pre, ...post] = nextChunk.split(match[0])
 			chunks.splice(nextChunkIndex, 1, pre, expr, post.join(match[0]))
 
-			findAndReplace()
+			if (direction !== 'downward') {
+				downwardOnly = false
+			}
+			bindingDirection = direction
+
+			findAndReplace(direction, regex)
 		}
-		findAndReplace()
+		findAndReplace('downward', /\[\[(!?)(.*?)\]\]/)
+		findAndReplace('upward', /\(\((!?)(.*?)\)\)/)
+		findAndReplace('two-way',  /\{\{(!?)(.*?)\}\}/)
 
 		chunks = chunks.filter(x => x)
 
 		let noExpressions = !chunks.length || chunks.every((chunk) => {
-			return typeof chunk == 'string'
+			return typeof chunk === 'string'
 		})
 		if (noExpressions) {
-			return
+			return []
 		}
 
 		let expressions = chunks.filter(x => x).map((chunk) => {
-			if (typeof chunk == 'string') {
+			if (typeof chunk === 'string') {
 				return new ValueSourceExpression({value: chunk})
 			}
 			return chunk
 		})
 
 		// single expression
-		if (expressions.length == 1) {
-			return expressions[0]
+		if (expressions.length === 1) {
+			let expr = expressions[0]
+
+			if (bindingDirection !== 'downward' && !(expr instanceof PropertySourceExpression) && !(expr instanceof PathSourceExpression)) {
+				console.error('upward and two-way binding can only be property binding', `"${text}"`)
+				return []
+			}
+
+			return [expr, bindingDirection]
 		}
 
 		// compound expression
-		return new CompoundSourceExpression({chunks: expressions})
+		if (!downwardOnly) {
+			console.error('compound binding can only contain downward bindings', `"${text}"`)
+			return []
+		}
+		return [new CompoundSourceExpression({chunks: expressions}), bindingDirection]
 	}
 
 	connect(host) {
@@ -193,6 +239,9 @@ export class Bindings {
 			this.host.observeProperty(prop)
 		})
 		this.host.addPropertiesObserver(this.#propertiesObserver)
+		this.bindings.forEach((binding) => {
+			binding.connect(host)
+		})
 	}
 
 	disconnect() {
@@ -201,101 +250,109 @@ export class Bindings {
 	}
 
 	update() {
-		// prop target bindings update by microtask
+		perf.markStart('bindings.update')
+
+		// microtask phase bindings
+		this.#isComponenInMicrotaskQueue = true
 		this.#updateDebouncer = debounceMicrotask(this.#updateDebouncer, () => {
+			this.#isComponenInMicrotaskQueue = false
+
 			if (!this.host) {
 				return
 			}
 
 			this.bindings.forEach((binding) => {
-				if (binding.target.constructor.updatePhase == 'microtask') {
+				if (binding.target.constructor.updatePhase === 'microtask') {
 					binding.pushValue(this.state, this.host)
 				}
 			})
 		})
 
-		if (this.#isComponenInRenderQueue) {
-			return
-		}
-
-		// other bindings update by rAF
-		queueRender(() => {
-			if (!this.host) {
-				return
-			}
-
-			this.#isComponenInRenderQueue = false
-			this.bindings.forEach((binding) => {
-				if (binding.target.constructor.updatePhase == 'animationFrame') {
-					binding.pushValue(this.state, this.host)
-				}
-			})
-		})
+		// animationFrame phase bindings
 		this.#isComponenInRenderQueue = true
+		this.#renderDebouncer = debounceRender(this.#renderDebouncer, () => {
+			this.#isComponenInRenderQueue = false
+
+			if (!this.host) {
+				return
+			}
+
+			this.bindings.forEach((binding) => {
+				if (binding.target.constructor.updatePhase === 'animationFrame') {
+					binding.pushValue(this.state, this.host)
+				}
+			})
+		})
+
+		perf.markEnd('bindings.update')
 	}
 
 	updateProp(prop) {
-		// no need to queue the prop if entire component is invalidated
-		if (this.#isComponenInRenderQueue) {
-			return
-		}
+		perf.markStart('bindings.updateProp')
 
-		if (this.notRelatedProps.includes(prop)) {
-			return
-		}
+		// microtask phase bindings
+		if (!this.#isComponenInMicrotaskQueue || this.notRelatedMicrotaskProps.includes(prop)) {
+			this.#propsInMicrotaskQueue.add(prop)
+			this.#propsMicrotakDebouncer = debounceMicrotask(this.#propsMicrotakDebouncer, () => {
+				if (!this.host) {
+					return
+				}
 
-		// prop target bindings update by microtask
-		this.#updatePropDebouncer = debounceMicrotask(this.#updatePropDebouncer, () => {
-			if (!this.host) {
-				return
-			}
+				let relatedBindings = new Set
+				this.#propsInMicrotaskQueue.forEach((prop) => {
+					this.bindings.forEach((binding) => {
+						if (binding.isPropRelated(prop) && binding.target.constructor.updatePhase === 'microtask') {
+							relatedBindings.add(binding)
+						}
+					})
+				})
+				this.#propsInMicrotaskQueue.clear()
 
-			let relatedBindings = new Set
-			this.#propsInRenderQueue.forEach((prop) => {
-				this.bindings.forEach((binding) => {
-					if (binding.isPropRelated(prop) && binding.target.constructor.updatePhase == 'microtask') {
-						relatedBindings.add(binding)
+				if (!relatedBindings.size) {
+					this.notRelatedMicrotaskProps.push(prop)
+					if (this.notRelatedMicrotaskProps.length > 3) {
+						this.notRelatedMicrotaskProps.shift()
 					}
+				}
+
+				relatedBindings.forEach((binding) => {
+					binding.pushValue(this.state, this.host)
 				})
 			})
-
-			// if (!relatedBindings.size) {
-			// 	this.notRelatedProps.push(prop)
-			// 	if (this.notRelatedProps.length > 3) {
-			// 		this.notRelatedProps.shift()
-			// 	}
-			// }
-			relatedBindings.forEach((binding) => {
-				binding.pushValue(this.state, this.host)
-			})
-		})
-		let queued = this.#propsInRenderQueue.size
-		this.#propsInRenderQueue.add(prop)
-
-		if (queued) {
-			return
 		}
 
-		// other bindings update by rAF
-		queueRender(() => {
-			if (!this.host) {
-				return
-			}
+		// animationFrame phase bindings
+		if (!this.#isComponenInRenderQueue || this.notRelatedRenderProps.includes(prop)) {
+			this.#propsInRenderQueue.add(prop)
+			this.#propsRenderDebouncer = debounceRender(this.#propsRenderDebouncer, () => {
+				if (!this.host) {
+					return
+				}
 
-			let relatedBindings = new Set
-			this.#propsInRenderQueue.forEach((prop) => {
-				this.bindings.forEach((binding) => {
-					if (binding.isPropRelated(prop) && binding.target.constructor.updatePhase == 'animationFrame') {
-						relatedBindings.add(binding)
+				let relatedBindings = new Set
+				this.#propsInRenderQueue.forEach((prop) => {
+					this.bindings.forEach((binding) => {
+						if (binding.isPropRelated(prop) && binding.target.constructor.updatePhase === 'animationFrame') {
+							relatedBindings.add(binding)
+						}
+					})
+				})
+				this.#propsInRenderQueue.clear()
+
+				if (!relatedBindings.size) {
+					this.notRelatedRenderProps.push(prop)
+					if (this.notRelatedRenderProps.length > 3) {
+						this.notRelatedRenderProps.shift()
 					}
+				}
+
+				relatedBindings.forEach((binding) => {
+					binding.pushValue(this.state, this.host)
 				})
 			})
-			this.#propsInRenderQueue.clear()
+		}
 
-			relatedBindings.forEach((binding) => {
-				binding.pushValue(this.state, this.host)
-			})
-		})
+		perf.markEnd('bindings.updateProp')
 	}
 
 	getAllRelatedProps() {

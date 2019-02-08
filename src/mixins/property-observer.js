@@ -3,8 +3,8 @@ export default (Class) => {
 		#observedProps = new Set
 		_propertiesObservers = new Set
 
-		ready() {
-			super.ready()
+		init() {
+			super.init()
 			let observedProperties = this.constructor.observedProperties || []
 			observedProperties.forEach((prop) => {
 				this.observeProperty(prop)

@@ -22,7 +22,7 @@ let perf = {
 			return
 		}
 		if (pendingStats[name]) {
-			console.warn(`perf: trying to start ${name} 2nd time before the 1st is finished`)
+			console.warn(`perf: trying to start '${name}' 2nd time before the 1st is finished`)
 			return
 		}
 		pendingStats[name] = performance.now()

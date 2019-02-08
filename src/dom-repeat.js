@@ -22,13 +22,13 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 		super()
 		let template = this.querySelector('template')
 		if (!template) {
-			throw 'dom-repeat must contain \'template\' element';
+			throw 'dom-repeat must contain \'template\' element'
 		}
 		if (template.content.childElementCount < 1) {
-			throw 'dom-repeat template must contain an element';
+			throw 'dom-repeat template must contain an element'
 		}
 		if (template.content.childElementCount > 1) {
-			throw 'dom-repeat template must contain only 1 element';
+			throw 'dom-repeat template must contain only 1 element'
 		}
 		template.remove()
 		this.template = template
@@ -85,7 +85,7 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 		}
 	}
 
-	// ensure elements count and update bindings
+	// ensure element count and update bindings
 	renderPlain() {
 		// ensure elements
 		let diff = this.items.length - this.childElementCount

@@ -1,6 +1,6 @@
 export default (Class) => {
 	return class extends Class {
-		ready() {}
+		init() {}
 		connectedCallback() {}
 		disconnectedCallback() {}
 		attributeChangedCallback() {}
