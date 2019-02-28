@@ -8,6 +8,7 @@ export default class ShowHideTargetExpression extends TargetExpression {
 		if (!['#show-if', '#hide-if'].includes(attribute)) {
 			return
 		}
+		console.log(4)
 		let target = new ShowHideTargetExpression
 		target.element = element
 		target.type = attribute.slice(1, -3)

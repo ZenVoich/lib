@@ -2,6 +2,7 @@ import TemplatePart from './template-part.js'
 import {RepeatContainer} from './repeat-container.js'
 import {Template} from '../template.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
+import perf from '../../perf.js'
 
 export default class RepeatTemplatePart extends TemplatePart {
 	static relatedProps
@@ -52,21 +53,50 @@ export default class RepeatTemplatePart extends TemplatePart {
 		this.itemTemplateRelatedProps = new Template(this.element.cloneNode(true)).getRelatedProps()
 	}
 
-	connect(host, state) {
+	connect(host) {
 		this.host = host
+		this._physicalElementsByKey.forEach(({template}) => {
+			template.connect(host)
+		})
+		this._bindingsByElement.forEach((template) => {
+			template.connect(host)
+		})
 	}
 
-	update(state, host) {
+	disconnect() {
+		this.host = null
+		this._physicalElementsByKey.forEach(({template}) => {
+			template.disconnect()
+		})
+		this._bindingsByElement.forEach((template) => {
+			template.disconnect()
+		})
+	}
+
+	update(state) {
 		this._render(state)
 	}
 
-	updateProp(state, host, prop) {
+	updateProp(state, prop) {
 		this._render(state)
 	}
 
 	getRelatedProps() {
 		let props = new Set
 		return new Set([...this.itemsSourceExpression.getRelatedProps(), ...this.itemTemplateRelatedProps])
+	}
+
+	_mergeStates(host, state) {
+		perf.markStart('repeat-template-part: merge states')
+
+		let newState = {}
+		Object.getOwnPropertyNames(host).forEach((prop) => {
+			newState[prop] = host[prop]
+		})
+		newState.localName = host.localName
+		state = Object.assign(newState, state)
+		perf.markEnd('repeat-template-part: merge states')
+		return state
 	}
 
 	async _render(state) {
@@ -81,19 +111,19 @@ export default class RepeatTemplatePart extends TemplatePart {
 
 		await Promise.resolve()
 		if (this.key) {
-			this.renderSorted()
+			this._renderSorted(state)
 		}
 		else {
-			this.renderPlain()
+			this._renderPlain(state)
 		}
 	}
 
-	_createElement(item) {
+	_createElement(state, item) {
 		let fragment = this.itemFragment.cloneNode(true)
 		let element = fragment.firstElementChild
-		let template = new Template(fragment);
-		template.connect(this.host, {[this.as]: item})
-		template.update()
+		let template = new Template(fragment)
+		template.connect(this.host)
+		template.update(this._mergeStates(state, {[this.as]: item}))
 
 		if (this.key) {
 			this._physicalElementsByKey.set(item[this.key], {element, template})
@@ -130,14 +160,14 @@ export default class RepeatTemplatePart extends TemplatePart {
 	}
 
 	// ensure element count and update templates
-	renderPlain() {
+	_renderPlain(state) {
 		// ensure elements
 		let childCount = this.repeatContainer.getChildElementCount()
 		let diff = this.items.length - childCount
 		if (diff > 0) {
 			for (let i = 0; i < diff; i++) {
 				let item = this.items[childCount + i]
-				let element = this._createElement(item)
+				let element = this._createElement(state, item)
 				this.repeatContainer.append(element)
 			}
 		}
@@ -149,14 +179,12 @@ export default class RepeatTemplatePart extends TemplatePart {
 
 		// update templates
 		[...this._bindingsByElement.values()].forEach((template, i) => {
-			template.disconnect()
-			template.connect(this.host, {[this.as]: this.items[i]})
-			template.update()
+			template.update(this._mergeStates(state, {[this.as]: this.items[i]}))
 		})
 	}
 
 	// sort existing elements by key
-	renderSorted() {
+	_renderSorted(state) {
 		// remove elements
 		let removedElements = []
 		let currentKeys = new Set(this._physicalElementsByKey.keys())
@@ -171,10 +199,10 @@ export default class RepeatTemplatePart extends TemplatePart {
 		this.items.forEach((item, index) => {
 			let physical = this._physicalElementsByKey.get(item[this.key])
 			if (physical) {
-				physical.template.update()
+				physical.template.update(this._mergeStates(state, {[this.as]: item}))
 			}
 			else {
-				let element = this._createElement(item)
+				let element = this._createElement(state, item)
 				this._placeElement(element, index)
 			}
 		})

@@ -1,4 +1,5 @@
 import BindingsTemplatePart from './bindings-template-part.js'
+import ShowHideTemplatePart from './show-hide-template-part.js'
 import AttachDetachTemplatePart from './attach-detach-template-part.js'
 import RepeatTemplatePart from './repeat-template-part.js'
 
@@ -35,6 +36,7 @@ let isDirectiveElement = (element) => {
 }
 
 let templatePartClasses = [
+	ShowHideTemplatePart,
 	AttachDetachTemplatePart,
 	RepeatTemplatePart,
 ]

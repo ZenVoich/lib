@@ -3,8 +3,7 @@ import {parse as parseBindings} from './bindings-parser.js'
 import perf from '../perf.js'
 
 export class Bindings {
-	host = null
-	state = null
+	isConnected = false
 
 	bindings = [] // [Binding]
 	notRelatedMicrotaskProps = []
@@ -27,12 +26,18 @@ export class Bindings {
 		this.bindings = parseBindings(template)
 	}
 
-	connect(host, state) {
-		this.host = host
-		this.state = state || host
+	connect(host) {
 		this.bindings.forEach((binding) => {
 			binding.connect(host)
 		})
+		this.isConnected = true
+	}
+
+	disconnect() {
+		this.bindings.forEach((binding) => {
+			binding.disconnect()
+		})
+		this.isConnected = false
 	}
 
 	getRelatedProps() {
@@ -45,7 +50,7 @@ export class Bindings {
 		return props
 	}
 
-	update() {
+	update(state) {
 		perf.markStart('bindings.update')
 
 		// microtask phase bindings
@@ -53,13 +58,13 @@ export class Bindings {
 		this.#updateDebouncer = debounceMicrotask(this.#updateDebouncer, () => {
 			this.#isComponenInMicrotaskQueue = false
 
-			if (!this.host) {
+			if (!this.isConnected) {
 				return
 			}
 
 			this.bindings.forEach((binding) => {
 				if (binding.target.constructor.updatePhase === 'microtask') {
-					binding.pushValue(this.state, this.host)
+					binding.pushValue(state)
 				}
 			})
 		})
@@ -69,13 +74,13 @@ export class Bindings {
 		this.#renderDebouncer = debounceRender(this.#renderDebouncer, () => {
 			this.#isComponenInRenderQueue = false
 
-			if (!this.host) {
+			if (!this.isConnected) {
 				return
 			}
 
 			this.bindings.forEach((binding) => {
 				if (binding.target.constructor.updatePhase === 'animationFrame') {
-					binding.pushValue(this.state, this.host)
+					binding.pushValue(state)
 				}
 			})
 		})
@@ -83,14 +88,14 @@ export class Bindings {
 		perf.markEnd('bindings.update')
 	}
 
-	updateProp(prop) {
+	updateProp(state, prop) {
 		perf.markStart('bindings.updateProp')
 
 		// microtask phase bindings
 		if (!this.#isComponenInMicrotaskQueue || this.notRelatedMicrotaskProps.includes(prop)) {
 			this.#propsInMicrotaskQueue.add(prop)
 			this.#propsMicrotaskDebouncer = debounceMicrotask(this.#propsMicrotaskDebouncer, () => {
-				if (!this.host) {
+				if (!this.isConnected) {
 					return
 				}
 
@@ -112,7 +117,7 @@ export class Bindings {
 				}
 
 				relatedBindings.forEach((binding) => {
-					binding.pushValue(this.state, this.host)
+					binding.pushValue(state)
 				})
 			})
 		}
@@ -121,7 +126,7 @@ export class Bindings {
 		if (!this.#isComponenInRenderQueue || this.notRelatedRenderProps.includes(prop)) {
 			this.#propsInRenderQueue.add(prop)
 			this.#propsRenderDebouncer = debounceRender(this.#propsRenderDebouncer, () => {
-				if (!this.host) {
+				if (!this.isConnected) {
 					return
 				}
 
@@ -143,7 +148,7 @@ export class Bindings {
 				}
 
 				relatedBindings.forEach((binding) => {
-					binding.pushValue(this.state, this.host)
+					binding.pushValue(state)
 				})
 			})
 		}

@@ -2,27 +2,21 @@ import {parse as parseTemplateParts} from './template-parts/template-part-parser
 
 export class Template {
 	parts = []
-	host = null
-	state = null
-
-	#propertiesObserver = (prop) => {
-		this.updateProp(prop)
-	}
 
 	constructor(root) {
 		this.parts = parseTemplateParts(root)
 	}
 
-	connect(host, state) {
-		this.host = host
-		this.state = state || host
+	connect(host) {
 		this.parts.forEach((part) => {
-			part.connect(host, state)
+			part.connect(host)
 		})
 	}
 
 	disconnect() {
-		this.host = null
+		this.parts.forEach((part) => {
+			part.disconnect()
+		})
 	}
 
 	getRelatedProps() {
@@ -35,25 +29,15 @@ export class Template {
 		return props
 	}
 
-	update() {
+	update(state) {
 		this.parts.forEach((part) => {
-			part.update(this.state, this.host)
+			part.update(state)
 		})
 	}
 
-	updateProp(prop) {
+	updateProp(state, prop) {
 		this.parts.forEach((part) => {
-			part.updateProp(this.state, this.host, prop)
+			part.updateProp(state, prop)
 		})
-	}
-
-	clone() {
-		let template = new Template
-		template.parts = this.parts.map((part) => {
-			return part.clone()
-		})
-		if (this.host) {
-			template.connect(this.host)
-		}
 	}
 }

@@ -20,21 +20,34 @@ export default class EventTargetExpression extends TargetExpression {
 		return target
 	}
 
+	isConnected = false
 	element = null
 	functionName = ''
 	#currentHandler = null
 
-	setValue(handler, state, host) {
-		if (this.#currentHandler) {
-			this.element.removeEventListener(this.eventName, this.#currentHandler)
+	connect(host) {
+		if (this.isConnected) {
+			return
 		}
-		if (typeof handler !== 'function') {
+		this.isConnected = true
+		if (typeof host[this.functionName] !== 'function') {
 			console.error(`Trying to add '${this.functionName}' listener that doesn't exist on '${host.localName}' element`)
 			return
 		}
-		this.#currentHandler = handler.bind(host)
+		this.#currentHandler = host[this.functionName].bind(host)
 		this.element.addEventListener(this.eventName, this.#currentHandler)
 	}
+
+
+	disconnect() {
+		if (!this.isConnected) {
+			return
+		}
+		this.isConnected = false
+		this.element.removeEventListener(this.eventName, this.#currentHandler)
+	}
+
+	setValue(handler) {}
 
 	getValue() {}
 }

@@ -3,7 +3,7 @@ import Component from '../component.js'
 import attr from '../decorators/prop/attr.js'
 import notify from '../decorators/prop/notify.js'
 import {Template} from '../bindings/template.js'
-import {observeProperty} from '../utils/property-observer.js'
+import {observeProperty, addObserver} from '../utils/property-observer.js'
 
 import template from './test-element.html'
 import styles from './test-element.css'
@@ -48,17 +48,24 @@ class TestElement extends Component {
 	}
 
 	unbox() {
-		let content = this.shadowRoot.querySelector('#template').content.cloneNode(true)
+		if (this.unboxed) {
+			return
+		}
+		this.unboxed = true
 
+		let content = this.shadowRoot.querySelector('#template').content.cloneNode(true)
 		let template = new Template(content)
 		template.connect(this)
-		template.update()
+		template.update(this)
 		template.getRelatedProps().forEach((prop) => {
 			observeProperty(this, prop)
 		})
+		addObserver(this, (prop) => {
+			template.updateProp(this, prop)
+		})
 
 		this.shadowRoot.querySelector('#content').innerHTML = ''
-		template.render(this.shadowRoot.querySelector('#content'))
+		this.shadowRoot.querySelector('#content').append(content)
 	}
 }
 

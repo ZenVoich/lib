@@ -4,12 +4,16 @@ export default class Binding {
 	direction = '' // downward | upward | two-way
 	source = null // SourceExpression
 	target = null // TargetExpression
+	phase = 'idle' // idle | push | pull
+	#backwardListener = () => {
+		// console.log('catch notify')
+		this.pullValue(this.host)
+	}
 
 	constructor(direction, source, target) {
 		this.direction = direction
 		this.source = source
 		this.target = target
-		this.phase = 'idle' // idle | push | pull
 	}
 
 	connect(host) {
@@ -19,36 +23,34 @@ export default class Binding {
 		this.host = host
 
 		if (this.direction !== 'downward') {
-			this.target.element.addEventListener(`${this.target.propertyName}-changed`, () => {
-				// console.log('catch notify')
-				this.pullValue(this.host)
-			})
+			this.target.element.addEventListener(`${this.target.propertyName}-changed`, this.#backwardListener)
 		}
+		this.target.connect(host)
 	}
 
-	pushValue(state, host) {
+	disconnect() {
+		if (!this.host) {
+			return
+		}
+		this.host = null
+
+		if (this.direction !== 'downward') {
+			this.target.element.removeEventListener(`${this.target.propertyName}-changed`, this.#backwardListener)
+		}
+		this.target.disconnect()
+	}
+
+	pushValue(state) {
 		if (this.phase !== 'idle') {
 			// console.log('skip push')
 			return
 		}
 		perf.markStart('binding.pushValue')
 
-		if (state !== host) {
-			perf.markStart('binding.pushValue: merge states')
-
-			let newState = {}
-			Object.getOwnPropertyNames(host).forEach((prop) => {
-				newState[prop] = host[prop]
-			})
-			newState.localName = host.localName
-			state = Object.assign(newState, state)
-			perf.markEnd('binding.pushValue: merge states')
-		}
-
 		if (state && this.direction !== 'upward') {
 			// console.log('push', this.phase, this)
 			this.phase = 'push'
-			this.target.setValue(this.source.getValue(state), state, host)
+			this.target.setValue(this.source.getValue(state), state)
 			Promise.resolve().then(() => {
 				this.phase = 'idle'
 			})
@@ -76,6 +78,4 @@ export default class Binding {
 	isPropRelated(prop) {
 		return this.source.isPropRelated(prop)
 	}
-
-	dispose() {}
 }

@@ -1,7 +1,8 @@
 export default class TemplatePart {
 	static parse(root, attr) {}
-	connect(host, state) {}
-	update(state, host) {}
-	updateProp(state, host, prop) {}
+	connect(host) {}
+	disconnect() {}
+	update(state) {}
+	updateProp(state, prop) {}
 	getRelatedProps() {}
 }

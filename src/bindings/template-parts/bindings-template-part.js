@@ -11,16 +11,20 @@ export default class BindingsTemplatePart extends TemplatePart {
 
 	bindings = null
 
-	connect(host, state) {
-		this.bindings.connect(host, state)
+	connect(host) {
+		this.bindings.connect(host)
 	}
 
-	update(state, host) {
-		this.bindings.update()
+	disconnect() {
+		this.bindings.disconnect()
 	}
 
-	updateProp(state, host, prop) {
-		this.bindings.updateProp(prop)
+	update(state) {
+		this.bindings.update(state)
+	}
+
+	updateProp(state, prop) {
+		this.bindings.updateProp(state, prop)
 	}
 
 	getRelatedProps() {

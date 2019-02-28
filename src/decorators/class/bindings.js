@@ -19,10 +19,10 @@ export default (descriptor) => {
 						observeProperty(this, prop)
 					})
 					addObserver(this, (prop) => {
-						template.updateProp(prop)
+						template.updateProp(this, prop)
 					})
 
-					template.update()
+					template.update(this)
 					// template.render(this.shadowRoot)
 					this.__template = template
 				}

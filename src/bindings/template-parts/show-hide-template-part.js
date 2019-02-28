@@ -2,23 +2,22 @@ import TemplatePart from './template-part.js'
 import {Template} from '../template.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 
-export default class AttachDetachTemplatePart extends TemplatePart {
+export default class ShowHideTemplatePart extends TemplatePart {
 	static parse(element, attribute) {
-		if (!['#attach-if', '#detach-if'].includes(attribute)) {
+		if (!['#show-if', '#hide-if'].includes(attribute)) {
 			return
 		}
 		let sourceExpression = parseSourceExpressionMemoized(element.getAttribute(attribute))[0]
-		element.removeAttribute('#attach-if')
-		element.removeAttribute('#detach-if')
+		element.removeAttribute('#show-if')
+		element.removeAttribute('#hide-if')
 
-		let part = new AttachDetachTemplatePart(element)
+		let part = new ShowHideTemplatePart(element)
 		part.type = attribute.slice(1, -3)
 		part.sourceExpression = sourceExpression
 		return part
 	}
 
-	type = '' // attach | detach
-	comment = new Comment
+	type = '' // show | hide
 	element = null
 	childTemplate = null
 	sourceExpression = null
@@ -26,7 +25,6 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 	constructor(element) {
 		super()
 		this.element = element
-		this.element.replaceWith(this.comment)
 		this.childTemplate = new Template(this.element)
 	}
 
@@ -40,29 +38,23 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 
 	update(state) {
 		this._render(state)
-
-		if (this.element.isConnected) {
-			this.childTemplate.update(state)
-		}
+		this.childTemplate.update(state)
 	}
 
 	updateProp(state, prop) {
 		this._render(state)
-
-		if (this.element.isConnected) {
-			this.childTemplate.updateProp(state, prop)
-		}
+		this.childTemplate.updateProp(state, prop)
 	}
 
 	_render(state) {
 		let value = this.sourceExpression.getValue(state)
-		let attach = this.type === 'attach' ? !!value : !value
+		let show = this.type === 'show' ? !!value : !value
 
-		if (attach && !this.element.isConnected) {
-			this.comment.replaceWith(this.element)
+		if (show) {
+			this.element.style.removeProperty('display')
 		}
-		else if (!attach && this.element.isConnected) {
-			this.element.replaceWith(this.comment)
+		else {
+			this.element.style.setProperty('display', 'none', 'important')
 		}
 	}
 
