@@ -1,6 +1,9 @@
 import define from '../decorators/class/define.js'
 import Component from '../component.js'
-import {Bindings} from '../bindings/bindings.js'
+import attr from '../decorators/prop/attr.js'
+import notify from '../decorators/prop/notify.js'
+import {Template} from '../bindings/template.js'
+import {observeProperty} from '../utils/property-observer.js'
 
 import template from './test-element.html'
 import styles from './test-element.css'
@@ -12,11 +15,13 @@ class TestElement extends Component {
 	static styles = styles
 
 	x = 2
+	@attr
 	prop = 3
 	obj = {val: 5}
 
 	constructor() {
 		super()
+
 		this.innerHTML = this.prop
 	}
 
@@ -39,29 +44,33 @@ class TestElement extends Component {
 	}
 
 	duplicate() {
-		this.insertAdjacentElement('afterend', this.cloneNode(true))
+		this.after(this.cloneNode(true))
 	}
 
 	unbox() {
 		let content = this.shadowRoot.querySelector('#template').content.cloneNode(true)
 
-		let bindings = new Bindings(content)
-		bindings.connect(this)
-		bindings.update()
-		bindings.getAllRelatedProps().forEach((prop) => {
-			this.observeProperty(prop)
+		let template = new Template(content)
+		template.connect(this)
+		template.update()
+		template.getRelatedProps().forEach((prop) => {
+			observeProperty(this, prop)
 		})
 
 		this.shadowRoot.querySelector('#content').innerHTML = ''
-		this.shadowRoot.querySelector('#content').appendChild(content)
-	}
-
-	propertyChangedCallback(prop, old, newVal) {
-		super.propertyChangedCallback(...arguments)
-		// console.log(prop, old, newVal)
+		template.render(this.shadowRoot.querySelector('#content'))
 	}
 }
 
-window.TestElement = TestElement
 
-// customElements.define('test-element', TestElement)
+@define('t-t')
+class TT extends Component {
+	constructor() {
+		super()
+		console.log('tt constructor')
+	}
+
+	connectedCallback() {
+		console.log('tt connectedCallback')
+	}
+}

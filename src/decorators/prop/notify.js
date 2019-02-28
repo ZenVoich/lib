@@ -1,42 +1,31 @@
-import {debounceMicrotask} from '../../helpers.js'
+import {debounceMicrotask} from '../../utils/scheduler.js'
+import {observeProperty, addObserver, removeObserver, notifyChange} from '../../utils/property-observer.js'
 
-export default (def) => {
-	if (def.kind !== 'field') {
+export default (descriptor) => {
+	if (descriptor.kind !== 'field') {
 		throw '@notify decorator can only be applied to a property'
 	}
+	return {
+		...descriptor,
+		finisher(Class) {
+			return class extends Class {
+				_notifyUpdateDebouncer
 
-	def.finisher = (Class) => {
-		return class extends Class {
-			_notifyUpdateDebouncer
-			_isInited
+				constructor() {
+					super()
 
-			constructor() {
-				super()
-				this.observeProperty(def.key)
-			}
+					observeProperty(this, descriptor.key)
 
-			init() {
-				super.init()
-				this._isInited = true
-			}
-
-			propertyChangedCallback(prop, oldVal, newVal) {
-				super.propertyChangedCallback(prop, oldVal, newVal)
-
-				// skip default value
-				if (!this._isInited) {
-					return
+					addObserver(this, (prop, oldVal, newVal) => {
+						this._notifyUpdateDebouncer = debounceMicrotask(this._notifyUpdateDebouncer, () => {
+							if (prop !== descriptor.key) {
+								return
+							}
+							this.dispatchEvent(new CustomEvent(`${prop}-changed`))
+						})
+					})
 				}
-
-				this._notifyUpdateDebouncer = debounceMicrotask(this._notifyUpdateDebouncer, () => {
-					if (prop !== def.key) {
-						return
-					}
-					this.dispatchEvent(new CustomEvent(`${prop}-changed`))
-				})
 			}
 		}
 	}
-
-	return def
 }

@@ -3,15 +3,17 @@ import AttributeTargetExpression from './attribute-target-expression.js'
 import NodeTargetExpression from './node-target-expression.js'
 import EventTargetExpression from './event-target-expression.js'
 import ShowHideTargetExpression from './show-hide-target-expression.js'
+import AttachDetachTargetExpression from './attach-detach-target-expression.js'
 
-let exprClasses = [
+let targetExprClasses = [
 	PropertyTargetExpression,
 	AttributeTargetExpression,
 	NodeTargetExpression,
 	EventTargetExpression,
 	ShowHideTargetExpression,
+	AttachDetachTargetExpression,
 ].sort((a, b) => {
-	return b.parsePriority - a.parsePriority
+	return b.parsePrecedence - a.parsePrecedence
 }).reduce((acc, Class) => {
 	if (!acc[Class.parseType]) {
 		acc[Class.parseType] = []
@@ -22,7 +24,7 @@ let exprClasses = [
 
 export let parse = (parseType, ...args) => {
 	let target
-	exprClasses[parseType].find((exprClass) => {
+	targetExprClasses[parseType].find((exprClass) => {
 		target = exprClass.parse(...args)
 		return target
 	})

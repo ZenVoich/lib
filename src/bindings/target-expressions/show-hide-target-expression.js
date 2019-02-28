@@ -5,12 +5,12 @@ export default class ShowHideTargetExpression extends TargetExpression {
 	static updatePhase = 'animationFrame'
 
 	static parse(element, attribute) {
-		if (!['show-if', 'hide-if'].includes(attribute)) {
+		if (!['#show-if', '#hide-if'].includes(attribute)) {
 			return
 		}
 		let target = new ShowHideTargetExpression
 		target.element = element
-		target.type = attribute.slice(0, -3)
+		target.type = attribute.slice(1, -3)
 		return target
 	}
 

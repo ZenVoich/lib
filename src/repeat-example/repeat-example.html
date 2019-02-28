@@ -26,21 +26,31 @@
 <button on-click="[[updateProp]]">Update parent prop</button>
 <br><br>
 
-<dom-repeat .items="[[items]]" .key="key">
+
+<!-- <lib-repeat .items="[[items]]">
 	<template>
 		<div class="item" .item="[[item]]">
 			<div .item="[[item]]" on-click="[[onClick]]">Item: [[item.value]] (nested [[item.nested.val]]) (parent binding: <span>[[pi]]</span> nested: [[nested.val]]) R: <random-number></random-number></div>
 
-			<!-- <div class="nested-items">
-				<dom-repeat .items="[[item.nested.items]]" .as="itm">
+			<div class="nested-items">
+						<div #repeat=[[item.nested.items]] #as="itm">[[itm.val]]</div>
+				<lib-repeat .items="[[item.nested.items]]" .as="itm">
 					<template>
-						<div>[[itm.val]]</div>
 					</template>
-				</dom-repeat>
-			</div> -->
+				</lib-repeat>
+			</div>
 		</div>
-
-		<!-- <br>
-		<button on-click="[[increment]]">dom-repeat increment</button> -->
 	</template>
-</dom-repeat>
+</lib-repeat> -->
+
+
+<div #repeat="[[items]]" #repeat-key="key" class="item" .item="[[item]]">
+	<div .item="[[item]]" on-click="[[onClick]]">Item: [[item.value]] (nested [[item.nested.val]]) (parent binding: <span>[[pi]]</span> nested: [[nested.val]]) R: <random-number></random-number></div>
+
+	<div class="nested-items">
+		<div #repeat=[[item.nested.items]] #repeat-as=itm>parent repeat item: [[item.value]], item: [[itm.val]]</div>
+	</div>
+</div>
+
+<!-- <br>
+<button on-click="[[increment]]">lib-repeat increment</button> -->

@@ -4,7 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "watch": "./node_modules/.bin/babel src --out-dir build -w"
+    "build": "./node_modules/.bin/babel src --out-dir build",
+    "watch": "./node_modules/.bin/babel src --out-dir build -w",
+    "w": "./node_modules/.bin/chokidar \"src/**/*.{html,css}\" -c \"npm run build\""
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",
@@ -14,6 +16,8 @@
     "@babel/plugin-proposal-export-default-from": "^7.0.0",
     "@babel/plugin-proposal-export-namespace-from": "^7.0.0",
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.0.0",
-    "babel-plugin-inline-import": "^3.0.0"
+    "babel-plugin-inline-import": "^3.0.0",
+    "chokidar": "^2.1.0",
+    "chokidar-cli": "^1.2.1"
   }
 }

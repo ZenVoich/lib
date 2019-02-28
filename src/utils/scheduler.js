@@ -1,11 +1,3 @@
-export let getAllChildren = (root) => {
-	let children = [...root.querySelectorAll('*')]
-	if (root instanceof HTMLElement) {
-		children.unshift(root)
-	}
-	return children
-}
-
 // microtask
 export let queueMicrotask = (fn) => {
 	Promise.resolve().then(fn)
@@ -31,7 +23,6 @@ export let debounceMicrotask = (id, fn) => {
 let queue = []
 let renderQueued = false
 export let queueRender = (fn) => {
-	fn || 	console.trace(fn)
 	queue.push(fn)
 	if (renderQueued) {
 		return
@@ -53,6 +44,7 @@ export let debounceRender = (id, fn) => {
 		renderDebouncers.delete(id)
 		fn()
 	})
+	return id
 }
 
 let render = () => {
@@ -62,12 +54,4 @@ let render = () => {
 	queueCopy.forEach((fn) => {
 		fn()
 	})
-}
-
-export let toHyphenCase = (str) => {
-	return str.split(/([A-Z][^A-Z]*)/).filter(x => x).join('-').toLowerCase()
-}
-
-export let toCamelCase = (str) => {
-	return str.split('-').map((x, i) => i && x ? x[0].toUpperCase() + x.slice(1) : x).join('')
 }

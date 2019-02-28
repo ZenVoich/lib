@@ -1,6 +1,6 @@
 import define from '../decorators/class/define.js'
-import Component from '../component.js'
 import {Bindings} from '../bindings/bindings.js'
+import Component from '../component.js'
 
 import perf from '../perf.js'
 
@@ -23,7 +23,6 @@ class RepeatExample extends Component {
 	}
 
 	connectedCallback() {
-		super.connectedCallback()
 		document.addEventListener('click', () => {
 			perf.run()
 			setTimeout(() => {

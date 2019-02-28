@@ -1,13 +1,12 @@
+import bindings from './bindings.js'
+
 export default (name) => {
-	return (def) => {
-		def.finisher = (Class) => {
-			customElements.define(name, class extends Class {
-				constructor() {
-					super()
-					this.init()
-				}
-			})
+	return (descriptor) => {
+		return {
+			...descriptor,
+			finisher(Class) {
+				customElements.define(name, @bindings class extends Class {})
+			}
 		}
-		return def
 	}
 }

@@ -1,6 +1,7 @@
 Top level: [[obj.val]]<br>
 Hello, World! <div val=[[prop]] attr="foo [[prop]]" .prop=[[prop]]>prop = [[prop]]<b>x</b>[[val]][[prop]].</div>
-<div>
+<div class=t>AAAAA [[aaa]]</div>
+<div class=t>
 	obj.val: [[obj.val]]
 </div>
 <div>empty prop: [[z.y.z]]</div>
@@ -39,19 +40,12 @@ Slot: <slot>Default slot value [[prop]]</slot>
 </template>
 <br>
 
-<div show-if="[[isEven(obj.val)]]">Show If</div>
-<div hide-if="[[isEven(prop, obj.val, ', tes, sa')]]">Hide If</div>
-<br>
+<!-- <div #show-if="[[isEven(obj.val)]]">#show-if [[obj.val]]</div>
+<div #hide-if="[[isEven(obj.val, prop, ', tes, sa')]]">#hide-if [[obj.val]]</div> -->
 
-<div>dom-if:</div>
-<dom-if .if="[[isEven(obj.val)]]">
-	<template>
-		Content [[x]]
-		<br>
-		<button on-click="[[increment]]">dom-if increment</button>
-	</template>
-</dom-if>
-<br>
+<div #attach-if="[[isEven(obj.val)]]">#attach-if [[obj.val]]</div>
+<div #detach-if="[[isEven(obj.val)]]">#detach-if [[obj.val]]</div>
+<template #attach-if="[[isEven(obj.val)]]">#attach-if template [[obj.val]]</template>
 <br>
 
 <button on-click="[[duplicate]]">Duplicate</button>

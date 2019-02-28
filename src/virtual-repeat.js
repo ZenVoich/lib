@@ -1,37 +1,69 @@
-import define from './decorators/class/define.js'
 import watch from './decorators/method/watch.js'
-import Initial from './mixins/initial.js'
-import Template from './mixins/template.js'
-import PropertyObserver from './mixins/property-observer.js'
+import define from './decorators/class/define.js'
 import {Bindings} from './bindings/bindings.js'
+import Component from './component.js'
 
 
-@define('dom-repeat')
-class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
-	static template = '<style>:host {display: contents;}</style><slot></slot>'
+@define('virtual-repeat')
+class VirtualRepeat extends Component {
+	static template = `
+		<style>
+			:host {
+				display: contents;
+			}
+			#container {
+				max-height: 500px;
+				overflow: auto;
+			}
+		</style>
+		<div id="container">
+			<slot></slot>
+		</div>
+	`
 
 	items = null
 	as = 'item'
 	key
 
+	_avgItemHeight = 100
+	_prerenderHeight = 300
 	_physicalElementsByKey = new Map
 	_bindingsByElement = new Map
-	_raf
+
+	@watch('items', 'as', 'key?')
+	async render() {
+		if (!this.template) {
+			return
+		}
+		await Promise.resolve()
+		if (this.key) {
+			this.renderSorted()
+		}
+		else {
+			this.renderPlain()
+		}
+	}
 
 	constructor() {
 		super()
 		let template = this.querySelector('template')
 		if (!template) {
-			throw 'dom-repeat must contain \'template\' element'
+			throw 'virtual-repeat must contain \'template\' element'
 		}
 		if (template.content.childElementCount < 1) {
-			throw 'dom-repeat template must contain an element'
+			throw 'virtual-repeat template must contain an element'
 		}
 		if (template.content.childElementCount > 1) {
-			throw 'dom-repeat template must contain only 1 element'
+			throw 'virtual-repeat template must contain only 1 element'
 		}
 		template.remove()
 		this.template = template
+	}
+
+	connectedCallback() {
+		this.shadowRoot.querySelector('#container').addEventListener('scroll', () => {
+			this.render()
+		}, {passive: true})
 	}
 
 	_createElement(key, item) {
@@ -43,7 +75,8 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 		let element = content.firstElementChild
 		if (this.key) {
 			this._physicalElementsByKey.set(item[this.key], {element, bindings})
-		} else {
+		}
+		else {
 			this._bindingsByElement.set(element, bindings)
 		}
 		return element
@@ -55,7 +88,8 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 			bindings.disconnect()
 			element.remove()
 			this._physicalElementsByKey.delete(key)
-		} else {
+		}
+		else {
 			let bindings = this._bindingsByElement.get(element)
 			bindings.disconnect()
 			element.remove()
@@ -66,38 +100,43 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 	_placeElement(element, index) {
 		let child = this.children[index]
 		if (child) {
-			child.insertAdjacentElement('beforeBegin', element)
-		} else {
+			child.before(element)
+		}
+		else {
 			this.append(element)
-		}
-	}
-
-	@watch('items', 'as', 'key?')
-	async render() {
-		if (!this.template) {
-			return
-		}
-		await Promise.resolve()
-		if (this.key) {
-			this.renderSorted()
-		} else {
-			this.renderPlain()
 		}
 	}
 
 	// ensure element count and update bindings
 	renderPlain() {
-		// ensure elements
 		let diff = this.items.length - this.childElementCount
-		if (diff > 0) {
-			for (let i = 0; i < diff; i++) {
-				let item = this.childElementCount + i
-				let element = this._createElement(item[this.key], item)
-				this.append(element)
+		let container = this.shadowRoot.querySelector('#container')
+		let canAddMoreElements = () => {
+			if (this.childElementCount === this.items.length) {
+				return false
 			}
-		} else if (diff < 0) {
+			else if (container.scrollHeight > container.offsetHeight + this._prerenderHeight + container.scrollTop) {
+				return false
+			}
+			return true
+		}
+
+		// remove extra elements
+		if (diff < 0) {
 			for (let i = 0; i > diff; i--) {
 				this._removeElement(null, this.lastElementChild)
+			}
+		}
+		else if (diff > 0) {
+			let ok = canAddMoreElements()
+			let i = 0
+			while (ok) {
+				let item = this.items[this.childElementCount + i]
+				console.log(item, ok)
+				let element = this._createElement(item[this.key], item)
+				this.append(element)
+				i++
+				ok = canAddMoreElements()
 			}
 		}
 
@@ -125,7 +164,8 @@ class DomRepeat extends PropertyObserver(Template(Initial(HTMLElement))) {
 			let physical = this._physicalElementsByKey.get(item[this.key])
 			if (physical) {
 				physical.bindings.update()
-			} else {
+			}
+			else {
 				let element = this._createElement(item[this.key], item)
 				this._placeElement(element, index)
 			}
