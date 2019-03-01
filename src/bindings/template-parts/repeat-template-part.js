@@ -33,7 +33,6 @@ export default class RepeatTemplatePart extends TemplatePart {
 	host = null
 	itemTemplateRelatedProps = null
 
-	comment = new Comment
 	element = null
 	itemFragment = null
 	itemsSourceExpression = null
@@ -45,11 +44,13 @@ export default class RepeatTemplatePart extends TemplatePart {
 
 	constructor(element) {
 		super()
+
 		this.element = element
-		this.element.replaceWith(this.comment)
-		this.repeatContainer = new RepeatContainer(this.comment)
+		this.repeatContainer = new RepeatContainer(this.element)
+
 		this.itemFragment = document.createDocumentFragment()
 		this.itemFragment.append(this.element)
+
 		this.itemTemplateRelatedProps = new Template(this.element.cloneNode(true)).getRelatedProps()
 	}
 
@@ -101,13 +102,6 @@ export default class RepeatTemplatePart extends TemplatePart {
 
 	async _render(state) {
 		this.items = this.itemsSourceExpression.getValue(state)
-
-		if (this.items.length) {
-			this.comment.replaceWith(this.element)
-		}
-		else {
-			this.element.replaceWith(this.comment)
-		}
 
 		await Promise.resolve()
 		if (this.key) {
@@ -208,7 +202,12 @@ export default class RepeatTemplatePart extends TemplatePart {
 		})
 
 		// sort elements
+		let x = 0
 		let sort = () => {
+			x++
+			if (x > 10) {
+				return
+			}
 			let children = this.repeatContainer.getChildren()
 			let itemsInfo = this.items.map((item, newIndex) => {
 				let physical = this._physicalElementsByKey.get(item[this.key])

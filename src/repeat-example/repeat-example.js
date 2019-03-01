@@ -15,6 +15,7 @@ class RepeatExample extends Component {
 	static styles = styles
 
 	pi = Math.PI
+	secret = '1-1'
 	nested = {val: 'ppp'}
 
 	constructor() {
@@ -37,6 +38,10 @@ class RepeatExample extends Component {
 		e.currentTarget.item.value += 10
 		this.items = this.items
 		// notify changes?
+	}
+
+	_isBig(num) {
+		return num > 0.5
 	}
 
 	add(count, toStart) {
@@ -111,6 +116,18 @@ class RepeatExample extends Component {
 
 	updateProp() {
 		this.pi++
+	}
+
+	updateFirstItemProp() {
+		this.items[0].nested.items[0].val++
+		this.items[0].nested.items[1].val++
+		this.items[0].nested.items[2].val++
+		this.items = this.items
+	}
+
+	clearSecondItem() {
+		this.items[1].nested.items = []
+		this.items = this.items
 	}
 }
 
