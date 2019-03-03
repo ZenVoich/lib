@@ -2,7 +2,8 @@ import TemplatePart from './template-part.js'
 import {RepeatContainer} from './repeat-container.js'
 import {Template} from '../template.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
-import perf from '../../perf.js'
+import {requestRender} from '../../utils/renderer.js'
+import perf from '../../utils/perf.js'
 
 export default class RepeatTemplatePart extends TemplatePart {
 	static relatedProps
@@ -90,12 +91,12 @@ export default class RepeatTemplatePart extends TemplatePart {
 	_mergeStates(host, state) {
 		perf.markStart('repeat-template-part: merge states')
 
-		let newState = {}
+		let hostState = {}
 		Object.getOwnPropertyNames(host).forEach((prop) => {
-			newState[prop] = host[prop]
+			hostState[prop] = host[prop]
 		})
-		newState.localName = host.localName
-		state = Object.assign(newState, state)
+		hostState.localName = host.localName
+		state = Object.assign(hostState, state)
 		perf.markEnd('repeat-template-part: merge states')
 		return state
 	}
@@ -103,7 +104,6 @@ export default class RepeatTemplatePart extends TemplatePart {
 	async _render(state) {
 		this.items = this.itemsSourceExpression.getValue(state)
 
-		await Promise.resolve()
 		if (this.key) {
 			this._renderSorted(state)
 		}

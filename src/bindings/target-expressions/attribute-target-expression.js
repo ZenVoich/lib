@@ -6,6 +6,9 @@ export default class AttributeTargetExpression extends TargetExpression {
 	static updatePhase = 'animationFrame'
 
 	static parse(element, attribute) {
+		if (attribute[0] === '#') {
+			return
+		}
 		let target = new AttributeTargetExpression
 		target.element = element
 		target.attributeName = attribute

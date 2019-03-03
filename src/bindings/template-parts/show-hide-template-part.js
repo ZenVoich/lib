@@ -1,6 +1,7 @@
 import TemplatePart from './template-part.js'
 import {Template} from '../template.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
+import {requestRender} from '../../utils/renderer.js'
 
 export default class ShowHideTemplatePart extends TemplatePart {
 	static parse(element, attribute) {
@@ -8,8 +9,7 @@ export default class ShowHideTemplatePart extends TemplatePart {
 			return
 		}
 		let sourceExpression = parseSourceExpressionMemoized(element.getAttribute(attribute))[0]
-		element.removeAttribute('#show-if')
-		element.removeAttribute('#hide-if')
+		element.removeAttribute(attribute)
 
 		let part = new ShowHideTemplatePart(element)
 		part.type = attribute.slice(1, -3)
@@ -17,6 +17,7 @@ export default class ShowHideTemplatePart extends TemplatePart {
 		return part
 	}
 
+	host = null
 	type = '' // show | hide
 	element = null
 	childTemplate = null
@@ -29,20 +30,26 @@ export default class ShowHideTemplatePart extends TemplatePart {
 	}
 
 	connect(host) {
+		this.host = host
 		this.childTemplate.connect(host)
 	}
 
 	disconnect() {
+		this.host = null
 		this.childTemplate.disconnect()
 	}
 
 	update(state) {
-		this._render(state)
+		requestRender(this.host, this, () => {
+			this._render(state)
+		})
 		this.childTemplate.update(state)
 	}
 
 	updateProp(state, prop) {
-		this._render(state)
+		requestRender(this.host, this, () => {
+			this._render(state)
+		})
 		this.childTemplate.updateProp(state, prop)
 	}
 

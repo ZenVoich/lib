@@ -1,6 +1,6 @@
 import {Template} from '../../bindings/template.js'
 import {observeProperty, addObserver, removeObserver} from '../../utils/property-observer.js'
-import perf from '../../perf.js'
+import perf from '../../utils/perf.js'
 
 export default (descriptor) => {
 	return {
@@ -23,7 +23,6 @@ export default (descriptor) => {
 					})
 
 					template.update(this)
-					// template.render(this.shadowRoot)
 					this.__template = template
 				}
 			}

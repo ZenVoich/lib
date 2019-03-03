@@ -1,4 +1,4 @@
-import perf from '../perf.js'
+import perf from '../utils/perf.js'
 
 export default class Binding {
 	direction = '' // downward | upward | two-way

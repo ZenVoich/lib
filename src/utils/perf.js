@@ -38,7 +38,4 @@ let perf = {
 	},
 }
 
-perf = window.__perf || perf
-window.__perf = perf
-
 export default perf

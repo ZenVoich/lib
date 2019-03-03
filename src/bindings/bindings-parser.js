@@ -8,7 +8,7 @@ import PropertyTargetExpression from './target-expressions/property-target-expre
 import {parse as parseTargetExpression} from './target-expressions/target-expression-parser.js'
 
 import Binding from './binding.js'
-import perf from '../perf.js'
+import perf from '../utils/perf.js'
 
 let sourceExpressionsCache = new Map
 
@@ -170,7 +170,7 @@ let parseSourceExpression = (text) => {
 	}
 	findAndReplace('downward', /\[\[(!?)(.*?)\]\]/)
 	findAndReplace('upward', /\(\((!?)(.*?)\)\)/)
-	findAndReplace('two-way',  /\{\{(!?)(.*?)\}\}/)
+	findAndReplace('two-way', /\{\{(!?)(.*?)\}\}/)
 
 	chunks = chunks.filter(x => x)
 

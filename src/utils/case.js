@@ -1,5 +1,6 @@
+let hyphenCaseRegex = /([A-Z][^A-Z]*)/
 export let toHyphenCase = (str) => {
-	return str.split(/([A-Z][^A-Z]*)/).filter(x => x).join('-').toLowerCase()
+	return str.split(hyphenCaseRegex).filter(x => x).join('-').toLowerCase()
 }
 
 export let toCamelCase = (str) => {

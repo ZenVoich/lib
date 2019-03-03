@@ -1,8 +1,7 @@
 import define from '../decorators/class/define.js'
-import {Bindings} from '../bindings/bindings.js'
 import Component from '../component.js'
 
-import perf from '../perf.js'
+import perf from '../utils/perf.js'
 
 import template from './repeat-example.html'
 import styles from './repeat-example.css'

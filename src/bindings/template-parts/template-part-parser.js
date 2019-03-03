@@ -17,9 +17,10 @@ export let parse = (root) => {
 			let tempNode = curNode
 			curNode = walker.nextSibling()
 			let part = parseDirectiveElement(tempNode)
-			// part.init()
-			parts.push(part)
-			continue
+			if (part) {
+				parts.push(part)
+				continue
+			}
 		}
 		curNode = walker.nextNode()
 	}
@@ -55,8 +56,16 @@ let parseDirectiveElement = (element) => {
 			return part
 		})
 	})
-	if (!part && directive) {
-		throw `Unknown directive '${directive}'`
+
+	let extraDirective = element.getAttributeNames().find(attr => attr[0] === '#')
+	if (extraDirective) {
+		if (part) {
+			console.error(`Only one directive can be used in an element (extra directive '${extraDirective}')`, element)
+		}
+		else {
+			console.error(`Unknown directive '${extraDirective}'`, element)
+		}
 	}
+
 	return part
 }

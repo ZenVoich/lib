@@ -30,6 +30,7 @@ export class Template {
 	}
 
 	update(state) {
+		// host render domain
 		this.parts.forEach((part) => {
 			part.update(state)
 		})
