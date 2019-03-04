@@ -102,7 +102,7 @@ export default class RepeatTemplatePart extends TemplatePart {
 	}
 
 	async _render(state) {
-		this.items = this.itemsSourceExpression.getValue(state)
+		this.items = this.itemsSourceExpression.getValue(state) || []
 
 		if (this.key) {
 			this._renderSorted(state)

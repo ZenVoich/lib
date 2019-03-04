@@ -22,7 +22,7 @@ export default class AttributeTargetExpression extends TargetExpression {
 		if (value === undefined || value === null || value === false) {
 			this.element.removeAttribute(this.attributeName)
 		}
-		else {
+		else if (this.element.getAttribute(this.attributeName) != value) {
 			this.element.setAttribute(this.attributeName, value)
 		}
 	}

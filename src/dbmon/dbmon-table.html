@@ -1,0 +1,22 @@
+<link href="./src/dbmon/dbmon/styles.css" rel="stylesheet" type="text/css">
+
+<table class="table table-striped latest-data">
+	<tbody class="tbody">
+
+		<tr #repeat="[[databases]]" #repeat-as="db" #repeat-key="dbname">
+		 	<td class="dbname">[[db.dbname]]</td>
+		 	<td class="query-count">
+				<span class="[[db.lastSample.countClassName]]">[[db.lastSample.nbQueries]]</span>
+		 	</td>
+
+			<td #repeat="[[db.lastSample.topFiveQueries]]" #repeat-as="q" class="[[q.elapsedClassName]]">
+				<span>[[q.formatElapsed]]</span>
+				<div class="popover left">
+				 	<div class="popover-content">[[q.query]]</div>
+				 	<div class="arrow"></div>
+				</div>
+			</td>
+
+		</tr>
+	</tbody>
+</table>
