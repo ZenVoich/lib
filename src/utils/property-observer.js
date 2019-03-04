@@ -12,18 +12,26 @@ export let observeProperty = (host, prop) => {
 	}
 	observedProps.add(prop)
 
-	let value = host[prop]
+	let setter = host.__lookupSetter__(prop)
+	let getter = host.__lookupGetter__(prop)
+	let value = setter || getter ? null : host[prop]
+
 	Object.defineProperty(host, prop, {
 		set(val) {
-			let oldVal = value
-			value = val
+			let oldVal = getter ? getter.call(host) : value
 			// if ((['boolean', 'number', 'string'].includes(typeof oldVal) || ['boolean', 'number', 'string'].includes(typeof val)) && val === oldVal) {
 			// 	return
 			// }
+			if (setter) {
+				setter.call(host, val)
+			}
+			else {
+				value = val
+			}
 			notifyChange(host, prop, oldVal, val)
 		},
 		get() {
-			return value
+			return getter ? getter.call(host) : value
 		},
 	})
 

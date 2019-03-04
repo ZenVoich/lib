@@ -1,5 +1,5 @@
 import {debounceMicrotask} from '../../utils/scheduler.js'
-import {observeProperty, addObserver, removeObserver, notifyChange} from '../../utils/property-observer.js'
+import {observeProperty, addObserver} from '../../utils/property-observer.js'
 
 export default (...props) => {
 	return (descriptor) => {
@@ -31,27 +31,27 @@ export default (...props) => {
 						})
 
 						addObserver(this, (prop, oldVal, newVal) => {
+							let isPropRelated = propsInfo.find((info) => {
+								return prop === info.prop
+							})
+							let canCall = isPropRelated && propsInfo.every((info) => {
+								if (info.mandatory) {
+									return this[info.prop] !== null
+								}
+								return true
+							})
+							if (!canCall) {
+								return
+							}
 							this._watchUpdateDebouncer = debounceMicrotask(this._watchUpdateDebouncer, () => {
-								let isPropRelated = propsInfo.find((info) => {
-									return prop === info.prop
-								})
-								let canCall = isPropRelated && propsInfo.every((info) => {
-									if (info.mandatory) {
-										return this[info.prop] !== null
-									}
-									return true
-								})
-
-								if (canCall) {
-									if (propsInfo.length === 1) {
-										this[descriptor.key].call(this, oldVal)
-									}
-									else {
-										let oldValues = propsInfo.map((info) => {
-											return info.prop === prop ? oldVal : this[info.prop]
-										})
-										this[descriptor.key].call(this, ...oldValues)
-									}
+								if (propsInfo.length === 1) {
+									this[descriptor.key].call(this, oldVal)
+								}
+								else {
+									let oldValues = propsInfo.map((info) => {
+										return info.prop === prop ? oldVal : this[info.prop]
+									})
+									this[descriptor.key].call(this, ...oldValues)
 								}
 							})
 						})

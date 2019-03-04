@@ -1,6 +1,8 @@
 import define from '../decorators/class/define.js'
 import Component from '../component.js'
+import watch from '../decorators/method/watch.js'
 import attr from '../decorators/prop/attr.js'
+import computed from '../decorators/method/computed.js'
 import notify from '../decorators/prop/notify.js'
 import {Template} from '../bindings/template.js'
 import {observeProperty, addObserver} from '../utils/property-observer.js'
@@ -23,6 +25,11 @@ class TestElement extends Component {
 		super()
 
 		this.innerHTML = this.prop
+	}
+
+	@computed('prop', 'obj')
+	get tt() {
+		return this.prop + this.obj.val
 	}
 
 	increment() {
