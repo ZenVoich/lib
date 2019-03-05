@@ -27,6 +27,7 @@ class TestElement extends Component {
 		this.innerHTML = this.prop
 	}
 
+	@attr
 	@computed('prop', 'obj')
 	get tt() {
 		return this.prop + this.obj.val

@@ -1,10 +1,11 @@
-import {debounceMicrotask, debounceRender} from '../../utils/scheduler.js'
-import {toHyphenCase} from '../../utils/case.js'
+import {debounceMicrotask} from '../../utils/scheduler.js'
+import {requestRender} from '../../utils/renderer.js'
+import {toHyphenCase, toCamelCase} from '../../utils/case.js'
 import {observeProperty, addObserver, removeObserver, notifyChange} from '../../utils/property-observer.js'
 
 export default (descriptor) => {
-	if (descriptor.kind !== 'field') {
-		throw '@attr decorator can only be applied to a property'
+	if (descriptor.kind !== 'field' && !descriptor.descriptor.get) {
+		throw '@attr decorator can only be applied to a property or getter'
 	}
 
 	let property = descriptor.key
@@ -16,11 +17,11 @@ export default (descriptor) => {
 			return class extends Class {
 				static get observedAttributes() {
 					let attrs = super.observedAttributes || []
-					attrs.push(property)
+					attrs.push(attribute)
 					return attrs
 				}
 
-				_rendering = false
+				__renderingProps = new Set
 
 				constructor() {
 					super()
@@ -29,8 +30,8 @@ export default (descriptor) => {
 
 					// on property change
 					let propChanged = () => {
-						this._renderDebouncer = debounceRender(this._renderDebouncer, () => {
-							this._rendering = true
+						requestRender(this, property, () => {
+							this.__renderingProps.add(property)
 							let value = this[property]
 							if (!value) {
 								this.removeAttribute(attribute)
@@ -41,11 +42,11 @@ export default (descriptor) => {
 							else {
 								this.setAttribute(attribute, value)
 							}
-							this._rendering = false
+							this.__renderingProps.delete(property)
 						})
 					}
 					addObserver(this, (prop, oldVal, newVal) => {
-						if (this._rendering || prop !== property) {
+						if (prop !== property || this.__renderingProps.has(prop)) {
 							return
 						}
 						propChanged()
@@ -59,7 +60,7 @@ export default (descriptor) => {
 				attributeChangedCallback(attr, oldVal, newVal) {
 					super.attributeChangedCallback && super.attributeChangedCallback(attr, oldVal, newVal)
 
-					if (this._rendering) {
+					if (attr !== attribute || this.__renderingProps.has(toCamelCase(attr))) {
 						return
 					}
 
