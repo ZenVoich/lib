@@ -1,4 +1,4 @@
-import {debounceMicrotask} from '../../utils/scheduler.js'
+import {requestMicrotask} from '../../utils/microtask.js'
 import {observeProperty, addObserver, removeObserver, notifyChange} from '../../utils/property-observer.js'
 
 export default (descriptor) => {
@@ -9,15 +9,13 @@ export default (descriptor) => {
 		...descriptor,
 		finisher(Class) {
 			return class extends Class {
-				_notifyUpdateDebouncer
-
 				constructor() {
 					super()
 
 					observeProperty(this, descriptor.key)
 
 					addObserver(this, (prop, oldVal, newVal) => {
-						this._notifyUpdateDebouncer = debounceMicrotask(this._notifyUpdateDebouncer, () => {
+						requestMicrotask(this, prop, () => {
 							if (prop !== descriptor.key) {
 								return
 							}

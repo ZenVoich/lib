@@ -1,6 +1,6 @@
-import {debounceMicrotask} from '../../utils/scheduler.js'
+import {requestMicrotask} from '../../utils/microtask.js'
 import {requestRender} from '../../utils/renderer.js'
-import {toHyphenCase, toCamelCase} from '../../utils/case.js'
+import {toKebabCase, toCamelCase} from '../../utils/case.js'
 import {observeProperty, addObserver, removeObserver, notifyChange} from '../../utils/property-observer.js'
 
 export default (descriptor) => {
@@ -9,7 +9,7 @@ export default (descriptor) => {
 	}
 
 	let property = descriptor.key
-	let attribute = toHyphenCase(property)
+	let attribute = toKebabCase(property)
 
 	return {
 		...descriptor,
@@ -64,7 +64,7 @@ export default (descriptor) => {
 						return
 					}
 
-					this._updateDebouncer = debounceMicrotask(this._updateDebouncer, () => {
+					requestMicrotask(this, attr, () => {
 						let type = typeof this[property]
 						if (newVal === null) {
 							if (type === 'boolean') {

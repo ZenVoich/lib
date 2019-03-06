@@ -1,4 +1,3 @@
-import {debounceMicrotask} from '../../utils/scheduler.js'
 import {observeProperty, addObserver, notifyChange} from '../../utils/property-observer.js'
 
 export default (...props) => {

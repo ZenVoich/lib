@@ -1,5 +1,6 @@
 import TemplatePart from './template-part.js'
-import {debounceMicrotask, debounceRender} from '../../utils/scheduler.js'
+import {debounceMicrotask} from '../../utils/microtask.js'
+import {debounceRender} from '../../utils/renderer.js'
 import {parse as parseBindings} from '../bindings-parser.js'
 import perf from '../../utils/perf.js'
 
