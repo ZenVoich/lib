@@ -1,6 +1,6 @@
 import TemplatePart from './template-part.js'
-import {debounceMicrotask} from '../../utils/microtask.js'
-import {debounceRender} from '../../utils/renderer.js'
+import {throttleMicrotask} from '../../utils/microtask.js'
+import {throttleRender} from '../../utils/renderer.js'
 import {parse as parseBindings} from '../bindings-parser.js'
 import perf from '../../utils/perf.js'
 
@@ -16,10 +16,10 @@ export default class BindingsTemplatePart extends TemplatePart {
 	#propsInRenderQueue = new Set
 	#propsInMicrotaskQueue = new Set
 
-	#microtaskDebouncer = Symbol()
-	#renderDebouncer = Symbol()
-	#propsMicrotaskDebouncer = Symbol()
-	#propsRenderDebouncer = Symbol()
+	#microtaskThrottler = Symbol()
+	#renderThrottler = Symbol()
+	#propsMicrotaskThrottler = Symbol()
+	#propsRenderThrottler = Symbol()
 
 	static parse(root) {
 		let part = new BindingsTemplatePart(root)
@@ -61,7 +61,7 @@ export default class BindingsTemplatePart extends TemplatePart {
 
 		// microtask phase bindings
 		this.#isComponenInMicrotaskQueue = true
-		debounceMicrotask(this.#microtaskDebouncer, () => {
+		throttleMicrotask(this.#microtaskThrottler, () => {
 			this.#isComponenInMicrotaskQueue = false
 
 			if (!this.isConnected) {
@@ -77,7 +77,7 @@ export default class BindingsTemplatePart extends TemplatePart {
 
 		// animationFrame phase bindings
 		this.#isComponenInRenderQueue = true
-		debounceRender(this.#renderDebouncer, () => {
+		throttleRender(this.#renderThrottler, () => {
 			this.#isComponenInRenderQueue = false
 
 			if (!this.isConnected) {
@@ -100,7 +100,7 @@ export default class BindingsTemplatePart extends TemplatePart {
 		// microtask phase bindings
 		if (!this.#isComponenInMicrotaskQueue || this.notRelatedMicrotaskProps.includes(prop)) {
 			this.#propsInMicrotaskQueue.add(prop)
-			debounceMicrotask(this.#propsMicrotaskDebouncer, () => {
+			throttleMicrotask(this.#propsMicrotaskThrottler, () => {
 				if (!this.isConnected) {
 					return
 				}
@@ -131,7 +131,7 @@ export default class BindingsTemplatePart extends TemplatePart {
 		// animationFrame phase bindings
 		if (!this.#isComponenInRenderQueue || this.notRelatedRenderProps.includes(prop)) {
 			this.#propsInRenderQueue.add(prop)
-			debounceRender(this.#propsRenderDebouncer, () => {
+			throttleRender(this.#propsRenderThrottler, () => {
 				if (!this.isConnected) {
 					return
 				}

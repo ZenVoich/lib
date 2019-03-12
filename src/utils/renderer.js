@@ -1,7 +1,7 @@
 import {createScheduler} from './scheduler-factory.js'
 
 export let {
-	debounce: debounceRender,
+	throttle: throttleRender,
 	request: requestRender,
 	afterNext: afterNextRender,
 	waitForNext: waitForNextRender

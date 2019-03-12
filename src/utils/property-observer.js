@@ -6,6 +6,11 @@ export let observeProperty = (host, prop) => {
 	if (observedProps && observedProps.has(prop)) {
 		return
 	}
+
+	if (typeof host[prop] === 'function') {
+		return
+	}
+
 	if (!observedProps) {
 		observedProps = new Set
 		observedPropsByComponent.set(host, observedProps)

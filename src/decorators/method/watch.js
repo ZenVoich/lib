@@ -34,7 +34,7 @@ export default (...props) => {
 							})
 							let canCall = isPropRelated && propsInfo.every((info) => {
 								if (info.mandatory) {
-									return this[info.prop] !== null
+									return this[info.prop] != null
 								}
 								return true
 							})

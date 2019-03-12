@@ -88,15 +88,19 @@ export default class RepeatTemplatePart extends TemplatePart {
 		return new Set([...this.itemsSourceExpression.getRelatedProps(), ...this.itemTemplateRelatedProps])
 	}
 
-	_mergeStates(host, state) {
-		perf.markStart('repeat-template-part: merge states')
-
+	_prepareState(host) {
 		let hostState = {}
 		Object.getOwnPropertyNames(host).forEach((prop) => {
 			hostState[prop] = host[prop]
 		})
 		hostState.localName = host.localName
-		state = Object.assign(hostState, state)
+		return hostState
+	}
+
+	_mergeStates(hostState, state) {
+		perf.markStart('repeat-template-part: merge states')
+
+		state = Object.assign({}, hostState, state)
 		perf.markEnd('repeat-template-part: merge states')
 		return state
 	}
@@ -117,7 +121,8 @@ export default class RepeatTemplatePart extends TemplatePart {
 		let element = fragment.firstElementChild
 		let template = new Template(fragment)
 		template.connect(this.host)
-		template.update(this._mergeStates(state, {[this.as]: item}))
+		let preparedState = this._prepareState(state)
+		template.update(this._mergeStates(preparedState, {[this.as]: item}))
 
 		if (this.key) {
 			this._physicalElementsByKey.set(item[this.key], {element, template})
@@ -172,8 +177,9 @@ export default class RepeatTemplatePart extends TemplatePart {
 		}
 
 		// update templates
-		[...this._bindingsByElement.values()].forEach((template, i) => {
-			template.update(this._mergeStates(state, {[this.as]: this.items[i]}))
+		let preparedState = this._prepareState(state)
+		![...this._bindingsByElement.values()].forEach((template, i) => {
+			template.update(this._mergeStates(preparedState, {[this.as]: this.items[i]}))
 		})
 	}
 
@@ -190,10 +196,11 @@ export default class RepeatTemplatePart extends TemplatePart {
 		})
 
 		// add/update elements
+		let preparedState = this._prepareState(state)
 		this.items.forEach((item, index) => {
 			let physical = this._physicalElementsByKey.get(item[this.key])
 			if (physical) {
-				physical.template.update(this._mergeStates(state, {[this.as]: item}))
+				physical.template.update(this._mergeStates(preparedState, {[this.as]: item}))
 			}
 			else {
 				let element = this._createElement(state, item)

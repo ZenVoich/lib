@@ -1,6 +1,7 @@
 import define from '../decorators/class/define.js'
 import Component from '../component.js'
 import watch from '../decorators/method/watch.js'
+import debounce from '../decorators/method/debounce.js'
 import attr from '../decorators/prop/attr.js'
 import computed from '../decorators/method/computed.js'
 import notify from '../decorators/prop/notify.js'
@@ -20,6 +21,7 @@ class TestElement extends Component {
 	@attr
 	prop = 3
 	obj = {val: 5}
+	k = null
 
 	constructor() {
 		super()
@@ -28,7 +30,7 @@ class TestElement extends Component {
 	}
 
 	@attr
-	@computed('prop', 'obj')
+	@computed('prop', 'obj', 'k')
 	get tt() {
 		return this.prop + this.obj.val
 	}
@@ -49,6 +51,11 @@ class TestElement extends Component {
 
 	isEven(num) {
 		return num % 10 !== 0
+	}
+
+	@debounce(100)
+	onInput(e) {
+		console.log('onInput')
 	}
 
 	duplicate() {

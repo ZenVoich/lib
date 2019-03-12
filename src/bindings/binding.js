@@ -45,7 +45,7 @@ export default class Binding {
 			// console.log('skip push')
 			return
 		}
-		perf.markStart('binding.pushValue')
+		perf.markStart('binding.pushValue:' + this.target.constructor.name)
 
 		if (state && this.direction !== 'upward') {
 			// console.log('push', this.phase, this)
@@ -56,7 +56,7 @@ export default class Binding {
 			})
 		}
 
-		perf.markEnd('binding.pushValue')
+		perf.markEnd('binding.pushValue:' + this.target.constructor.name)
 	}
 
 	pullValue(state) {

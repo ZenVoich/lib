@@ -10,7 +10,7 @@
 		 	</td>
 
 			<td #repeat="[[db.lastSample.topFiveQueries]]" #repeat-as="q" class="[[q.elapsedClassName]]">
-				<span>[[q.formatElapsed]]</span>
+				[[q.formatElapsed]]
 				<div class="popover left">
 				 	<div class="popover-content">[[q.query]]</div>
 				 	<div class="arrow"></div>

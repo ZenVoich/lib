@@ -27,7 +27,7 @@ export let parse = (template) => {
 
 	![...template.querySelectorAll('*')].forEach((el) => {
 		// attributes
-		el.getAttributeNames().sort((a, b) => (b[0] === '#') - (a[0] === '#')).forEach((attr) => {
+		el.getAttributeNames().forEach((attr) => {
 			addBinding(parseAttribute(el, attr))
 		})
 

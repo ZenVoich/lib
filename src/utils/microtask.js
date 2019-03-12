@@ -1,7 +1,7 @@
 import {createScheduler} from './scheduler-factory.js'
 
 export let {
-	debounce: debounceMicrotask,
+	throttle: throttleMicrotask,
 	request: requestMicrotask,
 	afterNext: afterNextMicrotask,
 	waitForNext: waitForNextMicrotask

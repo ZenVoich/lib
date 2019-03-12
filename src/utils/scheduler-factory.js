@@ -19,25 +19,23 @@ export let createScheduler = (schedule) => {
 		})
 	}
 
-	let debouncers = new Set
-	let debounce = (id, fn) => {
-		if (id && debouncers.has(id)) {
+	let throttles = new Set
+	let throttle = (id, fn) => {
+		if (id && throttles.has(id)) {
 			return id
 		}
 		if (!id) {
 			id = Symbol()
 		}
-		debouncers.add(id)
+		throttles.add(id)
 		enqueue(() => {
-			debouncers.delete(id)
+			throttles.delete(id)
 			fn()
 		})
 		return id
 	}
 
 	let requestsByHost = new WeakMap
-
-	// debounce fn by id
 	let request = (host, id, fn) => {
 		let requests = requestsByHost.get(host)
 		if (requests && requests.has(id)) {
@@ -49,7 +47,7 @@ export let createScheduler = (schedule) => {
 		}
 		requests.add(id)
 
-		debounce(id, () => {
+		throttle(id, () => {
 			requests.delete(id)
 			fn()
 			if (!requests.size) {
@@ -82,8 +80,7 @@ export let createScheduler = (schedule) => {
 				fn()
 			})
 		}
-		afterHandlers
 	}
 
-	return {enqueue, debounce, request, afterNext, waitForNext}
+	return {enqueue, throttle, request, afterNext, waitForNext}
 }
