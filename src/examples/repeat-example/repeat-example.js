@@ -1,7 +1,7 @@
-import define from '../decorators/class/define.js'
-import Component from '../component.js'
+import define from '../../decorators/class/define.js'
+import Component from '../../component.js'
 
-import perf from '../utils/perf.js'
+import perf from '../../utils/perf.js'
 
 import template from './repeat-example.html'
 import styles from './repeat-example.css'
@@ -9,7 +9,7 @@ import styles from './repeat-example.css'
 import './random-number.js'
 
 @define('repeat-example')
-class RepeatExample extends Component {
+class RepeatExample extends HTMLElement {
 	static template = template
 	static styles = styles
 

@@ -1,11 +1,15 @@
 import bindings from './bindings.js'
+import template from './template.js'
 
 export default (name) => {
 	return (descriptor) => {
 		return {
 			...descriptor,
 			finisher(Class) {
-				customElements.define(name, @bindings class extends Class {})
+				@bindings
+				@template
+				class NewClass extends Class {}
+				customElements.define(name, NewClass)
 			}
 		}
 	}

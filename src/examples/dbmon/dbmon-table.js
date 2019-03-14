@@ -1,5 +1,5 @@
-import define from '../decorators/class/define.js'
-import Component from '../component.js'
+import define from '../../decorators/class/define.js'
+import Component from '../../component.js'
 
 import template from './dbmon-table.html'
 

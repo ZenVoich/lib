@@ -1,19 +1,19 @@
-import define from '../decorators/class/define.js'
-import Component from '../component.js'
-import watch from '../decorators/method/watch.js'
-import debounce from '../decorators/method/debounce.js'
-import attr from '../decorators/prop/attr.js'
-import computed from '../decorators/method/computed.js'
-import notify from '../decorators/prop/notify.js'
-import {Template} from '../bindings/template.js'
-import {observeProperty, addObserver} from '../utils/property-observer.js'
+import define from '../../decorators/class/define.js'
+import Component from '../../component.js'
+import watch from '../../decorators/method/watch.js'
+import debounce from '../../decorators/method/debounce.js'
+import attr from '../../decorators/prop/attr.js'
+import computed from '../../decorators/method/computed.js'
+import notify from '../../decorators/prop/notify.js'
+import {Template} from '../../bindings/template.js'
+import {observeProperty, addObserver} from '../../utils/property-observer.js'
 
 import template from './test-element.html'
 import styles from './test-element.css'
 
 
 @define('test-element')
-class TestElement extends Component {
+class TestElement extends HTMLElement {
 	static template = template
 	static styles = styles
 
@@ -21,7 +21,6 @@ class TestElement extends Component {
 	@attr
 	prop = 3
 	obj = {val: 5}
-	k = null
 
 	constructor() {
 		super()
@@ -30,12 +29,18 @@ class TestElement extends Component {
 	}
 
 	@attr
-	@computed('prop', 'obj', 'k')
+	@computed('prop', 'obj')
 	get tt() {
 		return this.prop + this.obj.val
 	}
 
+	@computed('tt')
+	get gg() {
+		return this.tt + 1
+	}
+
 	increment() {
+		// for (var i = 0; i <= 100000; i++) {
 		// for (var i = 0; i <= 100000; i++) {
 		this.prop++
 		this.x++
