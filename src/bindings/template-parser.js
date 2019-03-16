@@ -1,12 +1,13 @@
-import BindingsTemplatePart from './bindings-template-part.js'
-import ShowHideTemplatePart from './show-hide-template-part.js'
-import AttachDetachTemplatePart from './attach-detach-template-part.js'
-import RepeatTemplatePart from './repeat-template-part.js'
+import BindingsTemplatePart from './template-parts/bindings-template-part.js'
+import ShowHideTemplatePart from './template-parts/show-hide-template-part.js'
+import AttachDetachTemplatePart from './template-parts/attach-detach-template-part.js'
+import RepeatTemplatePart from './template-parts/repeat-template-part.js'
 
-export let parse = (root) => {
+export let parse = (template) => {
 	let parts = []
-	let walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT)
+	let walker = document.createTreeWalker(template.content, NodeFilter.SHOW_ELEMENT)
 	let curNode = walker.nextNode()
+
 	while (true) {
 		if (!curNode) {
 			break
@@ -16,7 +17,7 @@ export let parse = (root) => {
 		if (isDirectiveElement(curNode)) {
 			let tempNode = curNode
 			curNode = walker.nextSibling()
-			let part = parseDirectiveElement(tempNode)
+			let part = parseDirectiveElement(ensureDirectiveTemplate(tempNode))
 			if (part) {
 				parts.push(part)
 				continue
@@ -25,7 +26,7 @@ export let parse = (root) => {
 		curNode = walker.nextNode()
 	}
 
-	parts.unshift(BindingsTemplatePart.parse(root))
+	parts.unshift(BindingsTemplatePart.parse(template.content))
 
 	return parts
 }
@@ -34,6 +35,28 @@ let isDirectiveElement = (element) => {
 	return element.getAttributeNames().find((attr) => {
 		return attr[0] === '#'
 	})
+}
+
+let ensureDirectiveTemplate = (element) => {
+	if (element.matches('template')) {
+		return element
+	}
+
+	// wrap directive element with a <template>
+	let template = document.createElement('template')
+	element.replaceWith(template)
+	template.content.append(element)
+
+	// move directive attributes to <template> tag
+	element.getAttributeNames().forEach((attr) => {
+		if (attr.startsWith('#')) {
+			// template.setAttribute(attr.slice(1), element.getAttribute(attr))
+			template.attributes.setNamedItem(element.attributes[attr].cloneNode())
+			element.removeAttribute(attr)
+		}
+	})
+
+	return template
 }
 
 let templatePartClasses = [

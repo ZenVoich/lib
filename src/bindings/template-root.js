@@ -1,10 +1,16 @@
-import {parse as parseTemplateParts} from './template-parts/template-part-parser.js'
+import {parse as parseTemplateParts} from './template-parser.js'
 
-export class Template {
+export class TemplateRoot {
 	parts = []
 
-	constructor(root) {
-		this.parts = parseTemplateParts(root)
+	constructor(template) {
+		this.originalTemplate = template.cloneNode(true)
+		this.template = template
+		this.parts = parseTemplateParts(template)
+	}
+
+	get content() {
+		return this.template.content
 	}
 
 	connect(host) {
@@ -40,5 +46,9 @@ export class Template {
 		this.parts.forEach((part) => {
 			part.updateProp(state, prop)
 		})
+	}
+
+	clone() {
+		return new TemplateRoot(this.originalTemplate.cloneNode(true))
 	}
 }

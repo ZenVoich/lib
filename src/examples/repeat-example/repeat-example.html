@@ -24,13 +24,25 @@
 
 
 
-<div #repeat="[[items]]" #repeat-key="key" class="item" .item="[[item]]">
+<div #repeat="[[items]]" class="item" .item="[[item]]">
 	<div .item="[[item]]" on-click="[[onClick]]">Item: [[item.value]] (nested [[item.nested.val]])(parent binding: <span>[[pi]]</span> nested: [[nested.val]]) R: <random-number></random-number></div>
+	<random-number #show-if="[[show]]"></random-number>
+	<random-number #show-if="[[show]]"></random-number>
+	<random-number #attach-if="[[show]]"></random-number>
+	<random-number #attach-if="[[show]]"></random-number>
+	<random-number #attach-if="[[show]]"></random-number>
+	<random-number #show-if="[[!show]]"></random-number>
+	<random-number #show-if="[[!show]]"></random-number>
+	<random-number #attach-if="[[!show]]"></random-number>
+	<random-number #attach-if="[[!show]]"></random-number>
+	<random-number #attach-if="[[!show]]"></random-number>
 
 	<div class="nested-items">
 		<div #repeat=[[item.nested.items]] #repeat-as=itm>parent repeat item: [[item.value]], parent binding: <span>[[pi]]</span> item: [[itm.val]]</div>
 	</div>
 </div>
+
+<div #attach-if="[[!items.length]]">(empty)</div>
 
 <!-- <br>
 <button on-click="[[increment]]">lib-repeat increment</button> -->

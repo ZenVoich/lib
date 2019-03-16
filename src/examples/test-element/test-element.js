@@ -5,7 +5,7 @@ import debounce from '../../decorators/method/debounce.js'
 import attr from '../../decorators/prop/attr.js'
 import computed from '../../decorators/method/computed.js'
 import notify from '../../decorators/prop/notify.js'
-import {Template} from '../../bindings/template.js'
+import {TemplateRoot} from '../../bindings/template-root.js'
 import {observeProperty, addObserver} from '../../utils/property-observer.js'
 
 import template from './test-element.html'
@@ -73,19 +73,18 @@ class TestElement extends HTMLElement {
 		}
 		this.unboxed = true
 
-		let content = this.shadowRoot.querySelector('#template').content.cloneNode(true)
-		let template = new Template(content)
-		template.connect(this)
-		template.update(this)
-		template.getRelatedProps().forEach((prop) => {
+		let templateRoot = new TemplateRoot(this.shadowRoot.querySelector('#template'))
+		templateRoot.connect(this)
+		templateRoot.update(this)
+		templateRoot.getRelatedProps().forEach((prop) => {
 			observeProperty(this, prop)
 		})
 		addObserver(this, (prop) => {
-			template.updateProp(this, prop)
+			templateRoot.updateProp(this, prop)
 		})
 
 		this.shadowRoot.querySelector('#content').innerHTML = ''
-		this.shadowRoot.querySelector('#content').append(content)
+		this.shadowRoot.querySelector('#content').append(templateRoot.content)
 	}
 }
 

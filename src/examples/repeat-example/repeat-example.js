@@ -16,6 +16,7 @@ class RepeatExample extends HTMLElement {
 	pi = Math.PI
 	secret = '1-1'
 	nested = {val: 'ppp'}
+	show = false
 
 	constructor() {
 		super()

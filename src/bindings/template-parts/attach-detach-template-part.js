@@ -1,17 +1,17 @@
 import TemplatePart from './template-part.js'
-import {Template} from '../template.js'
+import {TemplateRoot} from '../template-root.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 import {requestRender} from '../../utils/renderer.js'
 
 export default class AttachDetachTemplatePart extends TemplatePart {
-	static parse(element, attribute) {
+	static parse(template, attribute) {
 		if (!['#attach-if', '#detach-if'].includes(attribute)) {
 			return
 		}
-		let sourceExpression = parseSourceExpressionMemoized(element.getAttribute(attribute))[0]
-		element.removeAttribute(attribute)
+		let sourceExpression = parseSourceExpressionMemoized(template.getAttribute(attribute))[0]
+		template.removeAttribute(attribute)
 
-		let part = new AttachDetachTemplatePart(element)
+		let part = new AttachDetachTemplatePart(template)
 		part.type = attribute.slice(1, -3)
 		part.sourceExpression = sourceExpression
 		return part
@@ -21,24 +21,25 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 	type = '' // attach | detach
 	comment = new Comment
 	element = null
-	childTemplate = null
+	childTemplateRoot = null
 	sourceExpression = null
 
-	constructor(element) {
+	constructor(template) {
 		super()
-		this.element = element
-		this.element.replaceWith(this.comment)
-		this.childTemplate = new Template(this.element)
+		template = template
+		this.childTemplateRoot = new TemplateRoot(template)
+		this.element = template.content.firstElementChild
+		template.replaceWith(this.comment)
 	}
 
 	connect(host) {
 		this.host = host
-		this.childTemplate.connect(host)
+		this.childTemplateRoot.connect(host)
 	}
 
 	disconnect() {
 		this.host = null
-		this.childTemplate.disconnect()
+		this.childTemplateRoot.disconnect()
 	}
 
 	update(state) {
@@ -47,7 +48,7 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 		})
 
 		if (this._shouldAttach(state)) {
-			this.childTemplate.update(state)
+			this.childTemplateRoot.update(state)
 		}
 	}
 
@@ -57,7 +58,7 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 		})
 
 		if (this._shouldAttach(state)) {
-			this.childTemplate.updateProp(state, prop)
+			this.childTemplateRoot.updateProp(state, prop)
 		}
 	}
 
@@ -79,6 +80,6 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 
 	getRelatedProps() {
 		let props = new Set
-		return new Set([...this.sourceExpression.getRelatedProps(), ...this.childTemplate.getRelatedProps()])
+		return new Set([...this.sourceExpression.getRelatedProps(), ...this.childTemplateRoot.getRelatedProps()])
 	}
 }

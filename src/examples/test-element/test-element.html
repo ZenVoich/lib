@@ -40,12 +40,22 @@ Slot: <slot>Default slot value [[prop]]</slot>
 </template>
 <br>
 
-<div #show-if="[[isEven(obj.val)]]">#show-if [[obj.val]]</div>
-<div #hide-if="[[isEven(obj.val, prop, ', tes, sa')]]">#hide-if [[obj.val]]</div>
+<div>
+	<b>Show/Hide: [[obj.val]]</b>
+	<div #show-if="[[isEven(obj.val)]]">#show-if [[obj.val]]</div>
+	<div #hide-if="[[isEven(obj.val, prop, ', tes, sa')]]">#hide-if [[obj.val]]</div>
+</div>
 
 <div #attach-if="[[isEven(obj.val)]]">#attach-if [[obj.val]]</div>
 <div #detach-if="[[isEven(obj.val)]]">#detach-if [[obj.val]]</div>
-<template #attach-if="[[isEven(obj.val)]]">#attach-if template [[obj.val]]</template>
+<div #detach-if="[[isEven(obj.val)]]">
+	a
+	<div #attach-if="[[isEven(obj.val)]]">b</div>
+	<div #detach-if="[[isEven(obj.val)]]">c</div>
+</div>
+<template #attach-if="[[isEven(obj.val)]]">
+	<div>#attach-if template [[obj.val]]</div>
+</template>
 <br>
 
 Computed tt: [[tt]]

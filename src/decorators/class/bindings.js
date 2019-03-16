@@ -1,4 +1,4 @@
-import {Template} from '../../bindings/template.js'
+import {TemplateRoot} from '../../bindings/template-root.js'
 import {observeProperty, addObserver, removeObserver} from '../../utils/property-observer.js'
 import perf from '../../utils/perf.js'
 
@@ -9,21 +9,22 @@ export default (descriptor) => {
 			return class extends Class {
 				constructor() {
 					super()
-					if (!this.shadowRoot || !this.shadowRoot.innerHTML) {
+					if (!this.__userTemplate || !this.__userTemplate.innerHTML) {
 						return
 					}
-					let template = new Template(this.shadowRoot)
-					template.connect(this)
+					let templateRoot = new TemplateRoot(this.__userTemplate.cloneNode(true))
+					templateRoot.connect(this)
 
-					template.getRelatedProps().forEach((prop) => {
+					templateRoot.getRelatedProps().forEach((prop) => {
 						observeProperty(this, prop)
 					})
 					addObserver(this, (prop) => {
-						template.updateProp(this, prop)
+						templateRoot.updateProp(this, prop)
 					})
 
-					template.update(this)
-					this.__template = template
+					this.shadowRoot.append(templateRoot.content)
+					templateRoot.update(this)
+					this.__templateRoot = templateRoot
 				}
 			}
 		}

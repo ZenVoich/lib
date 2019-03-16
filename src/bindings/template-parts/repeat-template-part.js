@@ -1,31 +1,31 @@
 import TemplatePart from './template-part.js'
 import {RepeatContainer} from './repeat-container.js'
-import {Template} from '../template.js'
+import {TemplateRoot} from '../template-root.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 import {requestRender} from '../../utils/renderer.js'
 import perf from '../../utils/perf.js'
 
 export default class RepeatTemplatePart extends TemplatePart {
 	static relatedProps
-	static parse(element, attribute) {
+	static parse(template, attribute) {
 		if (attribute !== '#repeat') {
 			return
 		}
 
-		let part = new RepeatTemplatePart(element)
+		let part = new RepeatTemplatePart(template)
 
-		let itemsSourceExpression = parseSourceExpressionMemoized(element.getAttribute(attribute))[0]
-		element.removeAttribute('#repeat')
+		let itemsSourceExpression = parseSourceExpressionMemoized(template.getAttribute(attribute))[0]
+		template.removeAttribute('#repeat')
 		part.itemsSourceExpression = itemsSourceExpression
 
-		if (element.hasAttribute('#repeat-as')) {
-			part.as = element.getAttribute('#repeat-as')
-			element.removeAttribute('#repeat-as')
+		if (template.hasAttribute('#repeat-as')) {
+			part.as = template.getAttribute('#repeat-as')
+			template.removeAttribute('#repeat-as')
 		}
 
-		if (element.hasAttribute('#repeat-key')) {
-			part.key = element.getAttribute('#repeat-key')
-			element.removeAttribute('#repeat-key')
+		if (template.hasAttribute('#repeat-key')) {
+			part.key = template.getAttribute('#repeat-key')
+			template.removeAttribute('#repeat-key')
 		}
 
 		return part
@@ -34,8 +34,8 @@ export default class RepeatTemplatePart extends TemplatePart {
 	host = null
 	itemTemplateRelatedProps = null
 
-	element = null
-	itemFragment = null
+	template = null
+	itemTemplateRoot = null
 	itemsSourceExpression = null
 
 	_physicalElementsByKey = new Map
@@ -43,16 +43,13 @@ export default class RepeatTemplatePart extends TemplatePart {
 	key = ''
 	as = 'item'
 
-	constructor(element) {
+	constructor(template) {
 		super()
-
-		this.element = element
-		this.repeatContainer = new RepeatContainer(this.element)
-
-		this.itemFragment = document.createDocumentFragment()
-		this.itemFragment.append(this.element)
-
-		this.itemTemplateRelatedProps = new Template(this.element.cloneNode(true)).getRelatedProps()
+		this.template = template
+		this.repeatContainer = new RepeatContainer(this.template)
+		this.itemTemplateRoot = new TemplateRoot(this.template)
+		this.itemTemplateRelatedProps = this.itemTemplateRoot.getRelatedProps()
+		this.template.remove()
 	}
 
 	connect(host) {
@@ -105,7 +102,7 @@ export default class RepeatTemplatePart extends TemplatePart {
 		return state
 	}
 
-	async _render(state) {
+	_render(state) {
 		this.items = this.itemsSourceExpression.getValue(state) || []
 
 		if (this.key) {
@@ -117,32 +114,32 @@ export default class RepeatTemplatePart extends TemplatePart {
 	}
 
 	_createElement(state, item) {
-		let fragment = this.itemFragment.cloneNode(true)
-		let element = fragment.firstElementChild
-		let template = new Template(fragment)
-		template.connect(this.host)
+		let itemTemplateRoot = this.itemTemplateRoot.clone()
+		let element = itemTemplateRoot.content.firstElementChild
+
+		itemTemplateRoot.connect(this.host)
 		let preparedState = this._prepareState(state)
-		template.update(this._mergeStates(preparedState, {[this.as]: item}))
+		itemTemplateRoot.update(this._mergeStates(preparedState, {[this.as]: item}))
 
 		if (this.key) {
-			this._physicalElementsByKey.set(item[this.key], {element, template})
+			this._physicalElementsByKey.set(item[this.key], {element, templateRoot: itemTemplateRoot})
 		}
 		else {
-			this._bindingsByElement.set(element, template)
+			this._bindingsByElement.set(element, itemTemplateRoot)
 		}
 		return element
 	}
 
 	_removeElement(key, element) {
 		if (this.key) {
-			let {element, template} = this._physicalElementsByKey.get(key)
-			template.disconnect()
+			let {element, templateRoot} = this._physicalElementsByKey.get(key)
+			templateRoot.disconnect()
 			element.remove()
 			this._physicalElementsByKey.delete(key)
 		}
 		else {
-			let template = this._bindingsByElement.get(element)
-			template.disconnect()
+			let templateRoot = this._bindingsByElement.get(element)
+			templateRoot.disconnect()
 			element.remove()
 			this._bindingsByElement.delete(element)
 		}
@@ -178,15 +175,14 @@ export default class RepeatTemplatePart extends TemplatePart {
 
 		// update templates
 		let preparedState = this._prepareState(state)
-		![...this._bindingsByElement.values()].forEach((template, i) => {
-			template.update(this._mergeStates(preparedState, {[this.as]: this.items[i]}))
+		![...this._bindingsByElement.values()].forEach((templateRoot, i) => {
+			templateRoot.update(this._mergeStates(preparedState, {[this.as]: this.items[i]}))
 		})
 	}
 
 	// sort existing elements by key
 	_renderSorted(state) {
 		// remove elements
-		let removedElements = []
 		let currentKeys = new Set(this._physicalElementsByKey.keys())
 		this.items.forEach((item) => {
 			currentKeys.delete(item[this.key])
@@ -195,47 +191,58 @@ export default class RepeatTemplatePart extends TemplatePart {
 			this._removeElement(key)
 		})
 
+		let elementsToRender = []
+
 		// add/update elements
 		let preparedState = this._prepareState(state)
 		this.items.forEach((item, index) => {
 			let physical = this._physicalElementsByKey.get(item[this.key])
 			if (physical) {
-				physical.template.update(this._mergeStates(preparedState, {[this.as]: item}))
+				physical.templateRoot.update(this._mergeStates(preparedState, {[this.as]: item}))
 			}
 			else {
-				let element = this._createElement(state, item)
-				this._placeElement(element, index)
+				elementsToRender.push({state, item, index})
+				// let element = this._createElement(state, item)
+				// this._placeElement(element, index)
 			}
 		})
 
-		// sort elements
-		let x = 0
-		let sort = () => {
-			x++
-			if (x > 10) {
-				return
-			}
-			let children = this.repeatContainer.getChildren()
-			let itemsInfo = this.items.map((item, newIndex) => {
-				let physical = this._physicalElementsByKey.get(item[this.key])
-				let oldIndex = children.indexOf(physical.element)
-				return {
-					item,
-					oldIndex,
-					newIndex,
-					diffIndex: Math.abs(oldIndex - newIndex),
-				}
-			}).filter((itemInfo) => {
-				return itemInfo.diffIndex
-			}).sort((a, b) => {
-				return b.diffIndex - a.diffIndex
+		requestRender(this.host, this, () => {
+			elementsToRender.forEach(({state, item, index}) => {
+				let element = this._createElement(state, item)
+				this._placeElement(element, index)
 			})
-			if (!itemsInfo.length) {
-				return
+
+			// sort elements
+			let x = 0
+			let sort = () => {
+				x++
+				if (x > 10) {
+					console.log('loop')
+					return
+				}
+				let children = this.repeatContainer.getChildren()
+				let itemsInfo = this.items.map((item, newIndex) => {
+					let physical = this._physicalElementsByKey.get(item[this.key])
+					let oldIndex = children.indexOf(physical.element)
+					return {
+						item,
+						oldIndex,
+						newIndex,
+						diffIndex: Math.abs(oldIndex - newIndex),
+					}
+				}).filter((itemInfo) => {
+					return itemInfo.diffIndex
+				}).sort((a, b) => {
+					return b.diffIndex - a.diffIndex
+				})
+				if (!itemsInfo.length) {
+					return
+				}
+				this._placeElement(null, itemsInfo[0].newIndex)
+				sort()
 			}
-			this._placeElement(itemsInfo[0], itemsInfo[0].newIndex)
 			sort()
-		}
-		sort()
+		})
 	}
 }
