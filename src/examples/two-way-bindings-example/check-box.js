@@ -5,7 +5,7 @@ import watch from '../../decorators/method/watch.js'
 import Component from '../../component.js'
 
 @define('check-box')
-class TestElement extends Component {
+class TestElement extends HTMLElement {
 	static template = `
 		<input type=checkbox .checked=[[checked]] on-change=[[onChange]]>
 	`

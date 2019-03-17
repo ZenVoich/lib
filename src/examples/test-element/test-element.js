@@ -90,7 +90,7 @@ class TestElement extends HTMLElement {
 
 
 @define('t-t')
-class TT extends Component {
+class TT extends HTMLElement {
 	constructor() {
 		super()
 		console.log('tt constructor')

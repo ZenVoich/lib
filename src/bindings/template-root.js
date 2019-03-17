@@ -35,16 +35,15 @@ export class TemplateRoot {
 		return props
 	}
 
-	update(state) {
-		// host render domain
+	update(state, immediate) {
 		this.parts.forEach((part) => {
-			part.update(state)
+			part.update(state, immediate)
 		})
 	}
 
-	updateProp(state, prop) {
+	updateProp(state, prop, immediate) {
 		this.parts.forEach((part) => {
-			part.updateProp(state, prop)
+			part.updateProp(state, prop, immediate)
 		})
 	}
 

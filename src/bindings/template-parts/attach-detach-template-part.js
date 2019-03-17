@@ -42,23 +42,33 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 		this.childTemplateRoot.disconnect()
 	}
 
-	update(state) {
-		requestRender(this.host, this, () => {
+	update(state, immediate) {
+		if (immediate) {
 			this._render(state)
-		})
+		}
+		else {
+			requestRender(this.host, this, () => {
+				this._render(state)
+			})
+		}
 
 		if (this._shouldAttach(state)) {
-			this.childTemplateRoot.update(state)
+			this.childTemplateRoot.update(state, immediate)
 		}
 	}
 
-	updateProp(state, prop) {
-		requestRender(this.host, this, () => {
+	updateProp(state, prop, immediate) {
+		if (immediate) {
 			this._render(state)
-		})
+		}
+		else {
+			requestRender(this.host, this, () => {
+				this._render(state)
+			})
+		}
 
 		if (this._shouldAttach(state)) {
-			this.childTemplateRoot.updateProp(state, prop)
+			this.childTemplateRoot.updateProp(state, prop, immediate)
 		}
 	}
 

@@ -72,12 +72,23 @@ export default class RepeatTemplatePart extends TemplatePart {
 		})
 	}
 
-	update(state) {
-		this._render(state)
+	update(state, immediate) {
+		this._render(state, immediate)
 	}
 
-	updateProp(state, prop) {
-		this._render(state)
+	updateProp(state, prop, immediate) {
+		this._render(state, immediate)
+	}
+
+	_render(state, immediate) {
+		this.items = this.itemsSourceExpression.getValue(state) || []
+
+		if (this.key) {
+			this._renderSorted(state, immediate)
+		}
+		else {
+			this._renderPlain(state, immediate)
+		}
 	}
 
 	getRelatedProps() {
@@ -102,24 +113,13 @@ export default class RepeatTemplatePart extends TemplatePart {
 		return state
 	}
 
-	_render(state) {
-		this.items = this.itemsSourceExpression.getValue(state) || []
-
-		if (this.key) {
-			this._renderSorted(state)
-		}
-		else {
-			this._renderPlain(state)
-		}
-	}
-
-	_createElement(state, item) {
+	_createElement(state, item, immediate) {
 		let itemTemplateRoot = this.itemTemplateRoot.clone()
 		let element = itemTemplateRoot.content.firstElementChild
 
 		itemTemplateRoot.connect(this.host)
 		let preparedState = this._prepareState(state)
-		itemTemplateRoot.update(this._mergeStates(preparedState, {[this.as]: item}))
+		itemTemplateRoot.update(this._mergeStates(preparedState, {[this.as]: item}), immediate)
 
 		if (this.key) {
 			this._physicalElementsByKey.set(item[this.key], {element, templateRoot: itemTemplateRoot})
@@ -156,61 +156,71 @@ export default class RepeatTemplatePart extends TemplatePart {
 	}
 
 	// ensure element count and update templates
-	_renderPlain(state) {
-		// ensure elements
+	_renderPlain(state, immediate) {
 		let childCount = this.repeatContainer.getChildElementCount()
-		let diff = this.items.length - childCount
-		if (diff > 0) {
-			for (let i = 0; i < diff; i++) {
-				let item = this.items[childCount + i]
-				let element = this._createElement(state, item)
-				this.repeatContainer.append(element)
-			}
+
+		// update existing elements
+		let preparedState = this._prepareState(state)
+		for (let i = 0; i < childCount; i++) {
+			let element = this.repeatContainer.getChildAt(i)
+			let templateRoot = this._bindingsByElement.get(element)
+			templateRoot.update(this._mergeStates(preparedState, {[this.as]: this.items[i]}), immediate)
 		}
-		else if (diff < 0) {
-			for (let i = 0; i > diff; i--) {
-				this._removeElement(null, this.repeatContainer.getLastElementChild())
+
+		let render = () => {
+			// add new elements
+			let diff = this.items.length - childCount
+			if (diff > 0) {
+				for (let i = 0; i < diff; i++) {
+					let item = this.items[childCount + i]
+					let element = this._createElement(state, item, true)
+					this.repeatContainer.append(element)
+				}
+			}
+			// remove extra elements
+			else if (diff < 0) {
+				for (let i = 0; i > diff; i--) {
+					this._removeElement(null, this.repeatContainer.getLastElementChild())
+				}
 			}
 		}
 
-		// update templates
-		let preparedState = this._prepareState(state)
-		![...this._bindingsByElement.values()].forEach((templateRoot, i) => {
-			templateRoot.update(this._mergeStates(preparedState, {[this.as]: this.items[i]}))
-		})
+		if (immediate) {
+			render()
+		}
+		else {
+			requestRender(this.host, this, render)
+		}
 	}
 
 	// sort existing elements by key
-	_renderSorted(state) {
-		// remove elements
-		let currentKeys = new Set(this._physicalElementsByKey.keys())
-		this.items.forEach((item) => {
-			currentKeys.delete(item[this.key])
-		})
-		currentKeys.forEach((key) => {
-			this._removeElement(key)
-		})
-
-		let elementsToRender = []
-
-		// add/update elements
+	_renderSorted(state, immediate) {
+		// update elements
 		let preparedState = this._prepareState(state)
 		this.items.forEach((item, index) => {
 			let physical = this._physicalElementsByKey.get(item[this.key])
 			if (physical) {
-				physical.templateRoot.update(this._mergeStates(preparedState, {[this.as]: item}))
-			}
-			else {
-				elementsToRender.push({state, item, index})
-				// let element = this._createElement(state, item)
-				// this._placeElement(element, index)
+				physical.templateRoot.update(this._mergeStates(preparedState, {[this.as]: item}), immediate)
 			}
 		})
 
-		requestRender(this.host, this, () => {
-			elementsToRender.forEach(({state, item, index}) => {
-				let element = this._createElement(state, item)
-				this._placeElement(element, index)
+		let render = () => {
+			// remove elements
+			let currentKeys = new Set(this._physicalElementsByKey.keys())
+			this.items.forEach((item) => {
+				currentKeys.delete(item[this.key])
+			})
+			currentKeys.forEach((key) => {
+				this._removeElement(key)
+			})
+
+			// add elements
+			this.items.forEach((item, index) => {
+				let hasPhysical = this._physicalElementsByKey.has(item[this.key])
+				if (!hasPhysical) {
+					let element = this._createElement(state, item, true)
+					this._placeElement(element, index)
+				}
 			})
 
 			// sort elements
@@ -243,6 +253,13 @@ export default class RepeatTemplatePart extends TemplatePart {
 				sort()
 			}
 			sort()
-		})
+		}
+
+		if (immediate) {
+			render()
+		}
+		else {
+			requestRender(this.host, this, render)
+		}
 	}
 }

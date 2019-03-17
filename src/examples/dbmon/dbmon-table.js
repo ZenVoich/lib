@@ -1,10 +1,10 @@
 import define from '../../decorators/class/define.js'
-import Component from '../../component.js'
+import {afterNextRender} from '../../utils/renderer.js'
 
 import template from './dbmon-table.html'
 
 @define('dbmon-table')
-class DbmonTable extends Component {
+class DbmonTable extends HTMLElement {
 	static template = template
 
 	connectedCallback() {
@@ -14,7 +14,7 @@ class DbmonTable extends Component {
 	refresh() {
 		this.databases = ENV.generateData(true).toArray()
 		Monitoring.renderRate.ping()
-		// requestAnimationFrame(() => this.refresh())
+		// afterNextRender(this, Monitoring.renderRate.ping)
 		setTimeout(() => this.refresh(), ENV.timeout);
 	}
 }

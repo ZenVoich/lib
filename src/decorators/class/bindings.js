@@ -22,9 +22,21 @@ export default (descriptor) => {
 						templateRoot.updateProp(this, prop)
 					})
 
-					this.shadowRoot.append(templateRoot.content)
-					templateRoot.update(this)
 					this.__templateRoot = templateRoot
+					this.__templateRootAttached = false
+				}
+
+				connectedCallback() {
+					if (this.__templateRootAttached) {
+						super.connectedCallback && super.connectedCallback()
+						return
+					}
+					this.__templateRootAttached = true
+
+					this.shadowRoot.append(this.__templateRoot.content)
+					this.__templateRoot.update(this, true)
+
+					super.connectedCallback && super.connectedCallback()
 				}
 			}
 		}

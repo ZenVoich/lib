@@ -5,7 +5,7 @@ import Component from './component.js'
 
 
 @define('virtual-repeat')
-class VirtualRepeat extends Component {
+class VirtualRepeat extends HTMLElement {
 	static template = `
 		<style>
 			:host {

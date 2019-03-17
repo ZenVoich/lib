@@ -9,7 +9,7 @@ import styles from './two-way-bindings-example.css'
 import './check-box.js'
 
 @define('two-way-bindings-example')
-class A extends Component {
+class A extends HTMLElement {
 	static template = template
 	static styles = styles
 

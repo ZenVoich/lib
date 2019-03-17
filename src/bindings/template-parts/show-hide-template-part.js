@@ -40,18 +40,28 @@ export default class ShowHideTemplatePart extends TemplatePart {
 		this.childTemplateRoot.disconnect()
 	}
 
-	update(state) {
-		// requestRender(this.host, this, () => {
+	update(state, immediate) {
+		if (immediate) {
 			this._render(state)
-		// })
-		this.childTemplateRoot.update(state)
+		}
+		else {
+			requestRender(this.host, this, () => {
+				this._render(state)
+			})
+		}
+		this.childTemplateRoot.update(state, immediate)
 	}
 
-	updateProp(state, prop) {
-		// requestRender(this.host, this, () => {
+	updateProp(state, prop, immediate) {
+		if (immediate) {
 			this._render(state)
-		// })
-		this.childTemplateRoot.updateProp(state, prop)
+		}
+		else {
+			requestRender(this.host, this, () => {
+				this._render(state)
+			})
+		}
+		this.childTemplateRoot.updateProp(state, prop, immediate)
 	}
 
 	_render(state) {

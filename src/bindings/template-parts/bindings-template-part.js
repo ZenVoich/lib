@@ -1,10 +1,11 @@
 import TemplatePart from './template-part.js'
-import {throttleMicrotask} from '../../utils/microtask.js'
-import {throttleRender} from '../../utils/renderer.js'
+import {throttleMicrotask, requestMicrotask} from '../../utils/microtask.js'
+import {throttleRender, requestRender} from '../../utils/renderer.js'
 import {parse as parseBindings} from '../bindings-parser.js'
 import perf from '../../utils/perf.js'
 
 export default class BindingsTemplatePart extends TemplatePart {
+	host = null
 	isConnected = false
 
 	bindings = [] // [Binding]
@@ -35,6 +36,7 @@ export default class BindingsTemplatePart extends TemplatePart {
 		this.bindings.forEach((binding) => {
 			binding.connect(host)
 		})
+		this.host = host
 		this.isConnected = true
 	}
 
@@ -42,6 +44,7 @@ export default class BindingsTemplatePart extends TemplatePart {
 		this.bindings.forEach((binding) => {
 			binding.disconnect()
 		})
+		this.host = null
 		this.isConnected = false
 	}
 
@@ -55,13 +58,13 @@ export default class BindingsTemplatePart extends TemplatePart {
 		return props
 	}
 
-	update(state) {
+	update(state, immediate) {
 		// host render chunk
 		perf.markStart('bindings.update')
 
 		// microtask phase bindings
 		this.#isComponenInMicrotaskQueue = true
-		throttleMicrotask(this.#microtaskThrottler, () => {
+		let update = () => {
 			this.#isComponenInMicrotaskQueue = false
 
 			if (!this.isConnected) {
@@ -73,11 +76,18 @@ export default class BindingsTemplatePart extends TemplatePart {
 					binding.pushValue(state)
 				}
 			})
-		})
+		}
+
+		if (immediate) {
+			update()
+		}
+		else {
+			requestMicrotask(this.host, this.#microtaskThrottler, update)
+		}
 
 		// animationFrame phase bindings
 		this.#isComponenInRenderQueue = true
-		throttleRender(this.#renderThrottler, () => {
+		let render = () => {
 			this.#isComponenInRenderQueue = false
 
 			if (!this.isConnected) {
@@ -89,18 +99,26 @@ export default class BindingsTemplatePart extends TemplatePart {
 					binding.pushValue(state)
 				}
 			})
-		})
+		}
+
+		if (immediate) {
+			render()
+		}
+		else {
+			requestRender(this.host, this.#renderThrottler, render)
+		}
 
 		perf.markEnd('bindings.update')
 	}
 
-	updateProp(state, prop) {
+	updateProp(state, prop, immediate) {
 		perf.markStart('bindings.updateProp')
 
 		// microtask phase bindings
 		if (!this.#isComponenInMicrotaskQueue || this.notRelatedMicrotaskProps.includes(prop)) {
 			this.#propsInMicrotaskQueue.add(prop)
-			throttleMicrotask(this.#propsMicrotaskThrottler, () => {
+
+			let update = () => {
 				if (!this.isConnected) {
 					return
 				}
@@ -125,13 +143,21 @@ export default class BindingsTemplatePart extends TemplatePart {
 				relatedBindings.forEach((binding) => {
 					binding.pushValue(state)
 				})
-			})
+			}
+
+			if (immediate) {
+				update()
+			}
+			else {
+				requestMicrotask(this.host, this.#propsMicrotaskThrottler, update)
+			}
 		}
 
 		// animationFrame phase bindings
 		if (!this.#isComponenInRenderQueue || this.notRelatedRenderProps.includes(prop)) {
 			this.#propsInRenderQueue.add(prop)
-			throttleRender(this.#propsRenderThrottler, () => {
+
+			let render = () => {
 				if (!this.isConnected) {
 					return
 				}
@@ -156,7 +182,15 @@ export default class BindingsTemplatePart extends TemplatePart {
 				relatedBindings.forEach((binding) => {
 					binding.pushValue(state)
 				})
-			})
+			}
+
+
+			if (immediate) {
+				render()
+			}
+			else {
+				requestRender(this.host, this.#propsRenderThrottler, render)
+			}
 		}
 
 		perf.markEnd('bindings.updateProp')

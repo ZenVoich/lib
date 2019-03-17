@@ -16,7 +16,7 @@ export let parse = (template) => {
 		// if (part) {
 		if (isDirectiveElement(curNode)) {
 			let tempNode = curNode
-			curNode = walker.nextSibling()
+			curNode = walker.nextSibling() || walker.nextNode()
 			let part = parseDirectiveElement(ensureDirectiveTemplate(tempNode))
 			if (part) {
 				parts.push(part)
