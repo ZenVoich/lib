@@ -34,7 +34,7 @@ let perf = {
 		let duration = performance.now() - pendingStats[name]
 		let totalDuration = stats[name] || 0
 		stats[name] = totalDuration + duration
-		delete pendingStats[name]
+		pendingStats[name] = null
 	},
 }
 

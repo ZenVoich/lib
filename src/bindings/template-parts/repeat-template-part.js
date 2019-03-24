@@ -6,49 +6,67 @@ import {requestRender} from '../../utils/renderer.js'
 import perf from '../../utils/perf.js'
 
 export default class RepeatTemplatePart extends TemplatePart {
-	static relatedProps
-	static parse(template, attribute) {
+	static parseSkeleton(template, attribute) {
 		if (attribute !== '#repeat') {
 			return
 		}
 
-		let part = new RepeatTemplatePart(template)
-
 		let itemsSourceExpression = parseSourceExpressionMemoized(template.getAttribute(attribute))[0]
 		template.removeAttribute('#repeat')
-		part.itemsSourceExpression = itemsSourceExpression
 
+		let as = 'item'
 		if (template.hasAttribute('#repeat-as')) {
-			part.as = template.getAttribute('#repeat-as')
+			as = template.getAttribute('#repeat-as')
 			template.removeAttribute('#repeat-as')
 		}
 
+		let key = ''
 		if (template.hasAttribute('#repeat-key')) {
-			part.key = template.getAttribute('#repeat-key')
+			key = template.getAttribute('#repeat-key')
 			template.removeAttribute('#repeat-key')
 		}
 
+		let itemTemplateRootSkeleton = TemplateRoot.parseSkeleton(template)
+
+		return {
+			as,
+			key,
+			itemsSourceExpression,
+			itemTemplateRootSkeleton,
+			relatedProps: new Set([
+				...itemsSourceExpression.getRelatedProps(),
+				...TemplateRoot.fromSkeleton(itemTemplateRootSkeleton).getRelatedProps()
+			]),
+		};
+	}
+
+	static fromSkeleton(skeleton, template) {
+		let part = new RepeatTemplatePart(template)
+		part.as = skeleton.as
+		part.key = skeleton.key
+		part.itemsSourceExpression = skeleton.itemsSourceExpression
+		part.itemTemplateRootSkeleton = skeleton.itemTemplateRootSkeleton
+		part.relatedProps = skeleton.relatedProps
 		return part
 	}
 
 	host = null
-	itemTemplateRelatedProps = null
 
 	template = null
-	itemTemplateRoot = null
+	itemTemplateRootSkeleton = null
 	itemsSourceExpression = null
+	relatedProps = null
+	repeatContainer = null
 
-	_physicalElementsByKey = new Map
-	_bindingsByElement = new Map
 	key = ''
 	as = 'item'
+	_physicalElementsByKey = new Map
+	_bindingsByElement = new Map
 
 	constructor(template) {
 		super()
 		this.template = template
 		this.repeatContainer = new RepeatContainer(this.template)
-		this.itemTemplateRoot = new TemplateRoot(this.template)
-		this.itemTemplateRelatedProps = this.itemTemplateRoot.getRelatedProps()
 		this.template.remove()
 	}
 
@@ -92,8 +110,7 @@ export default class RepeatTemplatePart extends TemplatePart {
 	}
 
 	getRelatedProps() {
-		let props = new Set
-		return new Set([...this.itemsSourceExpression.getRelatedProps(), ...this.itemTemplateRelatedProps])
+		return this.relatedProps
 	}
 
 	_prepareState(host) {
@@ -114,7 +131,7 @@ export default class RepeatTemplatePart extends TemplatePart {
 	}
 
 	_createElement(state, item, immediate) {
-		let itemTemplateRoot = this.itemTemplateRoot.clone()
+		let itemTemplateRoot = TemplateRoot.fromSkeleton(this.itemTemplateRootSkeleton)
 		let element = itemTemplateRoot.content.firstElementChild
 
 		itemTemplateRoot.connect(this.host)

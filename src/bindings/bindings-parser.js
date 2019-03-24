@@ -5,57 +5,100 @@ import CompoundSourceExpression from './source-expressions/compound-source-expre
 import {parse as parseSourceExpressionChunk} from './source-expressions/source-expression-parser.js'
 
 import PropertyTargetExpression from './target-expressions/property-target-expression.js'
-import {parse as parseTargetExpression} from './target-expressions/target-expression-parser.js'
+import {parse as parseTargetExpression, parseSkeleton as parseTargetExpressionSkeleton} from './target-expressions/target-expression-parser.js'
 
 import Binding from './binding.js'
 import perf from '../utils/perf.js'
 
 let sourceExpressionsCache = new Map
 
-export let parse = (template) => {
-	if (!template) {
+export let parseSkeleton = (root) => {
+	if (!root) {
 		return []
 	}
 
-	let bindings = []
+	perf.markStart('bindings.parseSkeleton')
 
-	let addBinding = (binding) => {
-		if (binding) {
-			bindings.push(binding)
+	let bindingSkeletons = new Map
+	let walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT)
+	let curNode = walker.nextNode()
+	let nodeIndex = -1
+
+	let addBindingSkeleton = (bindingSkeleton) => {
+		if (!bindingSkeleton) {
+			return
 		}
+		let skeletons = bindingSkeletons.get(nodeIndex)
+		if (!skeletons) {
+			skeletons = new Set
+			bindingSkeletons.set(nodeIndex, skeletons)
+		}
+		skeletons.add(bindingSkeleton)
 	}
 
-	![...template.querySelectorAll('*')].forEach((el) => {
-		// attributes
-		el.getAttributeNames().forEach((attr) => {
-			addBinding(parseAttribute(el, attr))
-		})
-
-		// nodes
-		let textNodesOnly = [...el.childNodes].every((node) => {
-			return node.nodeType === document.TEXT_NODE
-		})
-		if (textNodesOnly) {
-			addBinding(parseNode(el))
+	while (true) {
+		if (!curNode) {
+			break
 		}
-		else {
-			![...el.childNodes].forEach((node) => {
-				if (node.nodeType === document.TEXT_NODE) {
-					addBinding(parseNode(node))
+		nodeIndex++
+
+		// elements
+		if (curNode.nodeType === document.ELEMENT_NODE) {
+			// attributes
+			let contenteditable = false
+			curNode.getAttributeNames().forEach((attr) => {
+				if (attr === 'contenteditable') {
+					contenteditable = true
 				}
+				addBindingSkeleton(parseAttribute(curNode, attr))
+			})
+
+			// if [contenteditable] parse an element instead of text nodes
+			if (contenteditable) {
+				addBindingSkeleton(parseNode(curNode))
+				// curNode = walker.nextSibling() || walker.nextNode()
+				// continue
+			}
+		}
+		// text nodes
+		else {
+			addBindingSkeleton(parseNode(curNode))
+		}
+
+		curNode = walker.nextNode()
+	}
+
+	perf.markEnd('bindings.parseSkeleton')
+
+	return bindingSkeletons
+}
+
+export let fromSkeleton = (bindingSkeletons, root) => {
+	perf.markStart('bindings.fromSkeleton')
+	let walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT)
+	let curNode = walker.nextNode()
+	let nodeIndex = -1
+	let bindings = []
+
+	while (true) {
+		if (!curNode) {
+			break
+		}
+		nodeIndex++
+		let skeletons = bindingSkeletons.get(nodeIndex)
+		if (skeletons) {
+			skeletons.forEach((skeleton) => {
+				let target = skeleton.targetSkeleton.class.fromSkeleton(skeleton.targetSkeleton, curNode)
+				bindings.push(new Binding(skeleton.direction, skeleton.source, target))
 			})
 		}
-	})
-
-	// root text nodes
-	![...template.childNodes].forEach((node) => {
-		if (node.nodeType === document.TEXT_NODE) {
-			addBinding(parseNode(node))
-		}
-	})
+		curNode = walker.nextNode()
+	}
+	perf.markEnd('bindings.fromSkeleton')
 
 	return bindings
 }
+
 
 let parseAttribute = (el, attr) => {
 	perf.markStart('bindings: parse source')
@@ -63,16 +106,16 @@ let parseAttribute = (el, attr) => {
 	let [source, direction] = parseSourceExpressionMemoized(value)
 	perf.markEnd('bindings: parse source')
 	perf.markStart('bindings: parse target')
-	let target = parseTargetExpression('attribute', el, attr, source)
+	let targetSkeleton = parseTargetExpressionSkeleton('attribute', el, attr, source)
 	perf.markEnd('bindings: parse target')
 
-	if (!target) {
+	if (!targetSkeleton) {
 		return
 	}
 
 	// <div .prop="val">
 	if (!source) {
-		if (target instanceof PropertyTargetExpression) {
+		if (targetSkeleton.class === PropertyTargetExpression) {
 			source = new ValueSourceExpression({value: el.getAttribute(attr)})
 		}
 		else {
@@ -80,7 +123,7 @@ let parseAttribute = (el, attr) => {
 		}
 	}
 
-	let binding = createBinding(direction, source, target)
+	let binding = createBinding(direction, source, targetSkeleton)
 	if (!binding) {
 		return
 	}
@@ -98,25 +141,26 @@ let parseNode = (node) => {
 	}
 
 	perf.markStart('bindings: parse target')
-	let target = parseTargetExpression('node', node)
+	let targetSkeleton = parseTargetExpressionSkeleton('node', node)
 	perf.markEnd('bindings: parse target')
-	if (!target) {
+	if (!targetSkeleton) {
 		return
 	}
 
-	let binding = createBinding(direction, source, target)
+	let binding = createBinding(direction, source, targetSkeleton)
 	if (!binding) {
 		return
 	}
 	return binding
 }
 
-let createBinding = (direction, source, target) => {
-	if (direction !== 'downward' && !(target instanceof PropertyTargetExpression)) {
+let createBinding = (direction, source, targetSkeleton) => {
+	if (direction !== 'downward' && targetSkeleton.class !== PropertyTargetExpression) {
 		console.error('upward and two-way binding can only be property binding')
 		return
 	}
-	return new Binding(direction, source, target)
+	// return new Binding(direction, source, target)
+	return {direction, source, targetSkeleton}
 }
 
 export let parseSourceExpressionMemoized = (text) => {

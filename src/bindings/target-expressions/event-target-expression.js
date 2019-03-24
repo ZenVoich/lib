@@ -5,7 +5,7 @@ export default class EventTargetExpression extends TargetExpression {
 	static parseType = 'attribute'
 	static updatePhase = 'microtask'
 
-	static parse(element, attribute, source) {
+	static parseSkeleton(element, attribute, source) {
 		if (!attribute.startsWith('on-')) {
 			return
 		}
@@ -17,11 +17,25 @@ export default class EventTargetExpression extends TargetExpression {
 		target.element = element
 		target.eventName = attribute.slice(3)
 		target.functionName = source.propertyName
+
+		return {
+			class: this,
+			eventName: attribute.slice(3),
+			functionName: source.propertyName,
+		}
+	}
+
+	static fromSkeleton(skeleton, element) {
+		let target = new EventTargetExpression
+		target.element = element
+		target.eventName = skeleton.eventName
+		target.functionName = skeleton.functionName
 		return target
 	}
 
 	isConnected = false
 	element = null
+	eventName = ''
 	functionName = ''
 	#currentHandler = null
 

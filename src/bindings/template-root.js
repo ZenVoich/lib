@@ -1,12 +1,24 @@
-import {parse as parseTemplateParts} from './template-parser.js'
+import {parseSkeleton, fromSkeleton} from './template-parser.js'
 
 export class TemplateRoot {
 	parts = []
 
-	constructor(template) {
-		this.originalTemplate = template.cloneNode(true)
-		this.template = template
-		this.parts = parseTemplateParts(template)
+	static parseSkeleton(template) {
+		return {
+			skeletonTemplate: template,
+			partSkeletons: parseSkeleton(template),
+		}
+	}
+
+	static fromSkeleton(skeleton, template) {
+		let templateRoot = new TemplateRoot
+		templateRoot.template = template || skeleton.skeletonTemplate.cloneNode(true)
+		templateRoot.parts = fromSkeleton(skeleton.partSkeletons, templateRoot.template)
+		return templateRoot
+	}
+
+	static parse(template) {
+		return this.fromSkeleton(this.parseSkeleton(template))
 	}
 
 	get content() {
@@ -45,9 +57,5 @@ export class TemplateRoot {
 		this.parts.forEach((part) => {
 			part.updateProp(state, prop, immediate)
 		})
-	}
-
-	clone() {
-		return new TemplateRoot(this.originalTemplate.cloneNode(true))
 	}
 }

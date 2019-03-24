@@ -12,17 +12,24 @@ export default (descriptor) => {
 					if (!this.__userTemplate || !this.__userTemplate.innerHTML) {
 						return
 					}
-					let templateRoot = new TemplateRoot(this.__userTemplate.cloneNode(true))
-					templateRoot.connect(this)
 
-					templateRoot.getRelatedProps().forEach((prop) => {
+					if (this.constructor.__templateRootSkeleton) {
+						this.__templateRoot = TemplateRoot.fromSkeleton(this.constructor.__templateRootSkeleton)
+					}
+					else {
+						this.constructor.__templateRootSkeleton = TemplateRoot.parseSkeleton(this.__userTemplate)
+						this.__templateRoot = TemplateRoot.fromSkeleton(this.constructor.__templateRootSkeleton, this.__userTemplate.cloneNode(true))
+					}
+
+					this.__templateRoot.connect(this)
+
+					this.__templateRoot.getRelatedProps().forEach((prop) => {
 						observeProperty(this, prop)
 					})
 					addObserver(this, (prop) => {
-						templateRoot.updateProp(this, prop)
+						this.__templateRoot.updateProp(this, prop)
 					})
 
-					this.__templateRoot = templateRoot
 					this.__templateRootAttached = false
 				}
 

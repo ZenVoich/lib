@@ -1,7 +1,7 @@
 import TemplatePart from './template-part.js'
 import {throttleMicrotask, requestMicrotask} from '../../utils/microtask.js'
 import {throttleRender, requestRender} from '../../utils/renderer.js'
-import {parse as parseBindings} from '../bindings-parser.js'
+import {parseSkeleton, fromSkeleton} from '../bindings-parser.js'
 import perf from '../../utils/perf.js'
 
 export default class BindingsTemplatePart extends TemplatePart {
@@ -22,14 +22,17 @@ export default class BindingsTemplatePart extends TemplatePart {
 	#propsMicrotaskThrottler = Symbol()
 	#propsRenderThrottler = Symbol()
 
-	static parse(root) {
-		let part = new BindingsTemplatePart(root)
-		return part
+	static parseSkeleton(root) {
+		return parseSkeleton(root)
 	}
 
-	constructor(root) {
+	static fromSkeleton(skeleton, root) {
+		return new BindingsTemplatePart(fromSkeleton(skeleton, root))
+	}
+
+	constructor(bindings) {
 		super()
-		this.bindings = parseBindings(root)
+		this.bindings = bindings
 	}
 
 	connect(host) {
@@ -196,3 +199,5 @@ export default class BindingsTemplatePart extends TemplatePart {
 		perf.markEnd('bindings.updateProp')
 	}
 }
+
+window.BindingsTemplatePart = BindingsTemplatePart

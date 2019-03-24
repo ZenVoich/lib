@@ -4,16 +4,34 @@ import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 import {requestRender} from '../../utils/renderer.js'
 
 export default class ShowHideTemplatePart extends TemplatePart {
-	static parse(template, attribute) {
+	static parseSkeleton(template, attribute) {
 		if (!['#show-if', '#hide-if'].includes(attribute)) {
 			return
 		}
+
 		let sourceExpression = parseSourceExpressionMemoized(template.getAttribute(attribute))[0]
 		template.removeAttribute(attribute)
 
+		let childTemplateRootSkeleton = TemplateRoot.parseSkeleton(template)
+
+		return {
+			type: attribute.slice(1, -3),
+			sourceExpression: sourceExpression,
+			childTemplateRootSkeleton: TemplateRoot.parseSkeleton(template),
+			relatedProps: new Set([
+				...sourceExpression.getRelatedProps(),
+				...TemplateRoot.fromSkeleton(childTemplateRootSkeleton).getRelatedProps()
+			]),
+		}
+	}
+
+	static fromSkeleton(skeleton, template) {
+		let childTemplateRoot = TemplateRoot.fromSkeleton(skeleton.childTemplateRootSkeleton, template)
 		let part = new ShowHideTemplatePart(template)
-		part.type = attribute.slice(1, -3)
-		part.sourceExpression = sourceExpression
+		part.type = skeleton.type
+		part.sourceExpression = skeleton.sourceExpression
+		part.childTemplateRoot = childTemplateRoot
+		part.relatedProps = skeleton.relatedProps
 		return part
 	}
 
@@ -22,10 +40,10 @@ export default class ShowHideTemplatePart extends TemplatePart {
 	element = null
 	childTemplateRoot = null
 	sourceExpression = null
+	relatedProps = null
 
 	constructor(template) {
 		super()
-		this.childTemplateRoot = new TemplateRoot(template)
 		this.element = template.content.firstElementChild
 		template.replaceWith(this.element)
 	}
@@ -77,7 +95,6 @@ export default class ShowHideTemplatePart extends TemplatePart {
 	}
 
 	getRelatedProps() {
-		let props = new Set
-		return new Set([...this.sourceExpression.getRelatedProps(), ...this.childTemplateRoot.getRelatedProps()])
+		return this.relatedProps
 	}
 }

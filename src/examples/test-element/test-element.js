@@ -73,7 +73,7 @@ class TestElement extends HTMLElement {
 		}
 		this.unboxed = true
 
-		let templateRoot = new TemplateRoot(this.shadowRoot.querySelector('#template'))
+		let templateRoot = TemplateRoot.parse(this.shadowRoot.querySelector('#template'))
 		templateRoot.connect(this)
 		templateRoot.update(this)
 		templateRoot.getRelatedProps().forEach((prop) => {

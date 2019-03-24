@@ -5,13 +5,20 @@ export default class AttributeTargetExpression extends TargetExpression {
 	static parseType = 'attribute'
 	static updatePhase = 'animationFrame'
 
-	static parse(element, attribute) {
+	static parseSkeleton(element, attribute) {
 		if (attribute[0] === '#') {
 			return
 		}
+		return {
+			class: this,
+			attributeName: attribute,
+		}
+	}
+
+	static fromSkeleton(skeleton, element) {
 		let target = new AttributeTargetExpression
 		target.element = element
-		target.attributeName = attribute
+		target.attributeName = skeleton.attributeName
 		return target
 	}
 

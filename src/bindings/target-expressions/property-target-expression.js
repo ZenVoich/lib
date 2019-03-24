@@ -5,17 +5,24 @@ export default class PropertyTargetExpression extends TargetExpression {
 	static parseType = 'attribute'
 	static updatePhase = 'microtask'
 
-	static parse(element, attribute) {
+	static parseSkeleton(element, attribute) {
 		if (!attribute.startsWith('.')) {
 			return
 		}
+		let propertyName = toCamelCase(attribute.slice(1))
+		if (propertyName === 'innerHtml' || propertyName === 'innerhtml') {
+			propertyName = 'innerHTML'
+		}
+		return {
+			class: this,
+			propertyName,
+		}
+	}
+
+	static fromSkeleton(skeleton, element) {
 		let target = new PropertyTargetExpression
 		target.element = element
-		target.propertyName = toCamelCase(attribute.slice(1))
-
-		if (target.propertyName === 'innerHtml' || target.propertyName === 'innerhtml') {
-			target.propertyName = 'innerHTML'
-		}
+		target.propertyName = skeleton.propertyName
 		return target
 	}
 

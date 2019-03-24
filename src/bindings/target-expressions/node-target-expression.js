@@ -4,10 +4,17 @@ export default class NodeTargetExpression extends TargetExpression {
 	static parseType = 'node'
 	static updatePhase = 'animationFrame'
 
-	static parse(node) {
+	static parseSkeleton(node) {
+		return {
+			class: this,
+			isTextNode: node.nodeType === document.TEXT_NODE,
+		}
+	}
+
+	static fromSkeleton(skeleton, node) {
 		let target = new NodeTargetExpression
 		target.node = node
-		target.isTextNode = node.nodeType === document.TEXT_NODE
+		target.isTextNode = skeleton.isTextNode
 		return target
 	}
 
