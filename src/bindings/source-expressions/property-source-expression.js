@@ -1,9 +1,12 @@
 import SourceExpression from './source-expression.js'
 import {varName} from './regex.js'
 
+let regex = new RegExp(`^(${varName})$`, 'ig')
+
 export default class PropertySourceExpression extends SourceExpression {
 	static parse(text) {
-		let match = new RegExp(`^(${varName})$`, 'ig').exec(text)
+		let match = regex.exec(text)
+		regex.lastIndex = 0
 
 		if (match) {
 			return new PropertySourceExpression({propertyName: match[1]})

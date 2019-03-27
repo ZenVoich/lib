@@ -13,11 +13,6 @@ export default class EventTargetExpression extends TargetExpression {
 			console.error('Provide function name expression for "on-" binding', source)
 			return
 		}
-		let target = new EventTargetExpression
-		target.element = element
-		target.eventName = attribute.slice(3)
-		target.functionName = source.propertyName
-
 		return {
 			class: this,
 			eventName: attribute.slice(3),

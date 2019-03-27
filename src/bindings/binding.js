@@ -1,4 +1,5 @@
 import perf from '../utils/perf.js'
+import {enqueueMicrotask} from '../utils/microtask.js'
 
 export default class Binding {
 	direction = '' // downward | upward | two-way
@@ -51,7 +52,7 @@ export default class Binding {
 			// console.log('push', this.phase, this)
 			this.phase = 'push'
 			this.target.setValue(this.source.getValue(state), state)
-			Promise.resolve().then(() => {
+			enqueueMicrotask(() => {
 				this.phase = 'idle'
 			})
 		}
@@ -69,7 +70,7 @@ export default class Binding {
 		if (state && this.direction !== 'downward') {
 			this.phase = 'pull'
 			this.source.setValue(state, this.target.getValue())
-			Promise.resolve().then(() => {
+			enqueueMicrotask(() => {
 				this.phase = 'idle'
 			})
 		}

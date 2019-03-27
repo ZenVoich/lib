@@ -2,14 +2,18 @@ import SourceExpression from './source-expression.js'
 import {varName} from './regex.js'
 import {parse as parseSourceExpression} from './source-expression-parser.js'
 
+let argRegexStr = `(?:!?${varName}(?:\\.${varName})*|'[^']*'|[0-9]+)`
+let argRegex = new RegExp(`${argRegexStr}`, 'ig')
+let regex = new RegExp(`^(${varName})\\((${argRegexStr}(?:\\s*,\\s*${argRegexStr})*)\\)$`, 'ig')
+
 export default class CallSourceExpression extends SourceExpression {
 	static parse(text) {
-		let argRegex = `(?:!?${varName}(?:\\.${varName})*|'[^']*'|[0-9]+)`
-		let match = new RegExp(`^(${varName})\\((${argRegex}(?:\\s*,\\s*${argRegex})*)\\)$`, 'ig').exec(text)
+		let match = regex.exec(text)
+		regex.lastIndex = 0
 
 		if (match) {
 			let [_, fn, argsStr] = match
-			let args = argsStr.match(new RegExp(`${argRegex}`, 'ig'))
+			let args = argsStr.match(argRegex)
 
 			args = args.map((arg) => {
 				let negate = false

@@ -16,8 +16,8 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 
 		return {
 			type: attribute.slice(1, -3),
-			sourceExpression: sourceExpression,
-			childTemplateRootSkeleton: TemplateRoot.parseSkeleton(template),
+			sourceExpression,
+			childTemplateRootSkeleton,
 			relatedProps: new Set([
 				...sourceExpression.getRelatedProps(),
 				...TemplateRoot.fromSkeleton(childTemplateRootSkeleton).getRelatedProps()

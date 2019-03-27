@@ -10,7 +10,7 @@ export default class PropertyTargetExpression extends TargetExpression {
 			return
 		}
 		let propertyName = toCamelCase(attribute.slice(1))
-		if (propertyName === 'innerHtml' || propertyName === 'innerhtml') {
+		if (propertyName === 'innerHtml') {
 			propertyName = 'innerHTML'
 		}
 		return {
