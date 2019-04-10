@@ -1,7 +1,3 @@
-<style>
-
-</style>
-
 <button on-click="[[addOneToStart]]" on-a="[[_isBig]]">Add 1 item to the start</button>
 <button on-click="[[addHundredToStart]]">Add 100 items to the start</button>
 <button on-click="[[addThousandToStart]]">Add 1000 items to the start</button>
@@ -17,6 +13,7 @@
 <button on-click="[[removeAll]]">Remove all</button>
 <br><br>
 <button on-click="[[updateFirstItemProp]]">Update first item's children props</button>
+<button on-click="[[toggleFirstItemVisibility]]">Toggle first item visibility</button>
 <button on-click="[[clearSecondItem]]">Remove second item's children</button>
 <button on-click="[[updateProp]]">Update parent prop</button>
 <br><br>
@@ -24,23 +21,25 @@
 
 
 
-<div #repeat="[[items]]" class="item" .item="[[item]]">
-	<div .item="[[item]]" on-click="[[onClick]]">Item: [[item.value]] (nested [[item.nested.val]])(parent binding: <span>[[pi]]</span> nested: [[nested.val]]) R: <random-number></random-number></div>
-	<random-number #show-if="[[show]]"></random-number>
-	<random-number #show-if="[[show]]"></random-number>
-	<random-number #attach-if="[[show]]"></random-number>
-	<random-number #attach-if="[[show]]"></random-number>
-	<random-number #attach-if="[[show]]"></random-number>
-	<random-number #show-if="[[!show]]"></random-number>
-	<random-number #show-if="[[!show]]"></random-number>
-	<random-number #attach-if="[[!show]]"></random-number>
-	<random-number #attach-if="[[!show]]"></random-number>
-	<random-number #attach-if="[[!show]]"></random-number>
+<template #repeat="[[items]]" #repeat-key="key" class="item" .item="[[item]]">
+	<!-- <div class="div" #attach-if="[[item.show]]"> -->
+		<div .item="[[item]]" on-click="[[onClick]]">Item: [[item.value]] (nested [[item.nested.val]])(parent binding: <span>[[pi]]</span> nested: [[nested.val]]) R: <random-number></random-number></div>
+		<random-number #show-if="[[show]]"></random-number>
+		<random-number #show-if="[[show]]"></random-number>
+		<random-number #attach-if="[[show]]"></random-number>
+		<random-number #attach-if="[[show]]"></random-number>
+		<random-number #attach-if="[[show]]"></random-number>
+		<random-number #show-if="[[!show]]"></random-number>
+		<random-number #show-if="[[!show]]"></random-number>
+		<random-number #attach-if="[[!show]]"></random-number>
+		<random-number #attach-if="[[!show]]"></random-number>
+		<random-number #attach-if="[[!show]]"></random-number>
 
-	<div class="nested-items">
-		<div #repeat=[[item.nested.items]] #repeat-as=itm>parent repeat item: [[item.value]], parent binding: <span>[[pi]]</span> item: [[itm.val]]</div>
-	</div>
-</div>
+		<div class="nested-items">
+			<div #repeat=[[item.nested.items]] #repeat-as=itm>parent repeat item: [[item.value]], parent binding: <span>[[pi]]</span> item: [[itm.val]]</div>
+		</div>
+	<!-- </div> -->
+</template>
 
 <div #attach-if="[[!items.length]]">(empty)</div>
 

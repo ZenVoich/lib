@@ -50,6 +50,7 @@ class RepeatExample extends HTMLElement {
 		for (let i = 0; i < count; i++) {
 			let rand = Math.random()
 			this.items[toStart ? 'unshift' : 'push']({
+				show: true,
 				key: rand,
 				value: rand,
 				nested: {val: 'aaa', items: [
@@ -122,6 +123,11 @@ class RepeatExample extends HTMLElement {
 		this.items[0].nested.items[0].val++
 		this.items[0].nested.items[1].val++
 		this.items[0].nested.items[2].val++
+		this.items = this.items
+	}
+
+	toggleFirstItemVisibility() {
+		this.items[0].show = !this.items[0].show
 		this.items = this.items
 	}
 

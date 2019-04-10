@@ -1,7 +1,7 @@
 import {requestMicrotask} from '../../utils/microtask.js'
 import {requestRender} from '../../utils/renderer.js'
 import {toKebabCase, toCamelCase} from '../../utils/case.js'
-import {observeProperty, addObserver, removeObserver, notifyChange} from '../../utils/property-observer.js'
+import {observeProperty, addObserver} from '../../utils/property-observer.js'
 
 export default (descriptor) => {
 	if (descriptor.kind !== 'field' && !descriptor.descriptor.get) {

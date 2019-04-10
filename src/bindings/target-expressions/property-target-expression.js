@@ -5,7 +5,7 @@ export default class PropertyTargetExpression extends TargetExpression {
 	static parseType = 'attribute'
 	static updatePhase = 'microtask'
 
-	static parseSkeleton(element, attribute) {
+	static parseSkeleton(attribute) {
 		if (!attribute.startsWith('.')) {
 			return
 		}

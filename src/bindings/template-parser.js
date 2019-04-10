@@ -23,8 +23,8 @@ export let parseSkeleton = (template) => {
 			let skeleton = parseDirectiveElement(ensureDirectiveTemplate(tempNode))
 			if (skeleton) {
 				partSkeletons.set(elementIndex, skeleton)
-				continue
 			}
+			continue
 		}
 		curNode = walker.nextNode()
 	}
@@ -117,9 +117,16 @@ let parseDirectiveElement = (element) => {
 		return templatePartClasses.find((templatePartClass) => {
 			partSkeleton = templatePartClass.parseSkeleton(element, attr)
 			partClass = templatePartClass
+			// if (partSkeleton === false) {
+			// 	return true
+			// }
 			return partSkeleton
 		})
 	})
+
+	if (partSkeleton === false) {
+		return
+	}
 
 	let extraDirective = element.getAttributeNames().find(attr => attr[0] === '#')
 	if (extraDirective) {
@@ -129,6 +136,7 @@ let parseDirectiveElement = (element) => {
 		else {
 			console.error(`Unknown directive '${extraDirective}'`, element)
 		}
+		return
 	}
 
 	return {partClass, partSkeleton}

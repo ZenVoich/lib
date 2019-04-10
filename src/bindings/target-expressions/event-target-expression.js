@@ -5,7 +5,7 @@ export default class EventTargetExpression extends TargetExpression {
 	static parseType = 'attribute'
 	static updatePhase = 'microtask'
 
-	static parseSkeleton(element, attribute, source) {
+	static parseSkeleton(attribute, source) {
 		if (!attribute.startsWith('on-')) {
 			return
 		}

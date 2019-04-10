@@ -5,7 +5,7 @@ export default class AttributeTargetExpression extends TargetExpression {
 	static parseType = 'attribute'
 	static updatePhase = 'animationFrame'
 
-	static parseSkeleton(element, attribute) {
+	static parseSkeleton(attribute) {
 		if (attribute[0] === '#') {
 			return
 		}

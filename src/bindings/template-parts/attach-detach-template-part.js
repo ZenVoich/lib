@@ -1,4 +1,5 @@
 import TemplatePart from './template-part.js'
+import {FragmentContainer} from './fragment-container.js'
 import {TemplateRoot} from '../template-root.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 import {requestRender} from '../../utils/renderer.js'
@@ -38,6 +39,7 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 	host = null
 	type = '' // attach | detach
 	comment = new Comment
+	fragmentContainer = null
 	element = null
 	childTemplateRoot = null
 	sourceExpression = null
@@ -45,7 +47,8 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 
 	constructor(template) {
 		super()
-		this.element = template.content.firstElementChild
+		this.fragmentContainer = new FragmentContainer(template.content)
+		// this.element = template.content.firstElementChild
 		template.replaceWith(this.comment)
 	}
 
@@ -97,11 +100,11 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 	_render(state) {
 		let attach = this._shouldAttach(state)
 
-		if (attach && !this.element.isConnected) {
-			this.comment.replaceWith(this.element)
+		if (attach && !this.fragmentContainer.isConnected) {
+			this.comment.replaceWith(this.fragmentContainer.content)
 		}
-		else if (!attach && this.element.isConnected) {
-			this.element.replaceWith(this.comment)
+		else if (!attach && this.fragmentContainer.isConnected) {
+			this.fragmentContainer.replaceWith(this.comment)
 		}
 	}
 

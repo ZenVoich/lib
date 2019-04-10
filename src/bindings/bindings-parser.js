@@ -5,7 +5,7 @@ import CompoundSourceExpression from './source-expressions/compound-source-expre
 import {parse as parseSourceExpressionChunk} from './source-expressions/source-expression-parser.js'
 
 import PropertyTargetExpression from './target-expressions/property-target-expression.js'
-import {parse as parseTargetExpression, parseSkeleton as parseTargetExpressionSkeleton} from './target-expressions/target-expression-parser.js'
+import {parseSkeleton as parseTargetExpressionSkeleton} from './target-expressions/target-expression-parser.js'
 
 import Binding from './binding.js'
 import perf from '../utils/perf.js'
@@ -106,7 +106,7 @@ let parseAttribute = (el, attr) => {
 	let [source, direction] = parseSourceExpressionMemoized(value)
 	perf.markEnd('bindings: parse source')
 	perf.markStart('bindings: parse target')
-	let targetSkeleton = parseTargetExpressionSkeleton('attribute', el, attr, source)
+	let targetSkeleton = parseTargetExpressionSkeleton('attribute', attr, source)
 	perf.markEnd('bindings: parse target')
 
 	if (!targetSkeleton) {
@@ -159,7 +159,6 @@ let createBinding = (direction, source, targetSkeleton) => {
 		console.error('upward and two-way binding can only be property binding')
 		return
 	}
-	// return new Binding(direction, source, target)
 	return {direction, source, targetSkeleton}
 }
 
