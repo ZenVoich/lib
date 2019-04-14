@@ -228,8 +228,7 @@ export default class RepeatTemplatePart extends TemplatePart {
 				let hasPhysical = this._physicalElementsByKey.has(item[this.key])
 				if (!hasPhysical) {
 					let fragmentContainer = this._createFragmentContainer(state, item, index, true)
-					this._actualOrder.push(item[this.key])
-					this.repeatContainer.append(fragmentContainer.content)
+					this._placeElement(item, fragmentContainer, null, index)
 				}
 			})
 
@@ -263,17 +262,7 @@ export default class RepeatTemplatePart extends TemplatePart {
 				}
 
 				let itemInfo = itemsInfo[0]
-				this._placeElement(itemInfo.item, itemInfo.physical, itemInfo.oldIndex, itemInfo.newIndex)
-				itemInfo.physical.index = itemInfo.newIndex
-
-				// update indices
-				this.items.slice().forEach((item, i) => {
-					let physical = this._physicalElementsByKey.get(item[this.key])
-					let correctActual = this._actualOrder[i] === item[this.key]
-					if (physical && correctActual) {
-						physical.index = i
-					}
-				})
+				this._placeElement(itemInfo.item, itemInfo.physical.fragmentContainer, itemInfo.oldIndex, itemInfo.newIndex)
 
 				sort()
 			}
@@ -288,16 +277,22 @@ export default class RepeatTemplatePart extends TemplatePart {
 		}
 	}
 
-	_placeElement(item, physical, oldIndex, newIndex) {
+	_placeElement(item, fragmentContainer, oldIndex, newIndex) {
 		let currentItemKey = this._actualOrder[newIndex]
 		let current = currentItemKey && this._physicalElementsByKey.get(currentItemKey)
 
-		physical.fragmentContainer.remove()
-		this._actualOrder.splice(oldIndex, 1)
+		if (oldIndex !== null) {
+			fragmentContainer.remove()
+			this._actualOrder.splice(oldIndex, 1)
+		}
 
 		if (current) {
-			current.fragmentContainer.before(physical.fragmentContainer.content)
+			current.fragmentContainer.before(fragmentContainer.content)
 			this._actualOrder.splice(newIndex, 0, item[this.key])
+		}
+		else {
+			this.repeatContainer.append(fragmentContainer.content)
+			this._actualOrder.push(item[this.key])
 		}
 	}
 }
