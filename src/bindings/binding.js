@@ -7,7 +7,6 @@ export default class Binding {
 	target = null // TargetExpression
 	phase = 'idle' // idle | push | pull
 	#backwardListener = () => {
-		// console.log('catch notify')
 		this.pullValue(this.host)
 	}
 
@@ -43,13 +42,11 @@ export default class Binding {
 
 	pushValue(state) {
 		if (this.phase !== 'idle') {
-			// console.log('skip push')
 			return
 		}
 		perf.markStart('binding.pushValue:' + this.target.constructor.name)
 
 		if (state && this.direction !== 'upward') {
-			// console.log('push', this.phase, this)
 			this.phase = 'push'
 			this.target.setValue(this.source.getValue(state), state)
 			enqueueMicrotask(() => {
@@ -62,10 +59,8 @@ export default class Binding {
 
 	pullValue(state) {
 		if (this.phase !== 'idle') {
-			// console.log('skip pull')
 			return
 		}
-		// console.log('pull', this.phase)
 
 		if (state && this.direction !== 'downward') {
 			this.phase = 'pull'

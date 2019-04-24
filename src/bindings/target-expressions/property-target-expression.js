@@ -6,7 +6,7 @@ export default class PropertyTargetExpression extends TargetExpression {
 	static updatePhase = 'microtask'
 
 	static parseSkeleton(attribute) {
-		if (!attribute.startsWith('.')) {
+		if (attribute[0] !== '.' && attribute[0] !== ':') {
 			return
 		}
 		let propertyName = toCamelCase(attribute.slice(1))
@@ -16,6 +16,7 @@ export default class PropertyTargetExpression extends TargetExpression {
 		return {
 			class: this,
 			propertyName,
+			twoWayBind: attribute[0] === ':',
 		}
 	}
 

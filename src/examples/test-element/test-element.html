@@ -1,71 +1,71 @@
-Top level: [[obj.val]]<br>
-Hello, World! <div val=[[prop]] attr="foo [[prop]]" .prop=[[prop]]>prop = [[prop]]<b>x</b>[[val]][[prop]].</div>
-<div class=t>AAAAA [[aaa]]</div>
+Top level: {obj.val}<br>
+Hello, World! <div val={prop} attr="foo {prop}" .prop={prop}>prop = {prop}<b>x</b>{val}{prop}.</div>
+<div class=t>AAAAA {aaa}</div>
 <div class=t>
-	obj.val: [[obj.val]]
+	obj.val: {obj.val}
 </div>
-<div>empty prop: [[z.y.z]]</div>
-Binding in slot: <slot name=sl>[[prop]]</slot>
+<div>empty prop: {z.y.z}</div>
+Binding in slot: <slot name=sl>{prop}</slot>
 <br>
 
 <div .prop-test="test">Prop target static string (no source expr)</div>
 
-<div>Static val: [['hey']] [[111]]</div>
+<div>Static val: {'hey'} {111}</div>
 
-<div>Same bindings: [[prop]] [[prop]] [[prop]] [[prop]] [[prop]]</div>
-<div>Negate binding: [[prop]] [[!prop]]</div>
+<div>Same bindings: {prop} {prop} {prop} {prop} {prop}</div>
+<div>Negate binding: {prop} {!prop}</div>
 
-<div>Call: [[prop]] [[add(prop, obj.val)]]</div>
-<div>Call with negate arg: [[add(prop, !obj.val)]]</div>
-<div>Negate call: [[!add(prop, !obj.val)]]</div>
+<div>Call: {prop} {add(prop, obj.val)}</div>
+<div>Call with negate arg: {add(prop, !obj.val)}</div>
+<div>Negate call: {!add(prop, !obj.val)}</div>
 
-<div>Call with static val: [[add(prop, 100)]] [[add('Str', 'ing')]]</div>
+<div>Call with static val: {add(prop, 100)} {add('Str', 'ing')}</div>
 
-<div .inner-html="[[prop]]">.inner-html</div>
+<div .inner-html="{prop}">.inner-html</div>
 
-<button on-click="[[increment]]">Increment</button>
+<button @click="{increment}">Increment</button>
 
 <div>
-	Contenteditable: <span contenteditable>[[prop]]</span>
+	Contenteditable: <span contenteditable>{prop}</span>
 </div>
 
-Slot: <slot>Default slot value [[prop]]</slot>
+Slot: <slot>Default slot value {prop}</slot>
 
 <br>
 <br>
-<button on-click="[[unbox]]">Unbox template</button>
+<button @click="{unbox}">Unbox template</button>
 <div id=content>default</div>
 <template id=template>
-	<div val=[[prop]]>content from template [[prop]]</div>
+	<div val={prop}>content from template {prop}</div>
 </template>
 <br>
 
 <div>
-	<b>Show/Hide: [[obj.val]]</b>
-	<div #show-if="[[isEven(obj.val)]]">#show-if [[obj.val]]</div>
-	<div #hide-if="[[isEven(obj.val, prop, ', tes, sa')]]">#hide-if [[obj.val]]</div>
+	<b>Show/Hide: {obj.val}</b>
+	<div #show-if="{isEven(obj.val)}">#show-if {obj.val}</div>
+	<div #hide-if="{isEven(obj.val, prop, ', tes, sa')}">#hide-if {obj.val}</div>
 </div>
 
-<div #attach-if="[[isEven(obj.val)]]">#attach-if [[obj.val]]</div>
-<div #detach-if="[[isEven(obj.val)]]">#detach-if [[obj.val]]</div>
-<div #detach-if="[[isEven(obj.val)]]">
+<div #attach-if="{isEven(obj.val)}">#attach-if {obj.val}</div>
+<div #detach-if="{isEven(obj.val)}">#detach-if {obj.val}</div>
+<div #detach-if="{isEven(obj.val)}">
 	a
-	<div #attach-if="[[isEven(obj.val)]]">b</div>
-	<div #detach-if="[[isEven(obj.val)]]">c</div>
+	<div #attach-if="{isEven(obj.val)}">b</div>
+	<div #detach-if="{isEven(obj.val)}">c</div>
 </div>
-<template #attach-if="[[isEven(obj.val)]]">
-	<div>#attach-if template [[obj.val]]</div>
+<template #attach-if="{isEven(obj.val)}">
+	<div>#attach-if template {obj.val}</div>
 	<div>#attach-if second child</div>
 </template>
 <br>
 
-Computed tt: [[tt]]
+Computed tt: {tt}
 <br>
-Computed gg: [[gg]]
+Computed gg: {gg}
 
 <br>
-<input on-input="[[onInput]]">
+<input @input="{onInput}">
 
 <br>
 <br>
-<button on-click="[[duplicate]]">Duplicate</button>
+<button @click="{duplicate}">Duplicate</button>

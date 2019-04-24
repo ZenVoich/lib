@@ -6,16 +6,16 @@ export default class EventTargetExpression extends TargetExpression {
 	static updatePhase = 'microtask'
 
 	static parseSkeleton(attribute, source) {
-		if (!attribute.startsWith('on-')) {
+		if (!attribute.startsWith('@')) {
 			return
 		}
 		if (!(source instanceof PropertySourceExpression)) {
-			console.error('Provide function name expression for "on-" binding', source)
+			console.error('Provide function name expression for "@" binding', source)
 			return
 		}
 		return {
 			class: this,
-			eventName: attribute.slice(3),
+			eventName: attribute.slice(1),
 			functionName: source.propertyName,
 		}
 	}

@@ -7,7 +7,7 @@ import Component from '../../component.js'
 @define('check-box')
 class TestElement extends HTMLElement {
 	static template = `
-		<input type=checkbox .checked=[[checked]] on-change=[[onChange]]>
+		<input type=checkbox .checked={checked} @change={onChange}>
 	`
 
 	@attr

@@ -103,7 +103,7 @@ export let fromSkeleton = (bindingSkeletons, root) => {
 let parseAttribute = (el, attr) => {
 	perf.markStart('bindings: parse source')
 	let value = el.getAttribute(attr)
-	let [source, direction] = parseSourceExpressionMemoized(value)
+	let source = parseSourceExpressionMemoized(value)
 	perf.markEnd('bindings: parse source')
 	perf.markStart('bindings: parse target')
 	let targetSkeleton = parseTargetExpressionSkeleton('attribute', attr, source)
@@ -123,7 +123,7 @@ let parseAttribute = (el, attr) => {
 		}
 	}
 
-	let binding = createBinding(direction, source, targetSkeleton)
+	let binding = createBinding(source, targetSkeleton)
 	if (!binding) {
 		return
 	}
@@ -134,7 +134,7 @@ let parseAttribute = (el, attr) => {
 
 let parseNode = (node) => {
 	perf.markStart('bindings: parse source')
-	let [source, direction] = parseSourceExpressionMemoized(node.textContent)
+	let source = parseSourceExpressionMemoized(node.textContent)
 	perf.markEnd('bindings: parse source')
 	if (!source) {
 		return
@@ -147,16 +147,17 @@ let parseNode = (node) => {
 		return
 	}
 
-	let binding = createBinding(direction, source, targetSkeleton)
+	let binding = createBinding(source, targetSkeleton)
 	if (!binding) {
 		return
 	}
 	return binding
 }
 
-let createBinding = (direction, source, targetSkeleton) => {
-	if (direction !== 'downward' && targetSkeleton.class !== PropertyTargetExpression) {
-		console.error('upward and two-way binding can only be property binding')
+let createBinding = (source, targetSkeleton) => {
+	let direction = targetSkeleton.twoWayBind ? 'two-way' : 'downward';
+	if (direction !== 'downward' && source instanceof CompoundSourceExpression) {
+		console.error('two-way binding can only contain one bidning on right-side')
 		return
 	}
 	return {direction, source, targetSkeleton}
@@ -171,12 +172,12 @@ export let parseSourceExpressionMemoized = (text) => {
 	return result
 }
 
+let sourceExprRegex = /\{(!?)(.*?)\}/
+
 let parseSourceExpression = (text) => {
 	let chunks = [text]
-	let downwardOnly = true
-	let bindingDirection = ''
 
-	let findAndReplace = (direction, regex) => {
+	let findAndReplace = () => {
 		let nextChunk
 		let nextChunkIndex
 		let match
@@ -185,7 +186,7 @@ let parseSourceExpression = (text) => {
 			if (typeof chunk !== 'string') {
 				continue
 			}
-			match = chunk.match(regex)
+			match = chunk.match(sourceExprRegex)
 			if (match) {
 				nextChunk = chunk
 				nextChunkIndex = index
@@ -204,16 +205,9 @@ let parseSourceExpression = (text) => {
 		let [pre, ...post] = nextChunk.split(match[0])
 		chunks.splice(nextChunkIndex, 1, pre, expr, post.join(match[0]))
 
-		if (direction !== 'downward') {
-			downwardOnly = false
-		}
-		bindingDirection = direction
-
-		findAndReplace(direction, regex)
+		findAndReplace()
 	}
-	findAndReplace('downward', /\[\[(!?)(.*?)\]\]/)
-	findAndReplace('upward', /\(\((!?)(.*?)\)\)/)
-	findAndReplace('two-way', /\{\{(!?)(.*?)\}\}/)
+	findAndReplace()
 
 	chunks = chunks.filter(x => x)
 
@@ -221,7 +215,7 @@ let parseSourceExpression = (text) => {
 		return typeof chunk === 'string'
 	})
 	if (noExpressions) {
-		return []
+		return
 	}
 
 	let expressions = chunks.filter(x => x).map((chunk) => {
@@ -233,20 +227,9 @@ let parseSourceExpression = (text) => {
 
 	// single expression
 	if (expressions.length === 1) {
-		let expr = expressions[0]
-
-		if (bindingDirection !== 'downward' && !(expr instanceof PropertySourceExpression) && !(expr instanceof PathSourceExpression)) {
-			console.error('upward and two-way binding can only be property binding', `"${text}"`)
-			return []
-		}
-
-		return [expr, bindingDirection]
+		return expressions[0]
 	}
 
 	// compound expression
-	if (!downwardOnly) {
-		console.error('compound binding can only contain downward bindings', `"${text}"`)
-		return []
-	}
-	return [new CompoundSourceExpression({chunks: expressions}), bindingDirection]
+	return new CompoundSourceExpression({chunks: expressions})
 }

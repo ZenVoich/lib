@@ -2,7 +2,7 @@ import define from '../../decorators/class/define.js'
 
 @define('random-number')
 class RepeatExample extends HTMLElement {
-	static template = `<div on-click="[[generateClick]]">[[num]]</div>`
+	static template = `<div @click="{generateClick}">{num}</div>`
 	static styles = `:host { display: inline-block; }`
 
 	num = 0

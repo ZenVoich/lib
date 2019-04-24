@@ -9,7 +9,7 @@ export default class ShowHideTemplatePart extends TemplatePart {
 			return
 		}
 
-		let sourceExpression = parseSourceExpressionMemoized(template.getAttribute(attribute))[0]
+		let sourceExpression = parseSourceExpressionMemoized(template.getAttribute(attribute))
 		template.removeAttribute(attribute)
 
 		let childTemplateRootSkeleton = TemplateRoot.parseSkeleton(template)

@@ -12,7 +12,7 @@ export default class RepeatTemplatePart extends TemplatePart {
 			return
 		}
 
-		let itemsSourceExpression = parseSourceExpressionMemoized(template.getAttribute(attribute))[0]
+		let itemsSourceExpression = parseSourceExpressionMemoized(template.getAttribute(attribute))
 		template.removeAttribute('#repeat')
 
 		let as = 'item'
