@@ -17,6 +17,17 @@ export let createScheduler = (schedule) => {
 		queueCopy.forEach((fn) => {
 			fn()
 		})
+
+		// let fn
+		// let queueCopy = [...queue]
+		// queued = false
+		// while (fn = queueCopy.shift()) {
+		// 	fn()
+		// 	if (navigator.scheduling && navigator.scheduling.isInputPending() && window.xx) {
+		// 		queued || schedule(flush)
+		// 		break
+		// 	}
+		// }
 	}
 
 	let throttles = new Set

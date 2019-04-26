@@ -1,11 +1,13 @@
 import PropertyTargetExpression from './property-target-expression.js'
 import AttributeTargetExpression from './attribute-target-expression.js'
+import AttributeValuePartTargetExpression from './attribute-value-part-target-expression.js'
 import NodeTargetExpression from './node-target-expression.js'
 import EventTargetExpression from './event-target-expression.js'
 
 let targetExprClasses = [
 	PropertyTargetExpression,
 	AttributeTargetExpression,
+	AttributeValuePartTargetExpression,
 	NodeTargetExpression,
 	EventTargetExpression,
 ].sort((a, b) => {
