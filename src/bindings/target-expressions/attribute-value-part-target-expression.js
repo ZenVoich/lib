@@ -37,7 +37,7 @@ export default class AttributeValuePartTargetExpression extends TargetExpression
 
 	setValue(value) {
 		if (this.attributeName === 'class') {
-			this.element.classList.toggle(this.attributeValuePart, value)
+			this.element.classList.toggle(this.attributeValuePart, !!value)
 			return
 		}
 

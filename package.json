@@ -4,8 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "./node_modules/.bin/babel src --out-dir build",
-    "watch": "./node_modules/.bin/babel src --out-dir build -w",
+    "build": "./node_modules/.bin/babel . --out-dir build --ignore node_modules,build",
+    "watch": "./node_modules/.bin/babel . --out-dir build --ignore node_modules,build -w",
     "w": "./node_modules/.bin/chokidar \"src/**/*.{html,css}\" -c \"npm run build\""
   },
   "devDependencies": {

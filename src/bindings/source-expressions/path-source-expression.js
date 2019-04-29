@@ -1,7 +1,7 @@
 import SourceExpression from './source-expression.js'
-import {varName} from './regex.js'
+import {varName, pathPart} from './regex.js'
 
-let regex = new RegExp(`^(${varName}(?:\\.${varName})+)$`, 'ig')
+let regex = new RegExp(`^(${varName}(?:\\.${pathPart})+)$`, 'ig')
 
 export default class PathSourceExpression extends SourceExpression {
 	static parse(text) {

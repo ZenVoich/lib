@@ -1,0 +1,1 @@
+import './bindings.test.js'

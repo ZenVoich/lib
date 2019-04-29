@@ -1,7 +1,7 @@
-import define from '../../decorators/class/define.js'
-import Component from '../../component.js'
+import define from '../../src/decorators/class/define.js'
+import Component from '../../src/component.js'
 
-import perf from '../../utils/perf.js'
+import perf from '../../src/utils/perf.js'
 
 import template from './repeat-example.html'
 import styles from './repeat-example.css'

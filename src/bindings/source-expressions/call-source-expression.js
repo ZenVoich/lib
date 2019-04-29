@@ -4,7 +4,7 @@ import {parse as parseSourceExpression} from './source-expression-parser.js'
 
 let argRegexStr = `(?:!?${varName}(?:\\.${varName})*|'[^']*'|[0-9]+)`
 let argRegex = new RegExp(`${argRegexStr}`, 'ig')
-let regex = new RegExp(`^(${varName})\\((${argRegexStr}(?:\\s*,\\s*${argRegexStr})*)\\)$`, 'ig')
+let regex = new RegExp(`^(${varName})\\((${argRegexStr}(?:\\s*,\\s*${argRegexStr})*)?\\)$`, 'ig')
 
 export default class CallSourceExpression extends SourceExpression {
 	static parse(text) {
@@ -13,7 +13,7 @@ export default class CallSourceExpression extends SourceExpression {
 
 		if (match) {
 			let [_, fn, argsStr] = match
-			let args = argsStr.match(argRegex)
+			let args = argsStr ? argsStr.match(argRegex) : []
 
 			args = args.map((arg) => {
 				let negate = false
@@ -38,6 +38,9 @@ export default class CallSourceExpression extends SourceExpression {
 	}
 
 	getValue(state) {
+		if (typeof state[this.functionName] !== 'function') {
+			throw `there is no function '${this.functionName}'`
+		}
 		let value = state[this.functionName](...this.args.map(expr => expr.getValue(state)))
 		return this.negateValueIfNeeded(value)
 	}
