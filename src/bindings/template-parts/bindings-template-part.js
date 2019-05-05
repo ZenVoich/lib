@@ -1,6 +1,6 @@
 import TemplatePart from './template-part.js'
-import {throttleMicrotask, requestMicrotask} from '../../utils/microtask.js'
-import {throttleRender, requestRender} from '../../utils/renderer.js'
+import {requestMicrotask} from '../../utils/microtask.js'
+import {requestRender} from '../../utils/renderer.js'
 import {parseSkeleton, fromSkeleton} from '../bindings-parser.js'
 import perf from '../../utils/perf.js'
 

@@ -1,0 +1,31 @@
+<style>
+	:host {
+		display: block;
+	}
+
+	@keyframes fade {
+		0% {
+			opacity: 0;
+		}
+		100% {
+			opacity: 1;
+		}
+	}
+
+	@keyframes fly {
+		from {
+			opacity: 0;
+			transform: translate(100%);
+		}
+		to {
+			opacity: 1;
+			transform: translate(0);
+		}
+	}
+</style>
+
+<button @click="{toggle}">Toggle</button>
+
+<div #attach-if="{shown}" #animation="fade 1s">Fade</div>
+<div #attach-if="{shown}" #animation="fly 3s">Fly</div>
+<div>Static</div>

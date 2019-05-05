@@ -22,7 +22,6 @@ export default (descriptor) => {
 					}
 
 					this.__templateRoot.connect(this)
-
 					this.__templateRoot.getRelatedProps().forEach((prop) => {
 						observeProperty(this, prop)
 					})

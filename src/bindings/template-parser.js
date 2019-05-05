@@ -2,6 +2,7 @@ import BindingsTemplatePart from './template-parts/bindings-template-part.js'
 import ShowHideTemplatePart from './template-parts/show-hide-template-part.js'
 import AttachDetachTemplatePart from './template-parts/attach-detach-template-part.js'
 import RepeatTemplatePart from './template-parts/repeat-template-part.js'
+import AnimationTemplatePart from './template-parts/animation-template-part.js'
 import perf from '../utils/perf.js'
 
 export let parseSkeleton = (template) => {
@@ -20,19 +21,19 @@ export let parseSkeleton = (template) => {
 		if (isDirectiveElement(curNode)) {
 			let tempNode = curNode
 			curNode = walker.nextSibling() || walker.nextNode()
-			let skeleton = parseDirectiveElement(ensureDirectiveTemplate(tempNode))
-			if (skeleton) {
-				partSkeletons.set(elementIndex, skeleton)
+			let skeletons = parseDirectiveElement(ensureDirectiveTemplate(tempNode))
+			if (skeletons.length) {
+				partSkeletons.set(elementIndex, skeletons)
 			}
 			continue
 		}
 		curNode = walker.nextNode()
 	}
 
-	partSkeletons.set(-1, {
-		partClass: BindingsTemplatePart,
-		partSkeleton: BindingsTemplatePart.parseSkeleton(template.content),
-	})
+	partSkeletons.set(-1, [{
+			partClass: BindingsTemplatePart,
+			partSkeleton: BindingsTemplatePart.parseSkeleton(template.content),
+		}])
 	perf.markEnd('template.parseSkeleton')
 
 	return partSkeletons
@@ -45,7 +46,7 @@ export let fromSkeleton = (partsSkeletons, template) => {
 	let curNode = walker.nextNode()
 	let elementIndex = -1
 
-	let bindingsSkeletonInfo = partsSkeletons.get(-1)
+	let [bindingsSkeletonInfo] = partsSkeletons.get(-1)
 	let part = bindingsSkeletonInfo.partClass.fromSkeleton(bindingsSkeletonInfo.partSkeleton, template.content)
 	parts.push(part)
 
@@ -54,12 +55,14 @@ export let fromSkeleton = (partsSkeletons, template) => {
 			break
 		}
 		elementIndex++
-		let skeletonInfo = partsSkeletons.get(elementIndex)
-		if (skeletonInfo) {
+		let skeletons = partsSkeletons.get(elementIndex)
+		if (skeletons && skeletons.length) {
 			let tempNode = curNode
 			curNode = walker.nextNode()
-			let part = skeletonInfo.partClass.fromSkeleton(skeletonInfo.partSkeleton, tempNode)
-			parts.push(part)
+			skeletons.forEach((skeletonInfo) => {
+				let part = skeletonInfo.partClass.fromSkeleton(skeletonInfo.partSkeleton, tempNode)
+				parts.push(part)
+			})
 		}
 		else {
 			curNode = walker.nextNode()
@@ -102,42 +105,50 @@ let templatePartClasses = [
 	ShowHideTemplatePart,
 	AttachDetachTemplatePart,
 	RepeatTemplatePart,
+	AnimationTemplatePart,
 ]
 let parseDirectiveElement = (element) => {
-	let partSkeleton
-	let partClass
-	let directive
-	element.getAttributeNames().find((attr) => {
+	let skeletons = []
+
+	let attrs = element.getAttributeNames()
+
+	let directiveWhitelist = [
+		'#show-if',
+		'#hide-if',
+		'#attach-if',
+		'#detach-if',
+		'#repeat',
+		'#repeat-as',
+		'#repeat-key',
+		'#animation',
+	]
+	let unknownDirective = attrs.find(attr => attr.startsWith('#') && !directiveWhitelist.includes(attr))
+	if (unknownDirective) {
+		console.error(`Unknown directive '${unknownDirective}'`, element)
+		return
+	}
+
+	let directives = attrs.filter(attr => attr.startsWith('#') && !attr.startsWith('#animation') && attr !== '#repeat-as' && attr !== '#repeat-key')
+	if (directives.length > 1) {
+		console.error(`Directives ${directives[0]} and ${directives[1]} can't be used together`, element)
+		return
+	}
+
+	attrs.forEach((attr) => {
 		if (attr[0] !== '#') {
 			return
 		}
-		if (!directive) {
-			directive = attr
-		}
-		return templatePartClasses.find((templatePartClass) => {
-			partSkeleton = templatePartClass.parseSkeleton(element, attr)
-			partClass = templatePartClass
-			// if (partSkeleton === false) {
-			// 	return true
-			// }
-			return partSkeleton
+		templatePartClasses.forEach((templatePartClass) => {
+			let partSkeleton = templatePartClass.parseSkeleton(element, attr)
+
+			if (partSkeleton) {
+				skeletons.push({
+					partClass: templatePartClass,
+					partSkeleton: partSkeleton,
+				})
+			}
 		})
 	})
 
-	if (partSkeleton === false) {
-		return
-	}
-
-	let extraDirective = element.getAttributeNames().find(attr => attr[0] === '#')
-	if (extraDirective) {
-		if (partSkeleton) {
-			console.error(`Only one directive can be used in an element (extra directive '${extraDirective}')`, element)
-		}
-		else {
-			console.error(`Unknown directive '${extraDirective}'`, element)
-		}
-		return
-	}
-
-	return {partClass, partSkeleton}
+	return skeletons
 }

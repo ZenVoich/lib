@@ -3,6 +3,7 @@ import {FragmentContainer} from './fragment-container.js'
 import {TemplateRoot} from '../template-root.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 import {requestRender} from '../../utils/renderer.js'
+import {pub} from '../../utils/pub-sub.js'
 
 export default class AttachDetachTemplatePart extends TemplatePart {
 	static parseSkeleton(template, attribute) {
@@ -27,11 +28,10 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 	}
 
 	static fromSkeleton(skeleton, template) {
-		let childTemplateRoot = TemplateRoot.fromSkeleton(skeleton.childTemplateRootSkeleton, template)
 		let part = new AttachDetachTemplatePart(template)
 		part.type = skeleton.type
 		part.sourceExpression = skeleton.sourceExpression
-		part.childTemplateRoot = childTemplateRoot
+		part.childTemplateRoot = TemplateRoot.fromSkeleton(skeleton.childTemplateRootSkeleton, template)
 		part.relatedProps = skeleton.relatedProps
 		return part
 	}
@@ -39,16 +39,16 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 	host = null
 	type = '' // attach | detach
 	comment = new Comment
+	template = null
 	fragmentContainer = null
-	element = null
 	childTemplateRoot = null
 	sourceExpression = null
 	relatedProps = null
 
 	constructor(template) {
 		super()
+		this.template = template
 		this.fragmentContainer = new FragmentContainer(template.content)
-		// this.element = template.content.firstElementChild
 		template.replaceWith(this.comment)
 	}
 
@@ -64,11 +64,11 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 
 	update(state, immediate) {
 		if (immediate) {
-			this._render(state)
+			this._render(state, immediate)
 		}
 		else {
 			requestRender(this.host, this, () => {
-				this._render(state)
+				this._render(state, immediate)
 			})
 		}
 
@@ -79,11 +79,11 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 
 	updateProp(state, prop, immediate) {
 		if (immediate) {
-			this._render(state)
+			this._render(state, immediate)
 		}
 		else {
 			requestRender(this.host, this, () => {
-				this._render(state)
+				this._render(state, immediate)
 			})
 		}
 
@@ -97,14 +97,26 @@ export default class AttachDetachTemplatePart extends TemplatePart {
 		return this.type === 'attach' ? !!value : !value
 	}
 
-	_render(state) {
+	async _render(state, immediate) {
 		let attach = this._shouldAttach(state)
 
-		if (attach && !this.fragmentContainer.isConnected) {
-			this.comment.replaceWith(this.fragmentContainer.content)
+		if (attach) {
+			if (!this.fragmentContainer.isConnected) {
+				this.comment.replaceWith(this.fragmentContainer.content)
+			}
+			if (!immediate) {
+				pub(this.template, 'intro')
+			}
 		}
 		else if (!attach && this.fragmentContainer.isConnected) {
-			this.fragmentContainer.replaceWith(this.comment)
+			if (!immediate) {
+				await pub(this.template, 'outro').then((ok) => {
+
+				})
+			}
+			if (this.fragmentContainer.isConnected) {
+				this.fragmentContainer.replaceWith(this.comment)
+			}
 		}
 	}
 
