@@ -6,10 +6,17 @@ export let define = (name) => {
 		return {
 			...descriptor,
 			finisher(Class) {
-				@bindings
-				@template
-				class NewClass extends Class {}
-				customElements.define(name, NewClass)
+				Promise.all([Class.template, Class.styles]).then(async () => {
+					@bindings
+					@template
+					class NewClass extends Class {}
+
+					NewClass.__staticTemplate = await Class.template
+					NewClass.__staticStyles = await Class.styles
+
+					customElements.define(name, NewClass)
+				})
+
 			}
 		}
 	}

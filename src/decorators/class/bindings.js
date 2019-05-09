@@ -9,7 +9,7 @@ export let bindings = (descriptor) => {
 			return class extends Class {
 				constructor() {
 					super()
-					if (!this.__userTemplate || !this.__userTemplate.innerHTML) {
+					if (!this.__templateElement || !this.__templateElement.innerHTML) {
 						return
 					}
 
@@ -17,8 +17,8 @@ export let bindings = (descriptor) => {
 						this.__templateRoot = TemplateRoot.fromSkeleton(this.constructor.__templateRootSkeleton)
 					}
 					else {
-						this.constructor.__templateRootSkeleton = TemplateRoot.parseSkeleton(this.__userTemplate)
-						this.__templateRoot = TemplateRoot.fromSkeleton(this.constructor.__templateRootSkeleton, this.__userTemplate.cloneNode(true))
+						this.constructor.__templateRootSkeleton = TemplateRoot.parseSkeleton(this.__templateElement)
+						this.__templateRoot = TemplateRoot.fromSkeleton(this.constructor.__templateRootSkeleton, this.__templateElement.cloneNode(true))
 					}
 
 					this.__templateRoot.connect(this)

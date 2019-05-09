@@ -5,12 +5,12 @@ try {
 	canConstructStylesheets = false
 }
 
-let getStyleSheets = (host) => {
+let getStyleSheets = (host, styles) => {
 	if (host.constructor.__adoptedStyleSheets) {
 		return host.constructor.__adoptedStyleSheets
 	}
 	let styleSheet = new CSSStyleSheet
-	styleSheet.replaceSync(host.constructor.styles)
+	styleSheet.replaceSync(styles)
 	host.constructor.__adoptedStyleSheets = [styleSheet]
 	return host.constructor.__adoptedStyleSheets
 }
@@ -27,29 +27,26 @@ export let template = (descriptor) => {
 						this.attachShadow({mode: this.constructor.shadow || 'open'})
 					}
 
-					let template = this.constructor.template || ''
+					let template = this.constructor.__staticTemplate || ''
 
-					if (this.constructor.styles) {
+					if (this.constructor.__staticStyles) {
 						if (canConstructStylesheets) {
-							this.shadowRoot.adoptedStyleSheets = getStyleSheets(this)
+							this.shadowRoot.adoptedStyleSheets = getStyleSheets(this, this.constructor.__staticStyles)
 						}
 						else {
-							template = `<style>${this.constructor.styles}</style>` + template
+							template = `<style>${this.constructor.__staticStyles}</style>` + template
 						}
 					}
 
-					if (this.constructor.__userTemplate) {
-						this.__userTemplate = this.constructor.__userTemplate
+					if (this.constructor.__templateElement) {
+						this.__templateElement = this.constructor.__templateElement
 						return
 					}
 
 					let templateEl = document.createElement('template')
 					templateEl.innerHTML = template
-					this.__userTemplate = templateEl
-					this.constructor.__userTemplate = templateEl
-					// if (template) {
-					// 	this.shadowRoot.innerHTML = template
-					// }
+					this.__templateElement = templateEl
+					this.constructor.__templateElement = templateEl
 				}
 			}
 		}
