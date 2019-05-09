@@ -1,6 +1,6 @@
 import {observeProperty, addObserver, notifyChange} from '../../utils/property-observer.js'
 
-export default (...props) => {
+export let computed = (...props) => {
 	return (descriptor) => {
 		if (descriptor.kind !== 'method' || !descriptor.descriptor.get) {
 			throw '@computed decorator can only be applied to a getter'

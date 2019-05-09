@@ -1,8 +1,6 @@
-import watch from './decorators/method/watch.js'
-import define from './decorators/class/define.js'
+import {watch} from './decorators/method/watch.js'
+import {define} from './decorators/class/define.js'
 import {Bindings} from './bindings/bindings.js'
-import Component from './component.js'
-
 
 @define('virtual-repeat')
 class VirtualRepeat extends HTMLElement {

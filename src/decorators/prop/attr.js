@@ -3,7 +3,7 @@ import {requestRender} from '../../utils/renderer.js'
 import {toKebabCase, toCamelCase} from '../../utils/case.js'
 import {observeProperty, addObserver} from '../../utils/property-observer.js'
 
-export default (descriptor) => {
+export let attr = (descriptor) => {
 	if (descriptor.kind !== 'field' && !descriptor.descriptor.get) {
 		throw '@attr decorator can only be applied to a property or getter'
 	}

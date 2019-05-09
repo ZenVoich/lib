@@ -1,4 +1,4 @@
-export default (delay = 0) => {
+export let debounce = (delay = 0) => {
 	return (descriptor) => {
 		if (descriptor.kind !== 'method' && descriptor.descriptor.value) {
 			throw '@debounce decorator can only be applied to a method'

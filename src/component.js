@@ -1,3 +1,3 @@
-import Template from './mixins/template.js'
+import {Template} from './mixins/template.js'
 
-export default class Component extends Template(HTMLElement) {}
+export class Component extends Template(HTMLElement) {}

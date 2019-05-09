@@ -1,7 +1,7 @@
-import SourceExpression from './source-expression.js'
+import {SourceExpression} from './source-expression.js'
 import {varName} from './regex.js'
 
-export default class ValueSourceExpression extends SourceExpression {
+export class ValueSourceExpression extends SourceExpression {
 	static parse(text) {
 		let value
 		let match = /^[0-9]+(?:\.[0-9]+)?$/.exec(text)

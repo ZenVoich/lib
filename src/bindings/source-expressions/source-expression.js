@@ -1,4 +1,4 @@
-export default class SourceExpression {
+export class SourceExpression {
 	negate = false
 
 	negateValueIfNeeded(value) {

@@ -1,21 +1,11 @@
-import define from '../../src/decorators/class/define.js'
-import Component from '../../src/component.js'
-import watch from '../../src/decorators/method/watch.js'
-import debounce from '../../src/decorators/method/debounce.js'
-import attr from '../../src/decorators/prop/attr.js'
-import computed from '../../src/decorators/method/computed.js'
-import notify from '../../src/decorators/prop/notify.js'
-import {TemplateRoot} from '../../src/bindings/template-root.js'
-import {observeProperty, addObserver} from '../../src/utils/property-observer.js'
-
-import template from './test-element.html'
-import styles from './test-element.css'
-
+import {define, watch, debounce, attr, computed, notify} from '../../src/lib.js'
+import {observeProperty, addObserver} from '../../src/utils.js'
+import {TemplateRoot} from '../../src/bindings.js'
 
 @define('test-element')
 class TestElement extends HTMLElement {
-	static template = template
-	static styles = styles
+	static template = import('./test-element.html')
+	static styles = import('./test-element.css')
 
 	x = 2
 	@attr

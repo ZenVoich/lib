@@ -1,9 +1,9 @@
-import SourceExpression from './source-expression.js'
+import {SourceExpression} from './source-expression.js'
 import {varName} from './regex.js'
 
 let regex = new RegExp(`^(${varName})$`, 'ig')
 
-export default class PropertySourceExpression extends SourceExpression {
+export class PropertySourceExpression extends SourceExpression {
 	static parse(text) {
 		let match = regex.exec(text)
 		regex.lastIndex = 0

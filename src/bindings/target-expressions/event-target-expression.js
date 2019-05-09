@@ -1,7 +1,7 @@
-import PropertySourceExpression from '../source-expressions/property-source-expression.js';
-import TargetExpression from './target-expression.js'
+import {PropertySourceExpression} from '../source-expressions/property-source-expression.js';
+import {TargetExpression} from './target-expression.js'
 
-export default class EventTargetExpression extends TargetExpression {
+export class EventTargetExpression extends TargetExpression {
 	static parseType = 'attribute'
 	static updatePhase = 'microtask'
 

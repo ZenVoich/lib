@@ -1,14 +1,14 @@
-import PropertySourceExpression from './source-expressions/property-source-expression.js'
-import PathSourceExpression from './source-expressions/path-source-expression.js'
-import ValueSourceExpression from './source-expressions/value-source-expression.js'
-import CompoundSourceExpression from './source-expressions/compound-source-expression.js'
+import {PropertySourceExpression} from './source-expressions/property-source-expression.js'
+import {PathSourceExpression} from './source-expressions/path-source-expression.js'
+import {ValueSourceExpression} from './source-expressions/value-source-expression.js'
+import {CompoundSourceExpression} from './source-expressions/compound-source-expression.js'
 import {parse as parseSourceExpressionChunk} from './source-expressions/source-expression-parser.js'
 
-import PropertyTargetExpression from './target-expressions/property-target-expression.js'
+import {PropertyTargetExpression} from './target-expressions/property-target-expression.js'
 import {parseSkeleton as parseTargetExpressionSkeleton} from './target-expressions/target-expression-parser.js'
 
-import Binding from './binding.js'
-import perf from '../utils/perf.js'
+import {Binding} from './binding.js'
+import {perf} from '../utils/perf.js'
 
 let sourceExpressionsCache = new Map
 

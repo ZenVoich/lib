@@ -1,12 +1,9 @@
-import define from '../../src/decorators/class/define.js'
-
-import template from './animation-example.html'
-import styles from './animation-example.css'
+import {define} from '../../src/lib.js'
 
 @define('animation-example')
 class AnimationExample extends HTMLElement {
-	static template = template
-	static styles = styles
+	static template = import('./animation-example.html')
+	static styles = import('./animation-example.css')
 
 	shown = true
 

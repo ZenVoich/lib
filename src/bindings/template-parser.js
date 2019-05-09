@@ -1,9 +1,9 @@
-import BindingsTemplatePart from './template-parts/bindings-template-part.js'
-import ShowHideTemplatePart from './template-parts/show-hide-template-part.js'
-import AttachDetachTemplatePart from './template-parts/attach-detach-template-part.js'
-import RepeatTemplatePart from './template-parts/repeat-template-part.js'
-import AnimationTemplatePart from './template-parts/animation-template-part.js'
-import perf from '../utils/perf.js'
+import {BindingsTemplatePart} from './template-parts/bindings-template-part.js'
+import {ShowHideTemplatePart} from './template-parts/show-hide-template-part.js'
+import {AttachDetachTemplatePart} from './template-parts/attach-detach-template-part.js'
+import {RepeatTemplatePart} from './template-parts/repeat-template-part.js'
+import {AnimationTemplatePart} from './template-parts/animation-template-part.js'
+import {perf} from '../utils/perf.js'
 
 export let parseSkeleton = (template) => {
 	perf.markStart('template.parseSkeleton')

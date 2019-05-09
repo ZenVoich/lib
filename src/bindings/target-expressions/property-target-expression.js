@@ -1,7 +1,7 @@
 import {toCamelCase} from '../../utils/case.js'
-import TargetExpression from './target-expression.js'
+import {TargetExpression} from './target-expression.js'
 
-export default class PropertyTargetExpression extends TargetExpression {
+export class PropertyTargetExpression extends TargetExpression {
 	static parseType = 'attribute'
 	static updatePhase = 'microtask'
 

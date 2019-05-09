@@ -1,12 +1,12 @@
-import TemplatePart from './template-part.js'
+import {TemplatePart} from './template-part.js'
 import {RepeatContainer} from './repeat-container.js'
 import {FragmentContainer} from './fragment-container.js'
 import {TemplateRoot} from '../template-root.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 import {requestRender} from '../../utils/renderer.js'
-import perf from '../../utils/perf.js'
+import {perf} from '../../utils/perf.js'
 
-export default class RepeatTemplatePart extends TemplatePart {
+export class RepeatTemplatePart extends TemplatePart {
 	static parseSkeleton(template, attribute) {
 		if (attribute !== '#repeat') {
 			return

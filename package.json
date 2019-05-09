@@ -16,6 +16,8 @@
     "@babel/plugin-proposal-export-default-from": "^7.0.0",
     "@babel/plugin-proposal-export-namespace-from": "^7.0.0",
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.0.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.2.0",
+    "babel-plugin-inline-dynamic-import": "^1.0.0",
     "babel-plugin-inline-import": "^3.0.0",
     "chokidar": "^2.1.0",
     "chokidar-cli": "^1.2.1"

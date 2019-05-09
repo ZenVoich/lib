@@ -1,0 +1,1 @@
+export {TemplateRoot} from './bindings/template-root.js'

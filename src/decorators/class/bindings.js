@@ -1,8 +1,8 @@
 import {TemplateRoot} from '../../bindings/template-root.js'
 import {observeProperty, addObserver, removeObserver} from '../../utils/property-observer.js'
-import perf from '../../utils/perf.js'
+import {perf} from '../../utils/perf.js'
 
-export default (descriptor) => {
+export let bindings = (descriptor) => {
 	return {
 		...descriptor,
 		finisher(Class) {

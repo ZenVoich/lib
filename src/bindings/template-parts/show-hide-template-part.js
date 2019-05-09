@@ -1,9 +1,9 @@
-import TemplatePart from './template-part.js'
+import {TemplatePart} from './template-part.js'
 import {TemplateRoot} from '../template-root.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 import {requestRender} from '../../utils/renderer.js'
 
-export default class ShowHideTemplatePart extends TemplatePart {
+export class ShowHideTemplatePart extends TemplatePart {
 	static parseSkeleton(template, attribute) {
 		if (!['#show-if', '#hide-if'].includes(attribute)) {
 			return

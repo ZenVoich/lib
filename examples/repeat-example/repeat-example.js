@@ -1,17 +1,12 @@
-import define from '../../src/decorators/class/define.js'
-import Component from '../../src/component.js'
-
-import perf from '../../src/utils/perf.js'
-
-import template from './repeat-example.html'
-import styles from './repeat-example.css'
+import {define} from '../../src/lib.js'
+import {perf} from '../../src/utils.js'
 
 import './random-number.js'
 
 @define('repeat-example')
 class RepeatExample extends HTMLElement {
-	static template = template
-	static styles = styles
+	static template = import('./repeat-example.html')
+	static styles = import('./repeat-example.css')
 
 	pi = Math.PI
 	secret = '1-1'

@@ -1,7 +1,7 @@
 import {requestMicrotask} from '../../utils/microtask.js'
 import {observeProperty, addObserver} from '../../utils/property-observer.js'
 
-export default (...props) => {
+export let watch = (...props) => {
 	return (descriptor) => {
 		if (descriptor.kind !== 'method') {
 			throw '@watch decorator can only be applied to a method'

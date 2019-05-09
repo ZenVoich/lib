@@ -1,7 +1,7 @@
-import bindings from './bindings.js'
-import template from './template.js'
+import {bindings} from './bindings.js'
+import {template} from './template.js'
 
-export default (name) => {
+export let define = (name) => {
 	return (descriptor) => {
 		return {
 			...descriptor,

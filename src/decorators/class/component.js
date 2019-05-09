@@ -1,7 +1,7 @@
-import define from './define.js'
-import bindings from './bindings.js'
+import {define} from './define.js'
+import {bindings} from './bindings.js'
 
-export default (tag) => {
+export let component = (tag) => {
 	return (descriptor) => {
 		return {
 			...descriptor,

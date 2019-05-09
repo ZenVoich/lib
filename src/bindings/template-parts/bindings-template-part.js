@@ -1,10 +1,10 @@
-import TemplatePart from './template-part.js'
+import {TemplatePart} from './template-part.js'
 import {requestMicrotask} from '../../utils/microtask.js'
 import {requestRender} from '../../utils/renderer.js'
 import {parseSkeleton, fromSkeleton} from '../bindings-parser.js'
-import perf from '../../utils/perf.js'
+import {perf} from '../../utils/perf.js'
 
-export default class BindingsTemplatePart extends TemplatePart {
+export class BindingsTemplatePart extends TemplatePart {
 	host = null
 	isConnected = false
 

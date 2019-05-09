@@ -2,7 +2,7 @@ let pendingStats = new Map
 let stats = {}
 let running = false
 
-let perf = {
+export let perf = {
 	run() {
 		running = true
 	},
@@ -37,5 +37,3 @@ let perf = {
 		pendingStats[name] = null
 	},
 }
-
-export default perf

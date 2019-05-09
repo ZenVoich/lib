@@ -1,4 +1,4 @@
-import TemplatePart from './template-part.js'
+import {TemplatePart} from './template-part.js'
 import {FragmentContainer} from './fragment-container.js'
 import {TemplateRoot} from '../template-root.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
@@ -11,7 +11,7 @@ let stringToMs = (str) => {
 	return parseFloat(str) * (str.endsWith('ms') ? 1 : 1000)
 }
 
-export default class AnimationTemplatePart extends TemplatePart {
+export class AnimationTemplatePart extends TemplatePart {
 	static parseSkeleton(template, attribute) {
 		if (!['#animation', '#animation-in', '#animation-out'].includes(attribute)) {
 			return

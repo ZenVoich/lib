@@ -1,13 +1,10 @@
-import define from '../../src/decorators/class/define.js'
-import {afterNextRender} from '../../src/utils/renderer.js'
-
-import template from './dbmon-table.html'
-import styles from './dbmon/styles.css'
+import {define} from '../../src/lib.js'
+import {afterNextRender} from '../../src/utils.js'
 
 @define('dbmon-table')
 class DbmonTable extends HTMLElement {
-	static template = template
-	static styles = styles
+	static template = import('./dbmon-table.html')
+	static styles = import('./dbmon/styles.css')
 
 	connectedCallback() {
 		this.refresh()

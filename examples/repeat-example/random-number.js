@@ -1,4 +1,4 @@
-import define from '../../src/decorators/class/define.js'
+import {define} from '../../src/lib.js'
 
 @define('random-number')
 class RepeatExample extends HTMLElement {

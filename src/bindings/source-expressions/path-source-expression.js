@@ -1,9 +1,9 @@
-import SourceExpression from './source-expression.js'
+import {SourceExpression} from './source-expression.js'
 import {varName, pathPart} from './regex.js'
 
 let regex = new RegExp(`^(${varName}(?:\\.${pathPart})+)$`, 'ig')
 
-export default class PathSourceExpression extends SourceExpression {
+export class PathSourceExpression extends SourceExpression {
 	static parse(text) {
 		let match = regex.exec(text)
 		regex.lastIndex = 0

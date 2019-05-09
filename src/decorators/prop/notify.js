@@ -1,7 +1,7 @@
 import {requestMicrotask} from '../../utils/microtask.js'
 import {observeProperty, addObserver} from '../../utils/property-observer.js'
 
-export default (descriptor) => {
+export let notify = (descriptor) => {
 	if (descriptor.kind !== 'field') {
 		throw '@notify decorator can only be applied to a property'
 	}

@@ -1,11 +1,11 @@
-import TemplatePart from './template-part.js'
+import {TemplatePart} from './template-part.js'
 import {FragmentContainer} from './fragment-container.js'
 import {TemplateRoot} from '../template-root.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 import {requestRender} from '../../utils/renderer.js'
 import {pub} from '../../utils/pub-sub.js'
 
-export default class AttachDetachTemplatePart extends TemplatePart {
+export class AttachDetachTemplatePart extends TemplatePart {
 	static parseSkeleton(template, attribute) {
 		if (!['#attach-if', '#detach-if'].includes(attribute)) {
 			return

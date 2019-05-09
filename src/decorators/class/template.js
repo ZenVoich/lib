@@ -15,7 +15,7 @@ let getStyleSheets = (host) => {
 	return host.constructor.__adoptedStyleSheets
 }
 
-export default (descriptor) => {
+export let template = (descriptor) => {
 	return {
 		...descriptor,
 		finisher(Class) {

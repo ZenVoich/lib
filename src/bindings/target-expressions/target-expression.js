@@ -1,4 +1,4 @@
-export default class TargetExpression {
+export class TargetExpression {
 	static parseType = 'attribute' // attribute, node
 	static parsePrecedence = 5
 	static updatePhase = 'animationFrame' // microtask, animationFrame

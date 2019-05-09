@@ -1,6 +1,6 @@
-import TargetExpression from './target-expression.js'
+import {TargetExpression} from './target-expression.js'
 
-export default class AttributeValuePartTargetExpression extends TargetExpression {
+export class AttributeValuePartTargetExpression extends TargetExpression {
 	static parseType = 'attribute'
 	static updatePhase = 'animationFrame'
 

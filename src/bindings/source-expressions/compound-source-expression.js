@@ -1,7 +1,7 @@
-import SourceExpression from './source-expression.js'
+import {SourceExpression} from './source-expression.js'
 import {varName} from './regex.js'
 
-export default class CompoundSourceExpression extends SourceExpression {
+export class CompoundSourceExpression extends SourceExpression {
 	chunks = [] // [SourceExpression]
 
 	constructor({chunks} = {}) {

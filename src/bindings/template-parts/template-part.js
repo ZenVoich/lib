@@ -1,6 +1,6 @@
 let relatedProps = new Set
 
-export default class TemplatePart {
+export class TemplatePart {
 	static parse(root, attr) {}
 	connect(host) {}
 	disconnect() {}

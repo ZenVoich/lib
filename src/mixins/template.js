@@ -15,7 +15,7 @@ let getStyleSheets = (host) => {
 	return host.constructor.adoptedStyleSheets
 }
 
-export default (Class) => {
+export let Template = (Class) => {
 	return class extends Class {
 		constructor() {
 			super()

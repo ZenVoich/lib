@@ -1,11 +1,12 @@
-import perf from '../utils/perf.js'
+import {perf} from '../utils/perf.js'
 import {enqueueMicrotask} from '../utils/microtask.js'
 
-export default class Binding {
+export class Binding {
 	direction = '' // downward | upward | two-way
 	source = null // SourceExpression
 	target = null // TargetExpression
 	phase = 'idle' // idle | push | pull
+
 	#backwardListener = () => {
 		this.pullValue(this.host)
 	}
