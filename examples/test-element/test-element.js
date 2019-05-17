@@ -1,4 +1,4 @@
-import {define, watch, debounce, attr, computed, notify} from '../../src/lib.js'
+import {define, watch, debounce, attr, computed, notify, type} from '../../src/lib.js'
 import {observeProperty, addObserver} from '../../src/utils.js'
 import {TemplateRoot} from '../../src/bindings.js'
 
@@ -7,9 +7,12 @@ class TestElement extends HTMLElement {
 	static template = import('./test-element.html')
 	static styles = import('./test-element.css')
 
+	@type(Number)
 	x = 2
+
 	@attr
 	prop = 3
+
 	obj = {val: 5}
 
 	constructor() {

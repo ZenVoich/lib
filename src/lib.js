@@ -8,3 +8,4 @@ export {debounce} from './decorators/method/debounce.js'
 
 export {attr} from './decorators/prop/attr.js'
 export {notify} from './decorators/prop/notify.js'
+export {type} from './decorators/prop/type.js'
