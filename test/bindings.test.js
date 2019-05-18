@@ -1,6 +1,5 @@
 import {assertRender, assertElement} from './utils.js'
 
-
 // static bindings
 assertRender('', {}, '')
 assertRender(' ', {}, ' ')

@@ -27,3 +27,29 @@ export let assertElement = (html, state, fn) => {
 
 	console.assert(!expected, `'${html}'`, 'with state', state, expected)
 }
+
+export let assert = (...args) => {
+	console.assert(...args)
+}
+
+export let assertThrow = (message, fn) => {
+	let thrown = false
+	try {
+		fn()
+	}
+	catch (e) {
+		thrown = true
+	}
+	console.assert(thrown, message)
+}
+
+export let assertNotThrow = (message, fn) => {
+	let thrown = false
+	try {
+		fn()
+	}
+	catch (e) {
+		thrown = true
+	}
+	console.assert(!thrown, message)
+}
