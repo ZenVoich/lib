@@ -1,7 +1,7 @@
 import {requestMicrotask} from '../../utils/microtask.js'
 import {requestRender} from '../../utils/renderer.js'
 import {toKebabCase, toCamelCase} from '../../utils/case.js'
-import {observeProperty, addObserver} from '../../utils/property-observer.js'
+import {observeHostProperty} from '../../utils/property-observer.js'
 
 export let attr = (descriptor) => {
 	if (descriptor.kind !== 'field' && !descriptor.descriptor.get) {
@@ -10,6 +10,26 @@ export let attr = (descriptor) => {
 
 	let property = descriptor.key
 	let attribute = toKebabCase(property)
+
+	let propObserver = (oldVal, newVal, prop, host) => {
+		if (host.__renderingProps.has(prop)) {
+			return
+		}
+		requestRender(host, prop, () => {
+			host.__renderingProps.add(prop)
+			let value = host[prop]
+			if (!value) {
+				host.removeAttribute(attribute)
+			}
+			else if (value === true) {
+				host.setAttribute(attribute, '')
+			}
+			else {
+				host.setAttribute(attribute, value)
+			}
+			host.__renderingProps.delete(prop)
+		})
+	}
 
 	return {
 		...descriptor,
@@ -26,34 +46,11 @@ export let attr = (descriptor) => {
 				constructor() {
 					super()
 
-					observeProperty(this, property)
-
 					// on property change
-					let propChanged = () => {
-						requestRender(this, property, () => {
-							this.__renderingProps.add(property)
-							let value = this[property]
-							if (!value) {
-								this.removeAttribute(attribute)
-							}
-							else if (value === true) {
-								this.setAttribute(attribute, '')
-							}
-							else {
-								this.setAttribute(attribute, value)
-							}
-							this.__renderingProps.delete(property)
-						})
-					}
-					addObserver(this, (prop, oldVal, newVal) => {
-						if (prop !== property || this.__renderingProps.has(prop)) {
-							return
-						}
-						propChanged()
-					})
+					observeHostProperty(this, property, propObserver)
 
 					// react on props already inited in constructor
-					propChanged()
+					propObserver(null, null, property, this)
 				}
 
 				// on attribute change

@@ -1,7 +1,50 @@
 let observedPropsByComponent = new WeakMap
 let observersByComponent = new WeakMap
 
-export let observeProperty = (host, prop) => {
+export let observeHostProperty = (host, property, fn) => {
+	observeProperty(host, property)
+	let observer = (prop, oldVal, newVal) => {
+		if (prop === property) {
+			fn(oldVal, newVal, property, host)
+		}
+	}
+	addObserver(host, observer)
+
+	return () => {
+		unobserveHostProperty(host, property, observer)
+	}
+}
+
+export let unobserveHostProperty = (host, property, fn) => {
+	removeObserver(host, fn)
+}
+
+export let notifyHostProperty = (host, prop, oldVal, newVal) => {
+	let observers = observersByComponent.get(host)
+	if (observers) {
+		observers.forEach((fn) => {
+			fn(prop, oldVal, newVal)
+		})
+	}
+}
+
+let addObserver = (host, fn) => {
+	let observers = observersByComponent.get(host)
+	if (!observers) {
+		observers = new Set
+		observersByComponent.set(host, observers)
+	}
+	observers.add(fn)
+}
+
+let removeObserver = (host, fn) => {
+	let observers = observersByComponent.get(host)
+	if (observers) {
+		observers.delete(fn)
+	}
+}
+
+let observeProperty = (host, prop) => {
 	let observedProps = observedPropsByComponent.get(host)
 	if (observedProps && observedProps.has(prop)) {
 		return
@@ -33,7 +76,7 @@ export let observeProperty = (host, prop) => {
 			else {
 				value = val
 			}
-			notifyChange(host, prop, oldVal, val)
+			notifyHostProperty(host, prop, oldVal, val)
 		},
 		get() {
 			return getter ? getter.call(host) : value
@@ -41,31 +84,6 @@ export let observeProperty = (host, prop) => {
 	})
 
 	if (value !== undefined) {
-		notifyChange(host, prop, undefined, value)
-	}
-}
-
-export let addObserver = (host, fn) => {
-	let observers = observersByComponent.get(host)
-	if (!observers) {
-		observers = new Set
-		observersByComponent.set(host, observers)
-	}
-	observers.add(fn)
-}
-
-export let removeObserver = (host, fn) => {
-	let observers = observersByComponent.get(host)
-	if (observers) {
-		observers.delete(fn)
-	}
-}
-
-export let notifyChange = (host, prop, oldVal, val) => {
-	let observers = observersByComponent.get(host)
-	if (observers) {
-		observers.forEach((fn) => {
-			fn(prop, oldVal, val)
-		})
+		notifyHostProperty(host, prop, undefined, value)
 	}
 }

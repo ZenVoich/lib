@@ -1,4 +1,4 @@
-import {observeProperty, addObserver} from '../../utils/property-observer.js'
+import {observeHostProperty} from '../../utils/property-observer.js'
 
 export let type = (type, required = false) => {
 	return (descriptor) => {
@@ -8,6 +8,17 @@ export let type = (type, required = false) => {
 
 		let property = descriptor.key
 
+		let propObserver = (oldVal, newVal, prop, host) => {
+			let value = host[prop]
+			if (!required && value == null) {
+				return
+			}
+			let matches = isTypeMatches(type, value)
+			if (!matches) {
+				throw `${host.localName}: the type of the property '${prop}' is expected to be '${stringifyType(type)}' (given value '${value}')`
+			}
+		}
+
 		return {
 			...descriptor,
 			finisher(Class) {
@@ -15,28 +26,11 @@ export let type = (type, required = false) => {
 					constructor() {
 						super()
 
-						observeProperty(this, property)
-
 						// on property change
-						let propChanged = () => {
-							let value = this[property]
-							if (!required && value == null) {
-								return
-							}
-							let matches = isTypeMatches(type, value)
-							if (!matches) {
-								throw `${this.localName}: the type of the property '${property}' is expected to be '${stringifyType(type)}' (given value '${value}')`
-							}
-						}
-
-						addObserver(this, (prop, oldVal, newVal) => {
-							if (prop === property) {
-								propChanged()
-							}
-						})
+						observeHostProperty(this, property, propObserver)
 
 						// react on props already inited in constructor
-						propChanged()
+						propObserver(null, null, property, this)
 					}
 				}
 			}

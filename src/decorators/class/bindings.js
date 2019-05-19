@@ -1,5 +1,4 @@
 import {TemplateRoot} from '../../bindings/template-root.js'
-import {observeProperty, addObserver, removeObserver} from '../../utils/property-observer.js'
 import {perf} from '../../utils/perf.js'
 
 export let bindings = (descriptor) => {
@@ -21,14 +20,7 @@ export let bindings = (descriptor) => {
 						this.__templateRoot = TemplateRoot.fromSkeleton(this.constructor.__templateRootSkeleton, this.__templateElement.cloneNode(true))
 					}
 
-					this.__templateRoot.connect(this)
-					this.__templateRoot.getRelatedProps().forEach((prop) => {
-						observeProperty(this, prop)
-					})
-					addObserver(this, (prop) => {
-						this.__templateRoot.updateProp(this, prop)
-					})
-
+					this.__templateRoot.connect(this, true)
 					this.__templateRootAttached = false
 				}
 

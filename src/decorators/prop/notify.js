@@ -1,5 +1,5 @@
 import {requestMicrotask} from '../../utils/microtask.js'
-import {observeProperty, addObserver} from '../../utils/property-observer.js'
+import {observeHostProperty} from '../../utils/property-observer.js'
 
 export let notify = (descriptor) => {
 	if (descriptor.kind !== 'field') {
@@ -12,18 +12,15 @@ export let notify = (descriptor) => {
 				constructor() {
 					super()
 
-					observeProperty(this, descriptor.key)
-
-					addObserver(this, (prop, oldVal, newVal) => {
-						requestMicrotask(this, prop, () => {
-							if (prop !== descriptor.key) {
-								return
-							}
-							this.dispatchEvent(new CustomEvent(`${prop}-changed`))
-						})
-					})
+					observeHostProperty(this, descriptor.key, propObserver)
 				}
 			}
 		}
 	}
+}
+
+let propObserver = (oldVal, newVal, prop, host) => {
+	requestMicrotask(host, prop, () => {
+		host.dispatchEvent(new CustomEvent(`${prop}-changed`))
+	})
 }

@@ -1,4 +1,4 @@
-import {observeProperty, addObserver, notifyChange} from '../../utils/property-observer.js'
+import {observeHostProperty, notifyHostProperty} from '../../utils/property-observer.js'
 
 export let computed = (...props) => {
 	return (descriptor) => {
@@ -16,6 +16,21 @@ export let computed = (...props) => {
 			propsInfo.push(info)
 		})
 
+		let propObserver = (oldVal, newVal, prop, host) => {
+			let isPropRelated = propsInfo.find((info) => {
+				return prop === info.prop
+			})
+			let canNotify = isPropRelated && propsInfo.every((info) => {
+				if (info.mandatory) {
+					return host[info.prop] != null
+				}
+				return true
+			})
+			if (canNotify) {
+				notifyHostProperty(host, descriptor.key)
+			}
+		}
+
 		return {
 			...descriptor,
 			finisher(Class) {
@@ -24,22 +39,7 @@ export let computed = (...props) => {
 						super()
 
 						propsInfo.forEach((info) => {
-							observeProperty(this, info.prop)
-						})
-
-						addObserver(this, (prop, oldVal, newVal) => {
-							let isPropRelated = propsInfo.find((info) => {
-								return prop === info.prop
-							})
-							let canNotify = isPropRelated && propsInfo.every((info) => {
-								if (info.mandatory) {
-									return this[info.prop] != null
-								}
-								return true
-							})
-							if (canNotify) {
-								notifyChange(this, descriptor.key)
-							}
+							observeHostProperty(this, info.prop, propObserver)
 						})
 					}
 				}

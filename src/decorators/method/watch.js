@@ -1,5 +1,5 @@
 import {requestMicrotask} from '../../utils/microtask.js'
-import {observeProperty, addObserver} from '../../utils/property-observer.js'
+import {observeHostProperty} from '../../utils/property-observer.js'
 
 export let watch = (...props) => {
 	return (descriptor) => {
@@ -17,6 +17,32 @@ export let watch = (...props) => {
 			propsInfo.push(info)
 		})
 
+		let propObserver = (oldVal, newVal, prop, host) => {
+			let isPropRelated = propsInfo.find((info) => {
+				return prop === info.prop
+			})
+			let canCall = isPropRelated && propsInfo.every((info) => {
+				if (info.mandatory) {
+					return host[info.prop] != null
+				}
+				return true
+			})
+			if (!canCall) {
+				return
+			}
+			requestMicrotask(host, descriptor.key, () => {
+				if (propsInfo.length === 1) {
+					host[descriptor.key].call(host, oldVal)
+				}
+				else {
+					let oldValues = propsInfo.map((info) => {
+						return info.prop === prop ? oldVal : host[info.prop]
+					})
+					host[descriptor.key].call(host, ...oldValues)
+				}
+			})
+		}
+
 		return {
 			...descriptor,
 			finisher(Class) {
@@ -25,33 +51,7 @@ export let watch = (...props) => {
 						super()
 
 						propsInfo.forEach((info) => {
-							observeProperty(this, info.prop)
-						})
-
-						addObserver(this, (prop, oldVal, newVal) => {
-							let isPropRelated = propsInfo.find((info) => {
-								return prop === info.prop
-							})
-							let canCall = isPropRelated && propsInfo.every((info) => {
-								if (info.mandatory) {
-									return this[info.prop] != null
-								}
-								return true
-							})
-							if (!canCall) {
-								return
-							}
-							requestMicrotask(this, descriptor.key, () => {
-								if (propsInfo.length === 1) {
-									this[descriptor.key].call(this, oldVal)
-								}
-								else {
-									let oldValues = propsInfo.map((info) => {
-										return info.prop === prop ? oldVal : this[info.prop]
-									})
-									this[descriptor.key].call(this, ...oldValues)
-								}
-							})
+							observeHostProperty(this, info.prop, propObserver)
 						})
 					}
 				}

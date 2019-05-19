@@ -110,9 +110,7 @@ export class AttachDetachTemplatePart extends TemplatePart {
 		}
 		else if (!attach && this.fragmentContainer.isConnected) {
 			if (!immediate) {
-				await pub(this.template, 'outro').then((ok) => {
-
-				})
+				await pub(this.template, 'outro')
 			}
 			if (this.fragmentContainer.isConnected) {
 				this.fragmentContainer.replaceWith(this.comment)

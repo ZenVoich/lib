@@ -1,7 +1,10 @@
 import {parseSkeleton, fromSkeleton} from './template-parser.js'
+import {observeHostProperty, unobserveHostProperty} from '../utils/property-observer.js'
 
 export class TemplateRoot {
 	parts = []
+	host = null
+	#unobserveList = []
 
 	static parseSkeleton(template) {
 		return {
@@ -25,15 +28,28 @@ export class TemplateRoot {
 		return this.template.content
 	}
 
-	connect(host) {
+	connect(host, ok) {
+		this.host = host
 		this.parts.forEach((part) => {
 			part.connect(host)
 		})
+
+		if (ok) {
+			this.#unobserveList = [...this.getRelatedProps()].map((prop) => {
+				return observeHostProperty(host, prop, (oldVal, newVal) => {
+					this.updateProp(host, prop)
+				})
+			})
+		}
 	}
 
 	disconnect() {
+		this.host = null
 		this.parts.forEach((part) => {
 			part.disconnect()
+		})
+		this.#unobserveList.forEach((unobserve) => {
+			unobserve()
 		})
 	}
 

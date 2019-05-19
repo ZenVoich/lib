@@ -1,5 +1,4 @@
 import {define, watch, debounce, attr, computed, notify, type} from '../../src/lib.js'
-import {observeProperty, addObserver} from '../../src/utils.js'
 import {TemplateRoot} from '../../src/bindings.js'
 
 @define('test-element')
@@ -69,12 +68,6 @@ class TestElement extends HTMLElement {
 		let templateRoot = TemplateRoot.parse(this.shadowRoot.querySelector('#template'))
 		templateRoot.connect(this)
 		templateRoot.update(this)
-		templateRoot.getRelatedProps().forEach((prop) => {
-			observeProperty(this, prop)
-		})
-		addObserver(this, (prop) => {
-			templateRoot.updateProp(this, prop)
-		})
 
 		this.shadowRoot.querySelector('#content').innerHTML = ''
 		this.shadowRoot.querySelector('#content').append(templateRoot.content)

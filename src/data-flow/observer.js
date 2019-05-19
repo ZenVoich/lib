@@ -1,8 +1,4 @@
-import {
-	observeProperty as observeHostProperty,
-	addObserver as addHostObserver
-} from '../utils/property-observer.js'
-
+import {observeHostProperty} from '../utils/property-observer.js'
 import {observePath, unobservePath, isPrimitive} from '../data-flow/proxy-object.js'
 
 export let observe = (host, path, fn) => {
@@ -10,11 +6,7 @@ export let observe = (host, path, fn) => {
 	let localPath = pathAr.slice(1).join('.')
 	let prop = pathAr[0]
 
-	observeHostProperty(host, prop)
-	addHostObserver(host, (p, oldVal, newVal) => {
-		if (prop !== p) {
-			return
-		}
+	observeHostProperty(host, prop, (oldVal, newVal) => {
 		// if (oldVal !== newVal) {
 		// 	fn(oldVal, newVal)
 		// }
