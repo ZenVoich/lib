@@ -131,10 +131,22 @@ assertNotThrow(`Must allow observing a non-proxy Date object`, () => {
 city = newCity()
 ok = false
 
-assertNotThrow(`Observing the path 'mayor', before setting a non-proxy object, must not throw an exception`, () => {
+assertNotThrow(`Observing the path 'city.mayor', before setting a non-proxy object, must not throw an exception`, () => {
 	observePath(city, 'mayor', (old, val) => {})
 })
-assertThrow(`Setting a non-proxy object to the observed path 'mayor' must throw an exception`, () => {
+assertNotThrow(`Setting a non-proxy object to the observed path 'city.mayor' must not throw an exception`, () => {
+	city.mayor = {firstName: 'John'}
+})
+
+
+// setting a non-proxy object to the observed path (nested)
+city = newCity()
+ok = false
+
+assertNotThrow(`Observing the path 'city.mayor.firstName', before setting a non-proxy object, must not throw an exception`, () => {
+	observePath(city, 'mayor.firstName', (old, val) => {})
+})
+assertThrow(`Setting a non-proxy object to the path 'city.mayor', when we have 'city.mayor.firstName' observer, must throw an exception`, () => {
 	city.mayor = {firstName: 'John'}
 })
 

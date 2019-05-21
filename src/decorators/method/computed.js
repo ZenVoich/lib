@@ -1,33 +1,35 @@
-import {observeHostProperty, notifyHostProperty} from '../../utils/property-observer.js'
+import {requestMicrotask} from '../../utils/microtask.js'
+import {notifyHostProperty} from '../../utils/property-observer.js'
+import {observe} from '../../data-flow/observer.js'
+import {getByPath} from '../../data-flow/proxy-object.js'
 
-export let computed = (...props) => {
+export let computed = (...paths) => {
 	return (descriptor) => {
 		if (descriptor.kind !== 'method' || !descriptor.descriptor.get) {
 			throw '@computed decorator can only be applied to a getter'
 		}
 
-		let propsInfo = []
-		props.forEach((prop) => {
-			let info = {prop: prop, mandatory: true}
-			if (prop.endsWith('?')) {
+		let pathsInfo = []
+		paths.forEach((path) => {
+			let info = {path: path, mandatory: true}
+			if (path.endsWith('?')) {
 				info.mandatory = false
-				info.prop = prop.slice(0, -1)
+				info.path = path.slice(0, -1)
 			}
-			propsInfo.push(info)
+			pathsInfo.push(info)
 		})
 
-		let propObserver = (oldVal, newVal, prop, host) => {
-			let isPropRelated = propsInfo.find((info) => {
-				return prop === info.prop
-			})
-			let canNotify = isPropRelated && propsInfo.every((info) => {
+		let observer = (oldVal, newVal, path, host) => {
+			let canNotify = pathsInfo.every((info) => {
 				if (info.mandatory) {
-					return host[info.prop] != null
+					return getByPath(host, info.path) != null
 				}
 				return true
 			})
 			if (canNotify) {
-				notifyHostProperty(host, descriptor.key)
+				requestMicrotask(host, 'computed:' + descriptor.key, () => {
+					notifyHostProperty(host, descriptor.key)
+				})
 			}
 		}
 
@@ -38,8 +40,8 @@ export let computed = (...props) => {
 					constructor() {
 						super()
 
-						propsInfo.forEach((info) => {
-							observeHostProperty(this, info.prop, propObserver)
+						pathsInfo.forEach((info) => {
+							observe(this, info.path, observer)
 						})
 					}
 				}

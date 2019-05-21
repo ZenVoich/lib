@@ -29,20 +29,28 @@ export let proxyObject = (object) => {
 
 			let oldVal = Reflect.get(target, property, receiver)
 
-			if (!isPrimitive(value)) {
-				if (!proxyObjects.has(value) && hasObservers(receiver, property)) {
-					let message = 'The value is non-primitive, has observers and is not an instance of ProxyObject'
-					throwError('Setting property', `'${property}'`, 'on object', receiver, 'with value', value, '\n' + message)
-				}
+			// check
+			if (value != null && !proxyObjects.has(value) && hasObservers(receiver, property, true)) {
+				let message = '\n1. The value is not a proxy-object. \n2. This path has nested observers that will be lost after assignment.'
+				throwError(`Setting property '${property}' on object`, receiver, 'with value', value, message)
+				return
+			}
+
+			// update nesting
+			if (canObserve(value)) {
 				if (oldVal) {
 					deleteNesting(oldVal, receiver, property)
 				}
 				setNesting(value, receiver, property)
 			}
 
+			// set
+			let result = Reflect.set(target, property, value, receiver)
+
+			// notify
 			notifyPath(receiver, property, oldVal, value)
 
-			return Reflect.set(target, property, value, receiver)
+			return result
 		},
 	})
 
@@ -56,14 +64,14 @@ export let proxyObject = (object) => {
 let setNestingForExistingValues = (object) => {
 	Object.keys(object).forEach((key) => {
 		let value = object[key]
-		if (!isPrimitive(value)) {
+		if (canObserve(value)) {
 			setNesting(value, object, key)
 		}
 	})
 }
 
-export let isPrimitive = (value) => {
-	return value === null || typeof value !== 'object'
+export let canObserve = (value) => {
+	return value != null && typeof value === 'object'
 }
 
 let setNesting = (object, parentObject, parentProp) => {
@@ -104,9 +112,9 @@ export let observePath = (object, path, fn) => {
 		observers = new Set
 		observersByPath.set(path, observers)
 	}
-	observers.add(fn)
 
 	// check if observable
+	let ok = true
 	let currentPath = ''
 	path.split('.').reduce((obj, prop) => {
 		if (!obj) {
@@ -116,17 +124,22 @@ export let observePath = (object, path, fn) => {
 		currentPath += (currentPath && '.') + prop
 		obj = obj[prop]
 
-		if (currentPath !== path && !isPrimitive(obj) && !proxyObjects.has(obj)) {
+		if (currentPath !== path && !proxyObjects.has(obj)) {
 			throwError(
 				`Trying to observe the path '${path}' on object`,
 				object,
-				`but value at '${currentPath.slice(1)}'`,
+				`but value at '${currentPath[0] === '.' ? currentPath.slice(1) : currentPath}'`,
 				obj,
-				`is not a primitive and is not an instance of ProxyObject`
+				`is not an instance of ProxyObject`
 			)
+			ok = false
 		}
 		return obj
 	}, object)
+
+	if (ok) {
+		observers.add(fn)
+	}
 }
 
 export let unobservePath = (object, path, fn) => {
@@ -141,7 +154,7 @@ export let unobservePath = (object, path, fn) => {
 	observers.delete(fn)
 }
 
-let getByPath = (obj, path) => {
+export let getByPath = (obj, path) => {
 	path = path.split('.')
 	let check = () => {
 		let prop = path.shift()
@@ -161,7 +174,7 @@ export let notifyPath = (object, path, oldVal, newVal) => {
 			// exact match
 			if (observerPath === path) {
 				observers.forEach((fn) => {
-					fn(oldVal, newVal)
+					fn(oldVal, newVal, path)
 				})
 			}
 			// nested observers (e.g. path=user and observerPath=user.name)
@@ -186,15 +199,22 @@ export let notifyPath = (object, path, oldVal, newVal) => {
 	}
 }
 
-// note: path=a.b will match observer a.b.c
-let hasObservers = (object, path) => {
+// note: path=a.b will match a.b and a.b.c observers
+// note: nestedOnly=true, path=a.b will match a.b.c observer but will not a.b
+let hasObservers = (object, path, nestedOnly = false) => {
 	let observersByPath = observersByObject.get(object)
 	if (observersByPath) {
 		for (let [p, observers] of observersByPath) {
-			if ((p === path || p.startsWith(path + '.')) && observers.size) {
+			let hasNested = p.startsWith(path + '.')
+			let has = nestedOnly ? hasNested : hasNested || p === path
+			if (has && observers.size) {
 				return true
 			}
 		}
+	}
+
+	if (nestedOnly) {
+		return false
 	}
 
 	let parents = nesting.get(object)
@@ -208,3 +228,5 @@ let hasObservers = (object, path) => {
 		}
 	}
 }
+
+window.proxyObject = proxyObject

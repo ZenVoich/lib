@@ -1,42 +1,43 @@
 import {requestMicrotask} from '../../utils/microtask.js'
-import {observeHostProperty} from '../../utils/property-observer.js'
+import {observe} from '../../data-flow/observer.js'
+import {getByPath} from '../../data-flow/proxy-object.js'
 
-export let watch = (...props) => {
+export let watch = (...paths) => {
 	return (descriptor) => {
 		if (descriptor.kind !== 'method') {
 			throw '@watch decorator can only be applied to a method'
 		}
 
-		let propsInfo = []
-		props.forEach((prop) => {
-			let info = {prop: prop, mandatory: true}
-			if (prop.endsWith('?')) {
+		let pathsInfo = []
+		paths.forEach((path) => {
+			let info = {path: path, mandatory: true}
+			if (path.endsWith('?')) {
 				info.mandatory = false
-				info.prop = prop.slice(0, -1)
+				info.path = path.slice(0, -1)
 			}
-			propsInfo.push(info)
+			pathsInfo.push(info)
 		})
 
-		let propObserver = (oldVal, newVal, prop, host) => {
-			let isPropRelated = propsInfo.find((info) => {
-				return prop === info.prop
+		let observer = (oldVal, newVal, path, host) => {
+			let isPathRelated = pathsInfo.find((info) => {
+				return path === info.path
 			})
-			let canCall = isPropRelated && propsInfo.every((info) => {
+			let canCall = isPathRelated && pathsInfo.every((info) => {
 				if (info.mandatory) {
-					return host[info.prop] != null
+					return getByPath(host, info.path) != null
 				}
 				return true
 			})
 			if (!canCall) {
 				return
 			}
-			requestMicrotask(host, descriptor.key, () => {
-				if (propsInfo.length === 1) {
+			requestMicrotask(host, 'watch:' + descriptor.key, () => {
+				if (pathsInfo.length === 1) {
 					host[descriptor.key].call(host, oldVal)
 				}
 				else {
-					let oldValues = propsInfo.map((info) => {
-						return info.prop === prop ? oldVal : host[info.prop]
+					let oldValues = pathsInfo.map((info) => {
+						return info.path === path ? oldVal : getByPath(host, info.path)
 					})
 					host[descriptor.key].call(host, ...oldValues)
 				}
@@ -50,8 +51,8 @@ export let watch = (...props) => {
 					constructor() {
 						super()
 
-						propsInfo.forEach((info) => {
-							observeHostProperty(this, info.prop, propObserver)
+						pathsInfo.forEach((info) => {
+							observe(this, info.path, observer)
 						})
 					}
 				}

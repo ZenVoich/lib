@@ -1,5 +1,6 @@
 import {define, watch, debounce, attr, computed, notify, type} from '../../src/lib.js'
 import {TemplateRoot} from '../../src/bindings.js'
+import {proxyObject} from '../../src/data-flow/proxy-object.js'
 
 @define('test-element')
 class TestElement extends HTMLElement {
@@ -13,6 +14,10 @@ class TestElement extends HTMLElement {
 	prop = 3
 
 	obj = {val: 5}
+	proxy = proxyObject({
+		p: 1,
+		nested: proxyObject({n: 5})
+	})
 
 	constructor() {
 		super()
@@ -31,14 +36,35 @@ class TestElement extends HTMLElement {
 		return this.tt + 1
 	}
 
+	@computed('proxy.nested.n')
+	get pp() {
+		return `{${this.proxy.p}}`
+	}
+
+	// @watch('proxy.nested')
+	// w() {
+	// 	console.log('proxy.nested changed')
+	// }
+
 	increment() {
 		// for (var i = 0; i <= 100000; i++) {
-		// for (var i = 0; i <= 100000; i++) {
+		// for (var i = 0; i <= 1000; i++) {
 		this.prop++
 		this.x++
 		this.prop++
 		this.obj.val++
 		this.obj = this.obj
+
+		if (this.x % 5 !== 0) {
+			this.proxy.p++
+			this.proxy.nested.n++
+		}
+		else {
+			this.proxy = proxyObject({
+				p: this.proxy.p + 1,
+				nested: proxyObject({n: this.proxy.nested.n + 1})
+			})
+		}
 		// }
 	}
 
