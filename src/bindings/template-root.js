@@ -1,10 +1,12 @@
 import {parseSkeleton, fromSkeleton} from './template-parser.js'
 import {observeHostProperty, unobserveHostProperty} from '../utils/property-observer.js'
+import {observe} from '../data-flow/observer.js'
 
 export class TemplateRoot {
+	host
+	relatedPaths
 	parts = []
-	host = null
-	#unobserveList = []
+	#unobservers = []
 
 	static parseSkeleton(template) {
 		return {
@@ -17,6 +19,18 @@ export class TemplateRoot {
 		let templateRoot = new TemplateRoot
 		templateRoot.template = template || skeleton.skeletonTemplate.cloneNode(true)
 		templateRoot.parts = fromSkeleton(skeleton.partSkeletons, templateRoot.template)
+
+		if (!skeleton.relatedPaths) {
+			let relatedPaths = new Set
+			templateRoot.parts.forEach((part) => {
+				part.relatedPaths.forEach((path) => {
+					relatedPaths.add(path)
+				})
+			})
+			skeleton.relatedPaths = relatedPaths
+		}
+		templateRoot.relatedPaths = skeleton.relatedPaths
+
 		return templateRoot
 	}
 
@@ -28,16 +42,16 @@ export class TemplateRoot {
 		return this.template.content
 	}
 
-	connect(host, ok) {
+	connect(host, ok = true) {
 		this.host = host
 		this.parts.forEach((part) => {
 			part.connect(host)
 		})
 
 		if (ok) {
-			this.#unobserveList = [...this.getRelatedProps()].map((prop) => {
-				return observeHostProperty(host, prop, (oldVal, newVal) => {
-					this.updateProp(host, prop)
+			this.#unobservers = [...this.relatedPaths].map((path) => {
+				return observe(host, path, (oldVal, newVal) => {
+					this.updateProp(host, path)
 				})
 			})
 		}
@@ -48,30 +62,28 @@ export class TemplateRoot {
 		this.parts.forEach((part) => {
 			part.disconnect()
 		})
-		this.#unobserveList.forEach((unobserve) => {
-			unobserve()
+		this.#unobservers.forEach((unobserver) => {
+			unobserver()
 		})
-	}
-
-	getRelatedProps() {
-		let props = new Set
-		this.parts.forEach((part) => {
-			part.getRelatedProps().forEach((prop) => {
-				props.add(prop)
-			})
-		})
-		return props
 	}
 
 	update(state, immediate) {
+		if (!this.host) {
+			return
+		}
 		this.parts.forEach((part) => {
 			part.update(state, immediate)
 		})
 	}
 
 	updateProp(state, prop, immediate) {
+		if (!this.host) {
+			return
+		}
 		this.parts.forEach((part) => {
-			part.updateProp(state, prop, immediate)
+			if (part.relatedPaths.has(prop)) {
+				part.updateProp(state, prop, immediate)
+			}
 		})
 	}
 }

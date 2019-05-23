@@ -7,27 +7,16 @@ export class CompoundSourceExpression extends SourceExpression {
 	constructor({chunks} = {}) {
 		super()
 		this.chunks = chunks
+
+		this.relatedPaths = new Set
+		chunks.forEach((expr) => {
+			expr.relatedPaths.forEach((path) => {
+				this.relatedPaths.add(path)
+			})
+		})
 	}
 
 	getValue(state) {
 		return this.chunks.map(expr => expr.getValue(state)).join('')
-	}
-
-	getRelatedProps() {
-		let props = new Set
-
-		this.chunks.forEach((expr) => {
-			expr.getRelatedProps().forEach((prop) => {
-				props.add(prop)
-			})
-		})
-
-		return props
-	}
-
-	isPropRelated(prop) {
-		return this.chunks.some((expr) => {
-			return expr.isPropRelated(prop)
-		})
 	}
 }

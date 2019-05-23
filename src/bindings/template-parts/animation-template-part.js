@@ -48,6 +48,7 @@ export class AnimationTemplatePart extends TemplatePart {
 	}
 
 	host = null
+	relatedPaths = new Set
 	template = null
 	element = null
 

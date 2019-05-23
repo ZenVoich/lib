@@ -35,6 +35,13 @@ export class CallSourceExpression extends SourceExpression {
 		super()
 		this.functionName = functionName
 		this.args = args
+
+		this.relatedPaths = new Set
+		args.forEach((expr) => {
+			expr.relatedPaths.forEach((path) => {
+				this.relatedPaths.add(path)
+			})
+		})
 	}
 
 	getValue(state) {
@@ -43,23 +50,5 @@ export class CallSourceExpression extends SourceExpression {
 		}
 		let value = state[this.functionName](...this.args.map(expr => expr.getValue(state)))
 		return this.negateValueIfNeeded(value)
-	}
-
-	getRelatedProps() {
-		let props = new Set
-
-		this.args.forEach((expr) => {
-			expr.getRelatedProps().forEach((prop) => {
-				props.add(prop)
-			})
-		})
-
-		return props
-	}
-
-	isPropRelated(prop) {
-		return this.args.some((expr) => {
-			return expr.isPropRelated(prop)
-		})
 	}
 }

@@ -41,6 +41,10 @@ export class Binding {
 		this.target.disconnect()
 	}
 
+	isPropRelated(prop) {
+		return this.source.relatedPaths.has(prop)
+	}
+
 	pushValue(state) {
 		if (this.phase !== 'idle') {
 			return
@@ -70,9 +74,5 @@ export class Binding {
 				this.phase = 'idle'
 			})
 		}
-	}
-
-	isPropRelated(prop) {
-		return this.source.isPropRelated(prop)
 	}
 }

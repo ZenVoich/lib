@@ -1,5 +1,6 @@
 import {define} from '../../src/lib.js'
 import {perf} from '../../src/utils.js'
+import {proxyObject} from '../../src/data-flow/proxy-object.js'
 
 import './random-number.js'
 
@@ -15,7 +16,7 @@ class RepeatExample extends HTMLElement {
 
 	constructor() {
 		super()
-		this.items = []
+		this.items = proxyObject([])
 	}
 
 	connectedCallback() {
@@ -31,8 +32,6 @@ class RepeatExample extends HTMLElement {
 
 	onClick(e) {
 		e.currentTarget.item.value += 10
-		this.items = this.items
-		// notify changes?
 	}
 
 	_isBig(num) {
@@ -44,20 +43,19 @@ class RepeatExample extends HTMLElement {
 
 		for (let i = 0; i < count; i++) {
 			let rand = Math.random()
-			this.items[toStart ? 'unshift' : 'push']({
+			this.items[toStart ? 'unshift' : 'push'](proxyObject({
 				show: true,
 				key: rand,
 				value: rand,
-				nested: {val: 'aaa', items: [
-					{id: 1, val: 1},
-					{id: 2, val: 2},
-					{id: 3, val: 3},
-					{id: 4, val: 4},
-					{id: 5, val: 5},
-				]},
-			})
+				nested: proxyObject({val: 'aaa', items: proxyObject([
+					proxyObject({id: 1, val: 1}),
+					proxyObject({id: 2, val: 2}),
+					proxyObject({id: 3, val: 3}),
+					proxyObject({id: 4, val: 4}),
+					proxyObject({id: 5, val: 5}),
+				])}),
+			}))
 		}
-		this.items = this.items
 
 		requestAnimationFrame(() => {
 			perf.markEnd('add')
@@ -98,16 +96,14 @@ class RepeatExample extends HTMLElement {
 
 	removeFirst() {
 		this.items.shift()
-		this.items = this.items
 	}
 
 	removeLast() {
 		this.items.pop()
-		this.items = this.items
 	}
 
 	removeAll() {
-		this.items = []
+		this.items = proxyObject([])
 	}
 
 	updateProp() {
@@ -118,17 +114,14 @@ class RepeatExample extends HTMLElement {
 		this.items[0].nested.items[0].val++
 		this.items[0].nested.items[1].val++
 		this.items[0].nested.items[2].val++
-		this.items = this.items
 	}
 
 	toggleFirstItemVisibility() {
 		this.items[0].show = !this.items[0].show
-		this.items = this.items
 	}
 
 	clearSecondItem() {
-		this.items[1].nested.items = []
-		this.items = this.items
+		this.items[1].nested.items = proxyObject([])
 	}
 }
 

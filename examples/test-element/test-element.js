@@ -13,11 +13,12 @@ class TestElement extends HTMLElement {
 	@attr
 	prop = 3
 
-	obj = {val: 5}
+	obj = proxyObject({val: 5})
 	proxy = proxyObject({
 		p: 1,
 		nested: proxyObject({n: 5})
 	})
+	array = proxyObject([])
 
 	constructor() {
 		super()
@@ -54,6 +55,7 @@ class TestElement extends HTMLElement {
 		this.prop++
 		this.obj.val++
 		this.obj = this.obj
+		this.array.push(0)
 
 		if (this.x % 5 !== 0) {
 			this.proxy.p++

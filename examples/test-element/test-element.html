@@ -7,7 +7,6 @@ Hello, World! <div val={prop} attr="foo {prop}" .prop={prop}>prop = {prop}<b>x</
 <div>empty prop: {z.y.z}</div>
 Binding in slot: <slot name=sl>{prop}</slot>
 <br>
-
 <div .prop-test="test">Prop target static string (no source expr)</div>
 
 <div>Static val: {'hey'} {111}</div>
@@ -38,6 +37,10 @@ Slot: <slot>Default slot value {prop}</slot>
 <template id=template>
 	<div val={prop}>content from template {prop}</div>
 </template>
+<br>
+
+Array: {array.length}
+<br>
 <br>
 
 <div>

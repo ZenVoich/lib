@@ -7,6 +7,7 @@ import {perf} from '../../utils/perf.js'
 export class BindingsTemplatePart extends TemplatePart {
 	host = null
 	isConnected = false
+	relatedPaths = new Set
 
 	bindings = [] // [Binding]
 	notRelatedMicrotaskProps = []
@@ -33,6 +34,13 @@ export class BindingsTemplatePart extends TemplatePart {
 	constructor(bindings) {
 		super()
 		this.bindings = bindings
+
+		this.relatedPaths = new Set
+		bindings.forEach((binding) => {
+			binding.source.relatedPaths.forEach((path) => {
+				this.relatedPaths.add(path)
+			})
+		})
 	}
 
 	connect(host) {
@@ -49,16 +57,6 @@ export class BindingsTemplatePart extends TemplatePart {
 		})
 		this.host = null
 		this.isConnected = false
-	}
-
-	getRelatedProps() {
-		let props = new Set
-		this.bindings.forEach((binding) => {
-			binding.source.getRelatedProps().forEach((prop) => {
-				props.add(prop)
-			})
-		})
-		return props
 	}
 
 	update(state, immediate) {

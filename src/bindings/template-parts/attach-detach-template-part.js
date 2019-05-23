@@ -20,10 +20,7 @@ export class AttachDetachTemplatePart extends TemplatePart {
 			type: attribute.slice(1, -3),
 			sourceExpression,
 			childTemplateRootSkeleton,
-			relatedProps: new Set([
-				...sourceExpression.getRelatedProps(),
-				...TemplateRoot.fromSkeleton(childTemplateRootSkeleton).getRelatedProps()
-			]),
+			relatedPaths: sourceExpression.relatedPaths,
 		}
 	}
 
@@ -32,29 +29,34 @@ export class AttachDetachTemplatePart extends TemplatePart {
 		part.type = skeleton.type
 		part.sourceExpression = skeleton.sourceExpression
 		part.childTemplateRoot = TemplateRoot.fromSkeleton(skeleton.childTemplateRootSkeleton, template)
-		part.relatedProps = skeleton.relatedProps
+		part.relatedPaths = skeleton.relatedPaths
 		return part
 	}
 
-	host = null
-	type = '' // attach | detach
+	host
+	relatedPaths
+
+	type // attach | detach
+	attached
 	comment = new Comment
-	template = null
-	fragmentContainer = null
-	childTemplateRoot = null
-	sourceExpression = null
-	relatedProps = null
+	template
+
+	fragmentContainer
+	childTemplateRoot
+	sourceExpression
+	relatedProps
 
 	constructor(template) {
 		super()
 		this.template = template
 		this.fragmentContainer = new FragmentContainer(template.content)
 		template.replaceWith(this.comment)
+		this.attached = false
 	}
 
 	connect(host) {
 		this.host = host
-		this.childTemplateRoot.connect(host)
+		this._render(host, true)
 	}
 
 	disconnect() {
@@ -71,10 +73,6 @@ export class AttachDetachTemplatePart extends TemplatePart {
 				this._render(state, immediate)
 			})
 		}
-
-		if (this._shouldAttach(state)) {
-			this.childTemplateRoot.update(state, immediate)
-		}
 	}
 
 	updateProp(state, prop, immediate) {
@@ -86,10 +84,6 @@ export class AttachDetachTemplatePart extends TemplatePart {
 				this._render(state, immediate)
 			})
 		}
-
-		if (this._shouldAttach(state)) {
-			this.childTemplateRoot.updateProp(state, prop, immediate)
-		}
 	}
 
 	_shouldAttach(state) {
@@ -100,25 +94,31 @@ export class AttachDetachTemplatePart extends TemplatePart {
 	async _render(state, immediate) {
 		let attach = this._shouldAttach(state)
 
+		if (this.attached == attach) {
+			return
+		}
+		this.attached = attach
+
+		// attach
 		if (attach) {
 			if (!this.fragmentContainer.isConnected) {
 				this.comment.replaceWith(this.fragmentContainer.content)
+				this.childTemplateRoot.connect(this.host)
+				this.childTemplateRoot.update(this.host, true)
 			}
 			if (!immediate) {
 				pub(this.template, 'intro')
 			}
 		}
+		// detach
 		else if (!attach && this.fragmentContainer.isConnected) {
 			if (!immediate) {
 				await pub(this.template, 'outro')
 			}
 			if (this.fragmentContainer.isConnected) {
 				this.fragmentContainer.replaceWith(this.comment)
+				this.childTemplateRoot.disconnect()
 			}
 		}
-	}
-
-	getRelatedProps() {
-		return this.relatedProps
 	}
 }

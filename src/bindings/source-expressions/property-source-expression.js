@@ -18,6 +18,7 @@ export class PropertySourceExpression extends SourceExpression {
 	constructor({propertyName} = {}) {
 		super()
 		this.propertyName = propertyName
+		this.relatedPaths = new Set([propertyName])
 	}
 
 	setValue(state, value) {
@@ -26,13 +27,5 @@ export class PropertySourceExpression extends SourceExpression {
 
 	getValue(state) {
 		return this.negateValueIfNeeded(state[this.propertyName])
-	}
-
-	getRelatedProps() {
-		return new Set([this.propertyName])
-	}
-
-	isPropRelated(prop) {
-		return prop === this.propertyName
 	}
 }

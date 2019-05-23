@@ -140,6 +140,10 @@ export let observePath = (object, path, fn) => {
 	if (ok) {
 		observers.add(fn)
 	}
+
+	return () => {
+		unobservePath(object, path, fn)
+	}
 }
 
 export let unobservePath = (object, path, fn) => {
@@ -230,3 +234,6 @@ let hasObservers = (object, path, nestedOnly = false) => {
 }
 
 window.proxyObject = proxyObject
+window.observePath = observePath
+window.proxyObjects = proxyObjects
+window.observersByObject = observersByObject

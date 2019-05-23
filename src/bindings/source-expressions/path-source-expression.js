@@ -18,6 +18,7 @@ export class PathSourceExpression extends SourceExpression {
 	constructor({path} = {}) {
 		super()
 		this.path = path
+		this.relatedPaths = new Set([path.join('.')])
 	}
 
 	setValue(state, value) {
@@ -45,13 +46,5 @@ export class PathSourceExpression extends SourceExpression {
 		}
 
 		return this.negateValueIfNeeded(value)
-	}
-
-	getRelatedProps() {
-		return new Set([this.path[0]])
-	}
-
-	isPropRelated(prop) {
-		return prop === this.path[0]
 	}
 }

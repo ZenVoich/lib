@@ -18,10 +18,7 @@ export class ShowHideTemplatePart extends TemplatePart {
 			type: attribute.slice(1, -3),
 			sourceExpression,
 			childTemplateRootSkeleton,
-			relatedProps: new Set([
-				...sourceExpression.getRelatedProps(),
-				...TemplateRoot.fromSkeleton(childTemplateRootSkeleton).getRelatedProps()
-			]),
+			relatedPaths: sourceExpression.relatedPaths,
 		}
 	}
 
@@ -31,26 +28,31 @@ export class ShowHideTemplatePart extends TemplatePart {
 		part.type = skeleton.type
 		part.sourceExpression = skeleton.sourceExpression
 		part.childTemplateRoot = childTemplateRoot
-		part.relatedProps = skeleton.relatedProps
+		part.relatedPaths = skeleton.relatedPaths
 		return part
 	}
 
-	host = null
-	type = '' // show | hide
-	element = null
-	childTemplateRoot = null
-	sourceExpression = null
-	relatedProps = null
+	host
+	relatedPaths
+
+	type // show | hide
+	shown
+
+	element
+	childTemplateRoot
+	sourceExpression
 
 	constructor(template) {
 		super()
 		this.element = template.content.firstElementChild
 		template.replaceWith(this.element)
+		this.shown = true
 	}
 
 	connect(host) {
 		this.host = host
 		this.childTemplateRoot.connect(host)
+		this.childTemplateRoot.update(this.host, true)
 	}
 
 	disconnect() {
@@ -67,7 +69,6 @@ export class ShowHideTemplatePart extends TemplatePart {
 				this._render(state)
 			})
 		}
-		this.childTemplateRoot.update(state, immediate)
 	}
 
 	updateProp(state, prop, immediate) {
@@ -79,12 +80,16 @@ export class ShowHideTemplatePart extends TemplatePart {
 				this._render(state)
 			})
 		}
-		this.childTemplateRoot.updateProp(state, prop, immediate)
 	}
 
 	_render(state) {
 		let value = this.sourceExpression.getValue(state)
 		let show = this.type === 'show' ? !!value : !value
+
+		if (this.shown === show) {
+			return
+		}
+		this.shown = show
 
 		if (show) {
 			this.element.style.removeProperty('display')
@@ -92,9 +97,5 @@ export class ShowHideTemplatePart extends TemplatePart {
 		else {
 			this.element.style.setProperty('display', 'none', 'important')
 		}
-	}
-
-	getRelatedProps() {
-		return this.relatedProps
 	}
 }

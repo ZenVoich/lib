@@ -26,6 +26,7 @@ export class ValueSourceExpression extends SourceExpression {
 	constructor({value} = {}) {
 		super()
 		this.value = value
+		this.relatedPaths = new Set
 	}
 
 	setValue(state, value) {
@@ -34,13 +35,5 @@ export class ValueSourceExpression extends SourceExpression {
 
 	getValue(state) {
 		return this.negateValueIfNeeded(this.value)
-	}
-
-	getRelatedProps() {
-		return new Set
-	}
-
-	isPropRelated(prop) {
-		return false
 	}
 }
