@@ -13,13 +13,13 @@ export class BindingsTemplatePart extends TemplatePart {
 
 	#isComponenInMicrotaskQueue = false
 	#isComponenInRenderQueue = false
-	#propsInRenderQueue = new Set
-	#propsInMicrotaskQueue = new Set
+	#pathsInRenderQueue = new Set
+	#pathsInMicrotaskQueue = new Set
 
 	#microtaskThrottler = Symbol()
 	#renderThrottler = Symbol()
-	#propsMicrotaskThrottler = Symbol()
-	#propsRenderThrottler = Symbol()
+	#pathsMicrotaskThrottler = Symbol()
+	#pathsRenderThrottler = Symbol()
 
 	static parseSkeleton(root) {
 		return parseSkeleton(root)
@@ -110,12 +110,12 @@ export class BindingsTemplatePart extends TemplatePart {
 		perf.markEnd('bindings.update')
 	}
 
-	updateProp(state, prop, immediate) {
-		perf.markStart('bindings.updateProp')
+	updatePath(state, path, immediate) {
+		perf.markStart('bindings.updatePath')
 
 		// microtask phase bindings
 		if (!this.#isComponenInMicrotaskQueue) {
-			this.#propsInMicrotaskQueue.add(prop)
+			this.#pathsInMicrotaskQueue.add(path)
 
 			let update = () => {
 				if (!this.isConnected) {
@@ -123,14 +123,14 @@ export class BindingsTemplatePart extends TemplatePart {
 				}
 
 				let relatedBindings = new Set
-				this.#propsInMicrotaskQueue.forEach((prop) => {
+				this.#pathsInMicrotaskQueue.forEach((path) => {
 					this.bindings.forEach((binding) => {
-						if (binding.isPropRelated(prop) && binding.target.constructor.updatePhase === 'microtask') {
+						if (binding.isPathRelated(path) && binding.target.constructor.updatePhase === 'microtask') {
 							relatedBindings.add(binding)
 						}
 					})
 				})
-				this.#propsInMicrotaskQueue.clear()
+				this.#pathsInMicrotaskQueue.clear()
 
 				relatedBindings.forEach((binding) => {
 					binding.pushValue(state)
@@ -141,13 +141,13 @@ export class BindingsTemplatePart extends TemplatePart {
 				update()
 			}
 			else {
-				requestMicrotask(this.host, this.#propsMicrotaskThrottler, update)
+				requestMicrotask(this.host, this.#pathsMicrotaskThrottler, update)
 			}
 		}
 
 		// animationFrame phase bindings
 		if (!this.#isComponenInRenderQueue) {
-			this.#propsInRenderQueue.add(prop)
+			this.#pathsInRenderQueue.add(path)
 
 			let render = () => {
 				if (!this.isConnected) {
@@ -155,14 +155,14 @@ export class BindingsTemplatePart extends TemplatePart {
 				}
 
 				let relatedBindings = new Set
-				this.#propsInRenderQueue.forEach((prop) => {
+				this.#pathsInRenderQueue.forEach((path) => {
 					this.bindings.forEach((binding) => {
-						if (binding.isPropRelated(prop) && binding.target.constructor.updatePhase === 'animationFrame') {
+						if (binding.isPathRelated(path) && binding.target.constructor.updatePhase === 'animationFrame') {
 							relatedBindings.add(binding)
 						}
 					})
 				})
-				this.#propsInRenderQueue.clear()
+				this.#pathsInRenderQueue.clear()
 
 				relatedBindings.forEach((binding) => {
 					binding.pushValue(state)
@@ -174,11 +174,11 @@ export class BindingsTemplatePart extends TemplatePart {
 				render()
 			}
 			else {
-				requestRender(this.host, this.#propsRenderThrottler, render)
+				requestRender(this.host, this.#pathsRenderThrottler, render)
 			}
 		}
 
-		perf.markEnd('bindings.updateProp')
+		perf.markEnd('bindings.updatePath')
 	}
 }
 

@@ -71,7 +71,7 @@ export class ShowHideTemplatePart extends TemplatePart {
 		}
 	}
 
-	updateProp(state, prop, immediate) {
+	updatePath(state, path, immediate) {
 		if (immediate) {
 			this._render(state)
 		}

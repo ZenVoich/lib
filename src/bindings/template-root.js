@@ -51,7 +51,7 @@ export class TemplateRoot {
 		if (ok) {
 			this.#unobservers = [...this.relatedPaths].map((path) => {
 				return observe(host, path, (oldVal, newVal) => {
-					this.updateProp(host, path)
+					this.updatePath(host, path)
 				})
 			})
 		}
@@ -76,13 +76,13 @@ export class TemplateRoot {
 		})
 	}
 
-	updateProp(state, prop, immediate) {
+	updatePath(state, path, immediate) {
 		if (!this.host) {
 			return
 		}
 		this.parts.forEach((part) => {
-			if (part.relatedPaths.has(prop)) {
-				part.updateProp(state, prop, immediate)
+			if (part.relatedPaths.has(path)) {
+				part.updatePath(state, path, immediate)
 			}
 		})
 	}

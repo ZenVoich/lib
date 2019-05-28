@@ -33,8 +33,8 @@ export class RepeatTemplatePart extends TemplatePart {
 			key,
 			itemsSourceExpression,
 			itemTemplateRootSkeleton,
-			relatedPaths: new Set([...itemsSourceExpression.relatedPaths].map((prop) => {
-				return prop + '.length'
+			relatedPaths: new Set([...itemsSourceExpression.relatedPaths].map((path) => {
+				return path + '.length'
 			}))
 		}
 	}
@@ -95,7 +95,7 @@ export class RepeatTemplatePart extends TemplatePart {
 		this._render(state, immediate)
 	}
 
-	updateProp(state, prop, immediate) {
+	updatePath(state, path, immediate) {
 		this._render(state, immediate)
 	}
 

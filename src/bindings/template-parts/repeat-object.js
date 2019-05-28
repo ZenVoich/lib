@@ -35,13 +35,13 @@ export class RepeatObject {
 		this.templateRoot.relatedPaths.forEach((path) => {
 			if (path.startsWith(`${this.as}.`)) {
 				let unobserver = observePath(item, path.split(`${this.as}.`)[1], (oldVal, newVal) => {
-					this.templateRoot.updateProp(this.createState(this.host), path)
+					this.templateRoot.updatePath(this.createState(this.host), path)
 				})
 				this.#unobservers.push(unobserver)
 			}
 			else {
 				let unobserver = observe(this.host, path, () => {
-					this.templateRoot.updateProp(this.createState(this.host), path)
+					this.templateRoot.updatePath(this.createState(this.host), path)
 				}, true)
 				this.#unobservers.push(unobserver)
 			}

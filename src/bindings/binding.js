@@ -41,8 +41,8 @@ export class Binding {
 		this.target.disconnect()
 	}
 
-	isPropRelated(prop) {
-		return this.source.relatedPaths.has(prop)
+	isPathRelated(path) {
+		return this.source.relatedPaths.has(path)
 	}
 
 	pushValue(state) {

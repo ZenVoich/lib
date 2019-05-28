@@ -5,5 +5,5 @@ export class TemplatePart {
 	connect(host) {}
 	disconnect() {}
 	update(state) {}
-	updateProp(state, prop) {}
+	updatePath(state, path) {}
 }

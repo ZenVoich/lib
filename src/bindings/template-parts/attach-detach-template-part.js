@@ -44,7 +44,6 @@ export class AttachDetachTemplatePart extends TemplatePart {
 	fragmentContainer
 	childTemplateRoot
 	sourceExpression
-	relatedProps
 
 	constructor(template) {
 		super()
@@ -75,7 +74,7 @@ export class AttachDetachTemplatePart extends TemplatePart {
 		}
 	}
 
-	updateProp(state, prop, immediate) {
+	updatePath(state, path, immediate) {
 		if (immediate) {
 			this._render(state, immediate)
 		}
