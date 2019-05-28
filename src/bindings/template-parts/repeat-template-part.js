@@ -1,12 +1,9 @@
 import {TemplatePart} from './template-part.js'
 import {RepeatContainer} from './repeat-container.js'
-import {FragmentContainer} from './fragment-container.js'
+import {RepeatObject} from './repeat-object.js'
 import {TemplateRoot} from '../template-root.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 import {requestRender} from '../../utils/renderer.js'
-import {observe} from '../../data-flow/observer.js'
-import {observePath, unobservePath, canObserve} from '../../data-flow/proxy-object.js'
-import {perf} from '../../utils/perf.js'
 
 export class RepeatTemplatePart extends TemplatePart {
 	static parseSkeleton(template, attribute) {
@@ -63,8 +60,8 @@ export class RepeatTemplatePart extends TemplatePart {
 	key = ''
 	as = 'item'
 	_actualOrder = []
-	_physicalElementsByKey = new Map
-	_physicalElementsByIndex = new Map
+	_repeatObjectsByKey = new Map
+	_repeatObjectsByIndex = new Map
 
 	constructor(template) {
 		super()
@@ -75,22 +72,23 @@ export class RepeatTemplatePart extends TemplatePart {
 
 	connect(host) {
 		this.host = host
-		this._physicalElementsByKey.forEach(({templateRoot}) => {
-			templateRoot.connect(host, false)
+		this._repeatObjectsByKey.forEach((repeatObject) => {
+			repeatObject.connect(host)
 		})
-		this._physicalElementsByIndex.forEach(({templateRoot}) => {
-			templateRoot.connect(host, false)
+		this._repeatObjectsByIndex.forEach((repeatObject) => {
+			repeatObject.connect(host)
 		})
 	}
 
 	disconnect() {
 		this.host = null
-		this._physicalElementsByKey.forEach(({templateRoot}) => {
-			templateRoot.disconnect()
+		this._repeatObjectsByKey.forEach((repeatObject, key) => {
+			repeatObject.disconnect()
 		})
-		this._physicalElementsByIndex.forEach(({templateRoot}) => {
-			templateRoot.disconnect()
+		this._repeatObjectsByIndex.forEach((repeatObject, index) => {
+			repeatObject.disconnect()
 		})
+		// todo: clear physical elements?
 	}
 
 	update(state, immediate) {
@@ -112,101 +110,61 @@ export class RepeatTemplatePart extends TemplatePart {
 		}
 	}
 
-	_createState(item) {
-		return this._mergeStates(this._prepareState(this.host), {[this.as]: item})
-	}
-
-	_prepareState(host) {
-		let hostState = {}
-		Object.getOwnPropertyNames(host).forEach((prop) => {
-			hostState[prop] = host[prop]
-		})
-		hostState.localName = host.localName
-		return hostState
-	}
-
-	_mergeStates(hostState, state) {
-		perf.markStart('repeat-template-part: merge states')
-
-		state = Object.assign({}, hostState, state)
-		perf.markEnd('repeat-template-part: merge states')
-		return state
-	}
-
-	_createFragmentContainer(state, item, index, immediate) {
+	_createRepeatObject(state, item, index, immediate) {
 		let itemTemplateRoot = TemplateRoot.fromSkeleton(this.itemTemplateRootSkeleton)
-		let fragmentContainer = new FragmentContainer(itemTemplateRoot.content)
-		let preparedState = this._prepareState(state)
-
-		let unobservers = []
-
-		if (canObserve(item)) {
-			let relatedPaths = new Set
-			itemTemplateRoot.relatedPaths.forEach((path) => {
-				if (path.startsWith(`${this.as}.`)) {
-					let unobserver = observePath(item, path.split(`${this.as}.`)[1], (oldVal, newVal) => {
-						itemTemplateRoot.updateProp(this._createState(item), path)
-					})
-					unobservers.push(unobserver)
-				}
-				else {
-					let unobserver = observe(this.host, path, () => {
-						itemTemplateRoot.updateProp(this._createState(item), path)
-					})
-					unobservers.push(unobserver)
-				}
-			})
-		}
-
-		itemTemplateRoot.connect(this.host, false)
-		itemTemplateRoot.update(this._mergeStates(preparedState, {[this.as]: item}), immediate)
+		let repeatObject = new RepeatObject(itemTemplateRoot, this.as)
+		repeatObject.connect(this.host, item)
+		// repeatObject.updateWithState(state, immediate)
+		repeatObject.update(state, immediate)
 
 		if (this.key) {
-			this._physicalElementsByKey.set(item[this.key], {fragmentContainer, templateRoot: itemTemplateRoot, unobservers, index})
+			this._repeatObjectsByKey.set(item[this.key], repeatObject)
 		}
 		else {
-			this._physicalElementsByIndex.set(index, {fragmentContainer, templateRoot: itemTemplateRoot})
+			this._repeatObjectsByIndex.set(index, repeatObject)
 		}
-		return fragmentContainer
+		return repeatObject
 	}
 
 	_removeElement(key, index) {
 		if (this.key) {
-			let {fragmentContainer, templateRoot, unobservers} = this._physicalElementsByKey.get(key)
-			unobservers.forEach((unobserver) => {
-				unobserver()
-			})
-			templateRoot.disconnect()
-			fragmentContainer.remove()
-			this._physicalElementsByKey.delete(key)
+			let repeatObject = this._repeatObjectsByKey.get(key)
+			repeatObject.remove()
+
+			this._repeatObjectsByKey.delete(key)
 			index = this._actualOrder.indexOf(key)
 			this._actualOrder.splice(index, 1)
 		}
 		else {
-			let {fragmentContainer, templateRoot} = this._physicalElementsByIndex.get(index)
-			templateRoot.disconnect()
-			fragmentContainer.remove()
-			this._physicalElementsByIndex.delete(index)
+			let repeatObject = this._repeatObjectsByIndex.get(index)
+			repeatObject.remove()
+
+			this._repeatObjectsByIndex.delete(index)
 		}
 	}
 
 	// ensure element count and update templates
 	_renderPlain(state, immediate) {
 		// update existing elements
-		let preparedState = this._prepareState(state)
-		this._physicalElementsByIndex.forEach(({templateRoot}, i) => {
-			templateRoot.update(this._mergeStates(preparedState, {[this.as]: this.items[i]}), immediate)
+		let preparedState = RepeatObject.prepareState(state)
+		this._repeatObjectsByIndex.forEach((repeatObject, i) => {
+			let item = this.items[i]
+			if (repeatObject.item !== item) {
+				repeatObject.disconnect()
+				repeatObject.connect(this.host, item)
+			}
+			repeatObject.updateWithState(RepeatObject.mergeStates(preparedState, {[this.as]: this.items[i]}), immediate)
 		})
 
 		let render = () => {
 			// add new elements
-			let existingCount = this._physicalElementsByIndex.size
+			let existingCount = this._repeatObjectsByIndex.size
 			let diff = this.items.length - existingCount
 			if (diff > 0) {
 				for (let i = 0; i < diff; i++) {
 					let item = this.items[existingCount + i]
-					let fragmentContainer = this._createFragmentContainer(state, item, existingCount + i, true)
-					this.repeatContainer.append(fragmentContainer.content)
+					let repeatObject = this._createRepeatObject(state, item, existingCount + i, true)
+					this.repeatContainer.append(repeatObject.fragmentContainer.content)
 				}
 			}
 			// remove extra elements
@@ -228,17 +186,17 @@ export class RepeatTemplatePart extends TemplatePart {
 	// sort existing elements by key
 	_renderSorted(state, immediate) {
 		// update elements
-		// let preparedState = this._prepareState(state)
+		// let preparedState = RepeatObject.prepareState(state)
 		// this.items.forEach((item, index) => {
-		// 	let physical = this._physicalElementsByKey.get(item[this.key])
-		// 	if (physical) {
-		// 		physical.templateRoot.update(this._mergeStates(preparedState, {[this.as]: item}), immediate)
+		// 	let repeatObject = this._repeatObjectsByKey.get(item[this.key])
+		// 	if (repeatObject) {
+		// 		repeatObject.templateRoot.updateWithState(RepeatObject.mergeStates(preparedState, {[this.as]: item}), immediate)
 		// 	}
 		// })
 
 		let render = () => {
 			// remove elements
-			let currentKeys = new Set(this._physicalElementsByKey.keys())
+			let currentKeys = new Set(this._repeatObjectsByKey.keys())
 			this.items.forEach((item) => {
 				currentKeys.delete(item[this.key])
 			})
@@ -248,10 +206,10 @@ export class RepeatTemplatePart extends TemplatePart {
 
 			// add elements
 			this.items.forEach((item, index) => {
-				let hasPhysical = this._physicalElementsByKey.has(item[this.key])
+				let hasPhysical = this._repeatObjectsByKey.has(item[this.key])
 				if (!hasPhysical) {
-					let fragmentContainer = this._createFragmentContainer(state, item, index, true)
-					this._placeElement(item, fragmentContainer, null, index)
+					let repeatObject = this._createRepeatObject(state, item, index, true)
+					this._placeElement(item, repeatObject.fragmentContainer, null, index)
 				}
 			})
 
@@ -265,11 +223,11 @@ export class RepeatTemplatePart extends TemplatePart {
 				}
 
 				let itemsInfo = this.items.map((item, newIndex) => {
-					let physical = this._physicalElementsByKey.get(item[this.key])
+					let repeatObject = this._repeatObjectsByKey.get(item[this.key])
 					let oldIndex = this._actualOrder.indexOf(item[this.key])
 					return {
 						item,
-						physical,
+						repeatObject,
 						oldIndex,
 						newIndex,
 						diffIndex: Math.abs(oldIndex - newIndex),
@@ -285,7 +243,7 @@ export class RepeatTemplatePart extends TemplatePart {
 				}
 
 				let itemInfo = itemsInfo[0]
-				this._placeElement(itemInfo.item, itemInfo.physical.fragmentContainer, itemInfo.oldIndex, itemInfo.newIndex)
+				this._placeElement(itemInfo.item, itemInfo.repeatObject.fragmentContainer, itemInfo.oldIndex, itemInfo.newIndex)
 
 				sort()
 			}
@@ -302,15 +260,15 @@ export class RepeatTemplatePart extends TemplatePart {
 
 	_placeElement(item, fragmentContainer, oldIndex, newIndex) {
 		let currentItemKey = this._actualOrder[newIndex]
-		let current = currentItemKey && this._physicalElementsByKey.get(currentItemKey)
+		let currentRepeatObject = currentItemKey && this._repeatObjectsByKey.get(currentItemKey)
 
 		if (oldIndex !== null) {
 			fragmentContainer.remove()
 			this._actualOrder.splice(oldIndex, 1)
 		}
 
-		if (current) {
-			current.fragmentContainer.before(fragmentContainer.content)
+		if (currentRepeatObject) {
+			currentRepeatObject.fragmentContainer.before(fragmentContainer.content)
 			this._actualOrder.splice(newIndex, 0, item[this.key])
 		}
 		else {

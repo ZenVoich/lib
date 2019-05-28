@@ -1,7 +1,7 @@
-import {observeHostProperty, unobserveHostProperty} from '../utils/property-observer.js'
+import {observeHostProperty} from '../utils/property-observer.js'
 import {observePath, unobservePath, canObserve} from '../data-flow/proxy-object.js'
 
-export let observe = (host, path, fn) => {
+export let observe = (host, path, fn, ok=false) => {
 	let pathAr = path.split('.')
 	let localPath = pathAr.slice(1).join('.')
 	let prop = pathAr[0]
@@ -14,22 +14,28 @@ export let observe = (host, path, fn) => {
 		fn(oldVal, newVal, path, host)
 	}
 
-	let observer = (oldVal, newVal) => {
-		if (oldVal !== newVal) {
-			fn(oldVal, newVal, path, host)
+	let pathUnobserver
+
+	let propObserver = (oldVal, newVal) => {
+		if (oldVal === newVal) {
+			return
 		}
-		if (canObserve(oldVal)) {
-			unobservePath(oldVal, localPath, pathObserver)
+
+		fn(oldVal, newVal, path, host)
+
+		if (pathUnobserver) {
+			pathUnobserver()
+			pathUnobserver = null
 		}
 		if (canObserve(newVal)) {
-			observePath(newVal, localPath, pathObserver)
+			pathUnobserver = observePath(newVal, localPath, pathObserver)
 		}
 	}
 
-	observeHostProperty(host, prop, observer)
+	let propUnobserver = observeHostProperty(host, prop, propObserver)
 
-	if (canObserve(host[prop])) {
-		observePath(host[prop], localPath, pathObserver)
+	if (canObserve(host[prop]) && !ok) {
+		pathUnobserver = observePath(host[prop], localPath, pathObserver)
 	}
 
 	return () => {
@@ -37,14 +43,10 @@ export let observe = (host, path, fn) => {
 		let localPath = pathAr.slice(1).join('.')
 		let prop = pathAr[0]
 
-		unobserveHostProperty(host, prop, observer)
+		propUnobserver()
 
-		if (!localPath) {
-			return
-		}
-
-		if (canObserve(host[prop])) {
-			unobservePath(host[prop], localPath, pathObserver)
+		if (pathUnobserver) {
+			pathUnobserver()
 		}
 	}
 }

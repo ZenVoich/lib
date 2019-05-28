@@ -10,8 +10,6 @@ export class BindingsTemplatePart extends TemplatePart {
 	relatedPaths = new Set
 
 	bindings = [] // [Binding]
-	notRelatedMicrotaskProps = []
-	notRelatedRenderProps = []
 
 	#isComponenInMicrotaskQueue = false
 	#isComponenInRenderQueue = false
@@ -116,7 +114,7 @@ export class BindingsTemplatePart extends TemplatePart {
 		perf.markStart('bindings.updateProp')
 
 		// microtask phase bindings
-		if (!this.#isComponenInMicrotaskQueue || this.notRelatedMicrotaskProps.includes(prop)) {
+		if (!this.#isComponenInMicrotaskQueue) {
 			this.#propsInMicrotaskQueue.add(prop)
 
 			let update = () => {
@@ -134,13 +132,6 @@ export class BindingsTemplatePart extends TemplatePart {
 				})
 				this.#propsInMicrotaskQueue.clear()
 
-				if (!relatedBindings.size) {
-					this.notRelatedMicrotaskProps.push(prop)
-					if (this.notRelatedMicrotaskProps.length > 3) {
-						this.notRelatedMicrotaskProps.shift()
-					}
-				}
-
 				relatedBindings.forEach((binding) => {
 					binding.pushValue(state)
 				})
@@ -155,7 +146,7 @@ export class BindingsTemplatePart extends TemplatePart {
 		}
 
 		// animationFrame phase bindings
-		if (!this.#isComponenInRenderQueue || this.notRelatedRenderProps.includes(prop)) {
+		if (!this.#isComponenInRenderQueue) {
 			this.#propsInRenderQueue.add(prop)
 
 			let render = () => {
@@ -172,13 +163,6 @@ export class BindingsTemplatePart extends TemplatePart {
 					})
 				})
 				this.#propsInRenderQueue.clear()
-
-				if (!relatedBindings.size) {
-					this.notRelatedRenderProps.push(prop)
-					if (this.notRelatedRenderProps.length > 3) {
-						this.notRelatedRenderProps.shift()
-					}
-				}
 
 				relatedBindings.forEach((binding) => {
 					binding.pushValue(state)

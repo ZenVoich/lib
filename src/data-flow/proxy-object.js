@@ -130,7 +130,7 @@ export let observePath = (object, path, fn) => {
 				object,
 				`but value at '${currentPath[0] === '.' ? currentPath.slice(1) : currentPath}'`,
 				obj,
-				`is not an instance of ProxyObject`
+				`is not a proxy-object`
 			)
 			ok = false
 		}

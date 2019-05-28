@@ -1,5 +1,5 @@
 import {parseSkeleton, fromSkeleton} from './template-parser.js'
-import {observeHostProperty, unobserveHostProperty} from '../utils/property-observer.js'
+import {observeHostProperty} from '../utils/property-observer.js'
 import {observe} from '../data-flow/observer.js'
 
 export class TemplateRoot {

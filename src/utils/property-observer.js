@@ -2,6 +2,7 @@ let observedPropsByComponent = new WeakMap
 let observersByComponent = new WeakMap
 
 export let observeHostProperty = (host, property, fn) => {
+	// console.log('ob')
 	observeProperty(host, property)
 	let observer = (prop, oldVal, newVal) => {
 		if (prop === property) {
@@ -11,13 +12,14 @@ export let observeHostProperty = (host, property, fn) => {
 	addObserver(host, observer)
 
 	return () => {
-		unobserveHostProperty(host, property, observer)
+		// unobserveHostProperty(host, property, observer)
+		removeObserver(host, observer)
 	}
 }
 
-export let unobserveHostProperty = (host, property, fn) => {
-	removeObserver(host, fn)
-}
+// export let unobserveHostProperty = (host, property, fn) => {
+// 	removeObserver(host, fn)
+// }
 
 export let notifyHostProperty = (host, prop, oldVal, newVal) => {
 	let observers = observersByComponent.get(host)
@@ -87,3 +89,6 @@ let observeProperty = (host, prop) => {
 		notifyHostProperty(host, prop, undefined, value)
 	}
 }
+
+window.observedPropsByComponent = observedPropsByComponent
+window.observersByComponent = observersByComponent
