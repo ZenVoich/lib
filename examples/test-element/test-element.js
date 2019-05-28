@@ -42,6 +42,11 @@ class TestElement extends HTMLElement {
 		return `{${this.proxy.p}}`
 	}
 
+	// @watch('isConnected', 'x')
+	// w() {
+	// 	console.log('isConnected changed', this.isConnected, this.x)
+	// }
+
 	// @watch('proxy.nested')
 	// w() {
 	// 	console.log('proxy.nested changed')

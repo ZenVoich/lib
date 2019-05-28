@@ -10,6 +10,9 @@ export let watch = (...paths) => {
 
 		let pathsInfo = []
 		paths.forEach((path) => {
+			if (path === 'isConnected') {
+				path = '__isConnected'
+			}
 			let info = {path: path, mandatory: true}
 			if (path.endsWith('?')) {
 				info.mandatory = false

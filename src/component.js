@@ -1,3 +1,8 @@
-import {Template} from './mixins/template.js'
-
-export class Component extends Template(HTMLElement) {}
+export class Component extends HTMLElement {
+	constructor() {
+		super()
+		if (!this.shadowRoot) {
+			this.attachShadow({mode: this.constructor.shadow || 'open'})
+		}
+	}
+}
