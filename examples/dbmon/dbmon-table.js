@@ -5,6 +5,7 @@ import {afterNextRender} from '../../src/utils.js'
 class DbmonTable extends HTMLElement {
 	static template = import('./dbmon-table.html')
 	static styles = import('./dbmon/styles.css')
+	static dirtyCheck = true
 
 	connectedCallback() {
 		this.refresh()

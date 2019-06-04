@@ -42,13 +42,25 @@ export class TemplateRoot {
 		return this.template.content
 	}
 
-	connect(host, ok = true) {
+	connect(host, ok = true, dirtyCheck = false) {
 		this.host = host
 		this.parts.forEach((part) => {
-			part.connect(host)
+			part.connect(host, {dirtyCheck})
 		})
 
-		if (ok) {
+		if (!ok) {
+			return
+		}
+
+		if (dirtyCheck) {
+			this.#unobservers = [...this.relatedPaths].map((path) => {
+				let prop = path.split('.')[0]
+				return observeHostProperty(host, prop, (oldVal, newVal) => {
+					this.updateProp(host, prop)
+				})
+			})
+		}
+		else {
 			this.#unobservers = [...this.relatedPaths].map((path) => {
 				return observe(host, path, (oldVal, newVal) => {
 					this.updatePath(host, path)
@@ -73,6 +85,20 @@ export class TemplateRoot {
 		}
 		this.parts.forEach((part) => {
 			part.update(state, immediate)
+		})
+	}
+
+	updateProp(state, prop, immediate) {
+		if (!this.host) {
+			return
+		}
+		this.parts.forEach((part) => {
+			for (let path of part.relatedPaths) {
+				if (path.startsWith(prop + '.')) {
+					part.updatePath(state, prop, immediate)
+					break
+				}
+			}
 		})
 	}
 

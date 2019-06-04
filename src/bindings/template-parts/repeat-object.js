@@ -17,7 +17,7 @@ export class RepeatObject {
 		this.fragmentContainer = new FragmentContainer(templateRoot.content)
 	}
 
-	connect(host, item) {
+	connect(host, item, {dirtyCheck = false} = {}) {
 		if (this.host || this.#unobservers.length) {
 			throw 'Already connected'
 		}
@@ -27,7 +27,7 @@ export class RepeatObject {
 
 		this.templateRoot.connect(this.host, false)
 
-		if (!canObserve(item)) {
+		if (dirtyCheck || !canObserve(item)) {
 			return
 		}
 

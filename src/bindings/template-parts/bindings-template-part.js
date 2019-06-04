@@ -7,7 +7,8 @@ import {perf} from '../../utils/perf.js'
 export class BindingsTemplatePart extends TemplatePart {
 	host = null
 	isConnected = false
-	relatedPaths = new Set
+	dirtyCheck = false
+	relatedPaths
 
 	bindings = [] // [Binding]
 
@@ -41,11 +42,12 @@ export class BindingsTemplatePart extends TemplatePart {
 		})
 	}
 
-	connect(host) {
+	connect(host, {dirtyCheck = false} = {}) {
 		this.bindings.forEach((binding) => {
 			binding.connect(host)
 		})
 		this.host = host
+		this.dirtyCheck = dirtyCheck
 		this.isConnected = true
 	}
 
@@ -125,11 +127,12 @@ export class BindingsTemplatePart extends TemplatePart {
 				let relatedBindings = new Set
 				this.#pathsInMicrotaskQueue.forEach((path) => {
 					this.bindings.forEach((binding) => {
-						if (binding.isPathRelated(path) && binding.target.constructor.updatePhase === 'microtask') {
+						if (this._isBindingRelated(binding, path, 'microtask')) {
 							relatedBindings.add(binding)
 						}
 					})
 				})
+
 				this.#pathsInMicrotaskQueue.clear()
 
 				relatedBindings.forEach((binding) => {
@@ -157,7 +160,7 @@ export class BindingsTemplatePart extends TemplatePart {
 				let relatedBindings = new Set
 				this.#pathsInRenderQueue.forEach((path) => {
 					this.bindings.forEach((binding) => {
-						if (binding.isPathRelated(path) && binding.target.constructor.updatePhase === 'animationFrame') {
+						if (this._isBindingRelated(binding, path, 'animationFrame')) {
 							relatedBindings.add(binding)
 						}
 					})
@@ -179,6 +182,21 @@ export class BindingsTemplatePart extends TemplatePart {
 		}
 
 		perf.markEnd('bindings.updatePath')
+	}
+
+	_isBindingRelated(binding, path, phase) {
+		if (binding.target.constructor.updatePhase !== phase) {
+			return false
+		}
+		if (this.dirtyCheck) {
+			for (let p of binding.relatedPaths) {
+				if (p.startsWith(path + '.')) {
+					return true
+				}
+			}
+		} else {
+			return binding.isPathRelated(path)
+		}
 	}
 }
 

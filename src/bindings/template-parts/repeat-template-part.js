@@ -50,6 +50,7 @@ export class RepeatTemplatePart extends TemplatePart {
 	}
 
 	host
+	dirtyCheck = false
 	relatedPaths
 
 	template
@@ -70,13 +71,14 @@ export class RepeatTemplatePart extends TemplatePart {
 		this.template.remove()
 	}
 
-	connect(host) {
+	connect(host, {dirtyCheck = false} = {}) {
 		this.host = host
+		this.dirtyCheck = dirtyCheck
 		this._repeatObjectsByKey.forEach((repeatObject) => {
-			repeatObject.connect(host)
+			repeatObject.connect(host, repeatObject.item, {dirtyCheck: this.dirtyCheck})
 		})
 		this._repeatObjectsByIndex.forEach((repeatObject) => {
-			repeatObject.connect(host)
+			repeatObject.connect(host, repeatObject.item, {dirtyCheck: this.dirtyCheck})
 		})
 	}
 
@@ -113,7 +115,7 @@ export class RepeatTemplatePart extends TemplatePart {
 	_createRepeatObject(state, item, index, immediate) {
 		let itemTemplateRoot = TemplateRoot.fromSkeleton(this.itemTemplateRootSkeleton)
 		let repeatObject = new RepeatObject(itemTemplateRoot, this.as)
-		repeatObject.connect(this.host, item)
+		repeatObject.connect(this.host, item, {dirtyCheck: this.dirtyCheck})
 		// repeatObject.updateWithState(state, immediate)
 		repeatObject.update(state, immediate)
 
@@ -151,7 +153,7 @@ export class RepeatTemplatePart extends TemplatePart {
 			let item = this.items[i]
 			if (repeatObject.item !== item) {
 				repeatObject.disconnect()
-				repeatObject.connect(this.host, item)
+				repeatObject.connect(this.host, item, {dirtyCheck: this.dirtyCheck})
 			}
 			repeatObject.updateWithState(RepeatObject.mergeStates(preparedState, {[this.as]: this.items[i]}), immediate)
 		})
@@ -186,13 +188,15 @@ export class RepeatTemplatePart extends TemplatePart {
 	// sort existing elements by key
 	_renderSorted(state, immediate) {
 		// update elements
-		// let preparedState = RepeatObject.prepareState(state)
-		// this.items.forEach((item, index) => {
-		// 	let repeatObject = this._repeatObjectsByKey.get(item[this.key])
-		// 	if (repeatObject) {
-		// 		repeatObject.templateRoot.updateWithState(RepeatObject.mergeStates(preparedState, {[this.as]: item}), immediate)
-		// 	}
-		// })
+		if (this.dirtyCheck) {
+			let preparedState = RepeatObject.prepareState(state)
+			this.items.forEach((item, index) => {
+				let repeatObject = this._repeatObjectsByKey.get(item[this.key])
+				if (repeatObject) {
+					repeatObject.updateWithState(RepeatObject.mergeStates(preparedState, {[this.as]: item}), immediate)
+				}
+			})
+		}
 
 		let render = () => {
 			// remove elements
