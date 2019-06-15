@@ -1,4 +1,4 @@
-import {PropertySourceExpression} from '../source-expressions/property-source-expression.js';
+import {PropertySourceExpression} from '../source-expressions/property-source-expression.js'
 import {TargetExpression} from './target-expression.js'
 
 export class EventTargetExpression extends TargetExpression {

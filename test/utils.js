@@ -4,8 +4,8 @@ export let createTemplateRoot = (html, state) => {
 	let template = document.createElement('template')
 	template.innerHTML = html
 	let templateRoot = TemplateRoot.parse(template)
-	templateRoot.connect(document)
-	templateRoot.update(state, true)
+	templateRoot.connect(state)
+	templateRoot.update(true)
 	return templateRoot
 }
 

@@ -6,6 +6,7 @@ import {observePath} from '../data-flow/proxy-object.js'
 export class TemplateRoot {
 	host
 	relatedPaths
+	relatedProps
 	parts = []
 	contextStates = []
 	#unobservers = []
@@ -34,8 +35,13 @@ export class TemplateRoot {
 				})
 			})
 			skeleton.relatedPaths = relatedPaths
+			skeleton.relatedProps = new Set
+			relatedPaths.forEach((path) => {
+				skeleton.relatedProps.add(path.split('.')[0])
+			})
 		}
 		templateRoot.relatedPaths = skeleton.relatedPaths
+		templateRoot.relatedProps = skeleton.relatedProps
 
 		return templateRoot
 	}
@@ -72,15 +78,11 @@ export class TemplateRoot {
 	}
 
 	getState() {
-		let hostState = {}
-		this.relatedPaths.forEach((path) => {
-			let prop = path.split('.')[0]
+		let hostState = {localName: this.host.localName}
+		this.relatedProps.forEach((prop) => {
 			hostState[prop] = this.host[prop]
 		})
-		hostState.localName = this.host.localName
-
-		let state = Object.assign({}, hostState, ...this.contextStates)
-		return state;
+		return Object.assign(hostState, ...this.contextStates)
 	}
 
 	disconnect() {
