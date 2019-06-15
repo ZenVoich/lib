@@ -6,7 +6,7 @@ export let observeHostProperty = (host, property, fn) => {
 	observeProperty(host, property)
 	let observer = (prop, oldVal, newVal) => {
 		if (prop === property) {
-			fn(oldVal, newVal, property, host)
+			fn(oldVal, newVal, property, host, host)
 		}
 	}
 	addObserver(host, observer)

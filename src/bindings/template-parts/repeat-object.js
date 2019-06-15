@@ -1,6 +1,4 @@
 import {FragmentContainer} from './fragment-container.js'
-import {observePath, unobservePath, canObserve} from '../../data-flow/proxy-object.js'
-import {observe} from '../../data-flow/observer.js'
 import {perf} from '../../utils/perf.js'
 
 export class RepeatObject {
@@ -9,7 +7,6 @@ export class RepeatObject {
 	templateRoot
 	fragmentContainer
 	as
-	#unobservers = []
 
 	constructor(templateRoot, as) {
 		this.templateRoot = templateRoot
@@ -18,34 +15,14 @@ export class RepeatObject {
 	}
 
 	connect(host, item, {dirtyCheck = false} = {}) {
-		if (this.host || this.#unobservers.length) {
-			throw 'Already connected'
+		if (this.host) {
+			throw 'RepeatObject: already connected'
 		}
 
 		this.host = host
 		this.item = item
 
-		this.templateRoot.connect(this.host, false)
-
-		if (dirtyCheck || !canObserve(item)) {
-			return
-		}
-
-		let relatedPaths = new Set
-		this.templateRoot.relatedPaths.forEach((path) => {
-			if (path.startsWith(`${this.as}.`)) {
-				let unobserver = observePath(item, path.split(`${this.as}.`)[1], (oldVal, newVal) => {
-					this.templateRoot.updatePath(this.createState(this.host), path)
-				})
-				this.#unobservers.push(unobserver)
-			}
-			else {
-				let unobserver = observe(this.host, path, () => {
-					this.templateRoot.updatePath(this.createState(this.host), path)
-				}, true)
-				this.#unobservers.push(unobserver)
-			}
-		})
+		this.templateRoot.connect(this.host, true, dirtyCheck)
 	}
 
 	disconnect() {
@@ -53,12 +30,7 @@ export class RepeatObject {
 			return
 		}
 		this.templateRoot.disconnect()
-		this.#unobservers.forEach((unobserver) => {
-			unobserver()
-		})
-		this.#unobservers = []
 		this.host = null
-		// this.item = null
 	}
 
 	remove() {
@@ -67,32 +39,7 @@ export class RepeatObject {
 		this.item = null
 	}
 
-	createState(state) {
-		return RepeatObject.mergeStates(RepeatObject.prepareState(state), {[this.as]: this.item})
-	}
-
-	update(state, immediate) {
-		state = this.createState(state)
-		this.templateRoot.update(state, immediate)
-	}
-
-	updateWithState(state, immediate) {
-		this.templateRoot.update(state, immediate)
-	}
-
-	static prepareState(state) {
-		let hostState = {}
-		Object.getOwnPropertyNames(state).forEach((prop) => {
-			hostState[prop] = state[prop]
-		})
-		hostState.localName = state.localName
-		return hostState
-	}
-
-	static mergeStates(state, itemState) {
-		perf.markStart('repeat-template-part: merge states')
-		itemState = Object.assign({}, state, itemState)
-		perf.markEnd('repeat-template-part: merge states')
-		return itemState
+	update(immediate) {
+		this.templateRoot.update(this.templateRoot.getState(), immediate)
 	}
 }

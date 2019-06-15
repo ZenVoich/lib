@@ -27,7 +27,7 @@ export let bindings = (descriptor) => {
 					this.shadowRoot.append(templateRoot.content)
 
 					templateRoot.connect(this, true, this.constructor.dirtyCheck)
-					templateRoot.update(this, true)
+					templateRoot.update(templateRoot.getState(), true)
 
 					this.__templateRoot = templateRoot
 				}

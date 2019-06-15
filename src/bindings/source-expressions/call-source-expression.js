@@ -36,7 +36,7 @@ export class CallSourceExpression extends SourceExpression {
 		this.functionName = functionName
 		this.args = args
 
-		this.relatedPaths = new Set
+		this.relatedPaths = new Set([functionName])
 		args.forEach((expr) => {
 			expr.relatedPaths.forEach((path) => {
 				this.relatedPaths.add(path)

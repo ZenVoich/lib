@@ -1,5 +1,6 @@
 <script type="module" src="./build/examples/test-element/test-element.js"></script>
 <script type="module" src="./build/examples/repeat-example/repeat-example.js"></script>
+<script type="module" src="./build/examples/repeat-parent/repeat-parent.js"></script>
 <script type="module" src="./build/examples/two-way-bindings-example/two-way-bindings-example.js"></script>
 <script type="module" src="./build/examples/animation-example/animation-example.js"></script>
 
@@ -7,9 +8,13 @@
 	body {
 		display: flex;
 	}
+	body > * {
+		margin-right: 30px;
+	}
 </style>
 
 <test-element></test-element>
 <repeat-example></repeat-example>
+<repeat-parent></repeat-parent>
 <two-way-bindings-example></two-way-bindings-example>
 <animation-example></animation-example>

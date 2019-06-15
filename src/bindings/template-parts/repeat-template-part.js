@@ -114,10 +114,11 @@ export class RepeatTemplatePart extends TemplatePart {
 
 	_createRepeatObject(state, item, index, immediate) {
 		let itemTemplateRoot = TemplateRoot.fromSkeleton(this.itemTemplateRootSkeleton)
+		itemTemplateRoot.contextStates = [...this.parentTemplateRoot.contextStates, {[this.as]: item}]
+
 		let repeatObject = new RepeatObject(itemTemplateRoot, this.as)
 		repeatObject.connect(this.host, item, {dirtyCheck: this.dirtyCheck})
-		// repeatObject.updateWithState(state, immediate)
-		repeatObject.update(state, immediate)
+		repeatObject.update(immediate)
 
 		if (this.key) {
 			this._repeatObjectsByKey.set(item[this.key], repeatObject)
@@ -148,14 +149,14 @@ export class RepeatTemplatePart extends TemplatePart {
 	// ensure element count and update templates
 	_renderPlain(state, immediate) {
 		// update existing elements
-		let preparedState = RepeatObject.prepareState(state)
 		this._repeatObjectsByIndex.forEach((repeatObject, i) => {
 			let item = this.items[i]
 			if (repeatObject.item !== item) {
 				repeatObject.disconnect()
+				repeatObject.templateRoot.contextStates = [...this.parentTemplateRoot.contextStates, {[this.as]: item}]
 				repeatObject.connect(this.host, item, {dirtyCheck: this.dirtyCheck})
 			}
-			repeatObject.updateWithState(RepeatObject.mergeStates(preparedState, {[this.as]: this.items[i]}), immediate)
+			repeatObject.update(immediate)
 		})
 
 		let render = () => {
@@ -189,11 +190,10 @@ export class RepeatTemplatePart extends TemplatePart {
 	_renderSorted(state, immediate) {
 		// update elements
 		if (this.dirtyCheck) {
-			let preparedState = RepeatObject.prepareState(state)
 			this.items.forEach((item, index) => {
 				let repeatObject = this._repeatObjectsByKey.get(item[this.key])
 				if (repeatObject) {
-					repeatObject.updateWithState(RepeatObject.mergeStates(preparedState, {[this.as]: item}), immediate)
+					repeatObject.update(immediate)
 				}
 			})
 		}

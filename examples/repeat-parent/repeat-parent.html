@@ -1,0 +1,15 @@
+<style>
+	div {
+		margin-left: 10px;
+	}
+</style>
+
+item.0.x: {items.0.x}
+
+<div #repeat="{items}" #repeat-key="key" @click="{onClick}">
+	top: {top}
+	p: {item.x}
+	<div class="nested-items">
+		<div #repeat={item.nested} #repeat-as=nested>top: {top}, parent item: {item.x}, nested: {nested.n}</div>
+	</div>
+</div>

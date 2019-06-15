@@ -52,7 +52,7 @@ export class ShowHideTemplatePart extends TemplatePart {
 	connect(host) {
 		this.host = host
 		this.childTemplateRoot.connect(host)
-		this.childTemplateRoot.update(this.host, true)
+		this.childTemplateRoot.update(this.childTemplateRoot.getState(), true)
 	}
 
 	disconnect() {

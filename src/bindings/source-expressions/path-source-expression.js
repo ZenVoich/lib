@@ -9,16 +9,16 @@ export class PathSourceExpression extends SourceExpression {
 		regex.lastIndex = 0
 
 		if (match) {
-			return new PathSourceExpression({path: match[1].split('.')})
+			return new PathSourceExpression({path: match[1].split('.'), pathStr: match[1]})
 		}
 	}
 
 	path = []
 
-	constructor({path} = {}) {
+	constructor({path, pathStr} = {}) {
 		super()
 		this.path = path
-		this.relatedPaths = new Set([path.join('.')])
+		this.relatedPaths = new Set([pathStr])
 	}
 
 	setValue(state, value) {

@@ -103,7 +103,7 @@ export class AttachDetachTemplatePart extends TemplatePart {
 			if (!this.fragmentContainer.isConnected) {
 				this.comment.replaceWith(this.fragmentContainer.content)
 				this.childTemplateRoot.connect(this.host)
-				this.childTemplateRoot.update(this.host, true)
+				this.childTemplateRoot.update(this.childTemplateRoot.getState(), true)
 			}
 			if (!immediate) {
 				pub(this.template, 'intro')

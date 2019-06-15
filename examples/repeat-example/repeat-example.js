@@ -8,6 +8,7 @@ import './random-number.js'
 class RepeatExample extends HTMLElement {
 	static template = import('./repeat-example.html')
 	static styles = import('./repeat-example.css')
+	// static dirtyCheck = true
 
 	pi = Math.PI
 	secret = '1-1'
@@ -32,6 +33,7 @@ class RepeatExample extends HTMLElement {
 
 	onClick(e) {
 		e.currentTarget.item.value += 10
+		// this.items = this.items
 	}
 
 	_isBig(num) {
@@ -55,6 +57,7 @@ class RepeatExample extends HTMLElement {
 					proxyObject({id: 5, val: 5}),
 				])}),
 			}))
+			// this.items = this.items
 		}
 
 		requestAnimationFrame(() => {

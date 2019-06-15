@@ -100,7 +100,7 @@ class TestElement extends HTMLElement {
 
 		let templateRoot = TemplateRoot.parse(this.shadowRoot.querySelector('#template'))
 		templateRoot.connect(this)
-		templateRoot.update(this)
+		templateRoot.update(templateRoot.getState())
 
 		this.shadowRoot.querySelector('#content').innerHTML = ''
 		this.shadowRoot.querySelector('#content').append(templateRoot.content)

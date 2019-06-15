@@ -21,13 +21,13 @@ export let watch = (...paths) => {
 			pathsInfo.push(info)
 		})
 
-		let observer = (oldVal, newVal, path, host) => {
+		let observer = (oldVal, newVal, path, state, host) => {
 			let isPathRelated = pathsInfo.find((info) => {
 				return path === info.path
 			})
 			let canCall = isPathRelated && pathsInfo.every((info) => {
 				if (info.mandatory) {
-					return getByPath(host, info.path) != null
+					return getByPath(state, info.path) != null
 				}
 				return true
 			})
@@ -40,7 +40,7 @@ export let watch = (...paths) => {
 				}
 				else {
 					let oldValues = pathsInfo.map((info) => {
-						return info.path === path ? oldVal : getByPath(host, info.path)
+						return info.path === path ? oldVal : getByPath(state, info.path)
 					})
 					host[descriptor.key].call(host, ...oldValues)
 				}
