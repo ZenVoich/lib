@@ -48,28 +48,24 @@ export class TemplateRoot {
 		return this.template.content
 	}
 
-	connect(host, observeHost = true, dirtyCheck = false) {
+	connect(host, dirtyCheck = false) {
 		this.host = host
 		this.parts.forEach((part) => {
 			part.connect(host, {dirtyCheck})
 		})
 
-		if (!observeHost) {
-			return
-		}
-
 		if (dirtyCheck) {
 			this.#unobservers = [...this.relatedPaths].map((path) => {
 				let prop = path.split('.')[0]
 				return observeHostProperty(host, prop, (oldVal, newVal) => {
-					this.updateProp(this.getState(), prop)
+					this.updateProp(prop)
 				})
 			})
 		}
 		else {
 			this.#unobservers = [...this.relatedPaths].map((path) => {
 				return observe(host, this.getState(), path, (oldVal, newVal) => {
-					this.updatePath(this.getState(), path)
+					this.updatePath(path)
 				})
 			})
 		}
@@ -97,19 +93,21 @@ export class TemplateRoot {
 		})
 	}
 
-	update(state, immediate) {
+	update(immediate) {
 		if (!this.host) {
 			return
 		}
+		let state = this.getState()
 		this.parts.forEach((part) => {
 			part.update(state, immediate)
 		})
 	}
 
-	updateProp(state, prop, immediate) {
+	updateProp(prop, immediate) {
 		if (!this.host) {
 			return
 		}
+		let state = this.getState()
 		this.parts.forEach((part) => {
 			for (let path of part.relatedPaths) {
 				if (path.startsWith(prop + '.')) {
@@ -120,10 +118,11 @@ export class TemplateRoot {
 		})
 	}
 
-	updatePath(state, path, immediate) {
+	updatePath(path, immediate) {
 		if (!this.host) {
 			return
 		}
+		let state = this.getState()
 		this.parts.forEach((part) => {
 			if (part.relatedPaths.has(path)) {
 				part.updatePath(state, path, immediate)

@@ -22,7 +22,7 @@ export class RepeatObject {
 		this.host = host
 		this.item = item
 
-		this.templateRoot.connect(this.host, true, dirtyCheck)
+		this.templateRoot.connect(this.host, dirtyCheck)
 	}
 
 	disconnect() {
@@ -40,6 +40,6 @@ export class RepeatObject {
 	}
 
 	update(immediate) {
-		this.templateRoot.update(this.templateRoot.getState(), immediate)
+		this.templateRoot.update(immediate)
 	}
 }

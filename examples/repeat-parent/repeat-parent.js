@@ -36,8 +36,4 @@ class RepeatParent extends HTMLElement {
 		// this.items[0].nested[1].n++
 		this.items[1].nested[1].n++
 	}
-
-	connectedCallback() {
-		console.log(Object.getOwnPropertyNames(this))
-	}
 }
