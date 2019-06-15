@@ -11,28 +11,20 @@ export class RepeatTemplatePart extends TemplatePart {
 			return
 		}
 
-		let itemsSourceExpression = parseSourceExpressionMemoized(template.getAttribute(attribute))
+		let match = template.getAttribute(attribute).match(/\s*\{\s*(.+?)(?:\s*as\s+(.+?)\s*)?(?:\s*by\s+(.+?)\s*)?\s*\}\s*/)
+		let itemsSourceExpression = match && parseSourceExpressionMemoized(`{${match[1]}}`)
+
+		if (!itemsSourceExpression) {
+			throw `Invalid #repeat value: #repeat="${template.getAttribute(attribute)}"`
+		}
+
 		template.removeAttribute('#repeat')
 
-		let as = 'item'
-		if (template.hasAttribute('#repeat-as')) {
-			as = template.getAttribute('#repeat-as')
-			template.removeAttribute('#repeat-as')
-		}
-
-		let key = ''
-		if (template.hasAttribute('#repeat-key')) {
-			key = template.getAttribute('#repeat-key')
-			template.removeAttribute('#repeat-key')
-		}
-
-		let itemTemplateRootSkeleton = TemplateRoot.parseSkeleton(template)
-
 		return {
-			as,
-			key,
+			as: match[2] || 'item',
+			key: match[3] || '',
 			itemsSourceExpression,
-			itemTemplateRootSkeleton,
+			itemTemplateRootSkeleton: TemplateRoot.parseSkeleton(template),
 			relatedPaths: new Set([...itemsSourceExpression.relatedPaths].map((path) => {
 				return path + '.length'
 			}))

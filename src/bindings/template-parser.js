@@ -118,8 +118,6 @@ let parseDirectiveElement = (element) => {
 		'#attach-if',
 		'#detach-if',
 		'#repeat',
-		'#repeat-as',
-		'#repeat-key',
 		'#animation',
 	]
 	let unknownDirective = attrs.find(attr => attr.startsWith('#') && !directiveWhitelist.includes(attr))
@@ -128,7 +126,7 @@ let parseDirectiveElement = (element) => {
 		return
 	}
 
-	let directives = attrs.filter(attr => attr.startsWith('#') && !attr.startsWith('#animation') && attr !== '#repeat-as' && attr !== '#repeat-key')
+	let directives = attrs.filter(attr => attr.startsWith('#') && !attr.startsWith('#animation'))
 	if (directives.length > 1) {
 		console.error(`Directives ${directives[0]} and ${directives[1]} can't be used together`, element)
 		return
