@@ -5,6 +5,7 @@ import {CompoundSourceExpression} from './source-expressions/compound-source-exp
 import {parse as parseSourceExpressionChunk} from './source-expressions/source-expression-parser.js'
 
 import {PropertyTargetExpression} from './target-expressions/property-target-expression.js'
+import {AttributeValuePartTargetExpression} from './target-expressions/attribute-value-part-target-expression.js'
 import {parseSkeleton as parseTargetExpressionSkeleton} from './target-expressions/target-expression-parser.js'
 
 import {Binding} from './binding.js'
@@ -113,9 +114,9 @@ let parseAttribute = (el, attr) => {
 		return
 	}
 
-	// <div .prop="val">
+	// <div .prop="val"> or <div style|color="red">
 	if (!source) {
-		if (targetSkeleton.class === PropertyTargetExpression) {
+		if (targetSkeleton.class === PropertyTargetExpression || targetSkeleton.class === AttributeValuePartTargetExpression) {
 			source = new ValueSourceExpression({value: el.getAttribute(attr)})
 		}
 		else {

@@ -11,8 +11,8 @@ export class AttributeValuePartTargetExpression extends TargetExpression {
 
 		let [attr, value] = attribute.split('|')
 
-		if (attr !== 'class') {
-			console.error(`Attribute value part expression can only be applied to the 'class' attribute: ${attribute}`)
+		if (attr !== 'class' && attr !== 'style') {
+			console.error(`Attribute value part expression can only be applied to the 'class' or 'style' attribute: ${attribute}`)
 			return
 		}
 
@@ -38,6 +38,11 @@ export class AttributeValuePartTargetExpression extends TargetExpression {
 	setValue(value) {
 		if (this.attributeName === 'class') {
 			this.element.classList.toggle(this.attributeValuePart, !!value)
+			return
+		}
+
+		if (this.attributeName === 'style') {
+			this.element.style[this.attributeValuePart] = value
 			return
 		}
 

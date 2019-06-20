@@ -82,6 +82,20 @@ assertRender('<b class|yes="{x}" class|no="{y}"></b>', {x: false, y: true}, '<b 
 assertRender('<b class="yes" class|yes="{x}" class|no="{y}"></b>', {x: false, y: true}, '<b class="no"></b>')
 assertRender('<b class="no" class|yes="{x}" class|no="{y}"></b>', {x: false, y: true}, '<b class="no"></b>')
 
+// style attribute value part
+assertRender('<b style|not-valid="{x}"></b>', {x: 'a'}, '<b></b>')
+assertRender('<b style|color="{x}"></b>', {x: null}, '<b></b>')
+assertRender('<b style|color="{x}"></b>', {x: ''}, '<b></b>')
+assertRender('<b style|color="{x}"></b>', {x: true}, '<b></b>')
+assertRender('<b style|color="{x}"></b>', {x: 'red'}, '<b style="color: red;"></b>')
+assertRender('<b style|border-top="2px solid {x}"></b>', {x: 'red'}, '<b style="border-top: 2px solid red;"></b>')
+assertRender('<b style|border-top="2px solid {x}"></b>', {x: 'invalid'}, '<b></b>')
+assertRender('<b style|color="{x}"></b>', {x: 'not-a-collor'}, '<b></b>')
+assertRender('<b style|color="{x}"></b>', {x: 'var(--some-var)'}, '<b style="color: var(--some-var);"></b>')
+assertRender('<b style|background-color="blue"></b>', {}, '<b style="background-color: blue;"></b>')
+assertRender('<b style="color: blue; text-align: center;" style|text-align="{x}"></b>', {x: 'left'}, '<b style="color: blue; text-align: left;"></b>')
+assertRender('<b style="color: blue; text-align: center;" style|text-align="{x}"></b>', {x: 'invalid'}, '<b style="color: blue; text-align: center;"></b>')
+
 // .inner-html
 assertRender('<b>{data}</b>', {data: '<i>a</i>'}, '<b>&lt;i&gt;a&lt;/i&gt;</b>')
 assertRender('<b .inner-html="{data}"></b>', {data: '<i>a</i>'}, '<b><i>a</i></b>')
