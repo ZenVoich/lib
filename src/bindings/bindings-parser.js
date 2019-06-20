@@ -157,8 +157,8 @@ let parseNode = (node) => {
 
 let createBinding = (source, targetSkeleton) => {
 	let direction = targetSkeleton.twoWayBind ? 'two-way' : 'downward'
-	if (direction !== 'downward' && source instanceof CompoundSourceExpression) {
-		console.error('two-way binding can only contain one bidning on right-side')
+	if (direction !== 'downward' && !(source instanceof PropertySourceExpression) && !(source instanceof PathSourceExpression)) {
+		console.error('two-way binding can only contain a property binding on the right side')
 		return
 	}
 	return {direction, source, targetSkeleton}

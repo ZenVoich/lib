@@ -1,10 +1,12 @@
 import {ValueSourceExpression} from './value-source-expression.js'
 import {PropertySourceExpression} from './property-source-expression.js'
 import {PathSourceExpression} from './path-source-expression.js'
+import {EqualitySourceExpression} from './equality-source-expression.js'
 import {CallSourceExpression} from './call-source-expression.js'
 
 let sourceExprClasses = [
 	CallSourceExpression,
+	EqualitySourceExpression,
 	PathSourceExpression,
 	PropertySourceExpression,
 	ValueSourceExpression,
