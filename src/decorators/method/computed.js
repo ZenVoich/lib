@@ -19,20 +19,23 @@ export let computed = (...paths) => {
 			pathsInfo.push(info)
 		})
 
+		let canCall = (state) => {
+			return pathsInfo.every((info) => {
+				return !info.mandatory || getByPath(state, info.path) != null
+			})
+		}
+
 		let observer = (oldVal, newVal, path, state, host) => {
 			requestMicrotask(host, 'computed:' + descriptor.key, () => {
-				let canNotify = pathsInfo.every((info) => {
-					return !info.mandatory || getByPath(state, info.path) != null
-				})
-				if (canNotify) {
-					notifyHostProperty(host, descriptor.key)
-				}
+				notifyHostProperty(host, descriptor.key)
 			})
 		}
 
 		return {
 			...descriptor,
 			finisher(Class) {
+				let getter = Class.prototype.__lookupGetter__(descriptor.key)
+
 				return class extends Class {
 					constructor() {
 						super()
@@ -40,6 +43,12 @@ export let computed = (...paths) => {
 						pathsInfo.forEach((info) => {
 							observe(this, this, info.path, observer)
 						})
+					}
+
+					get [descriptor.key]() {
+						if (canCall(this)) {
+							return getter.call(this)
+						}
 					}
 				}
 			}

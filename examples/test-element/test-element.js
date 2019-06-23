@@ -42,6 +42,17 @@ class TestElement extends HTMLElement {
 		return `{${this.proxy.p}}`
 	}
 
+	@computed('noProp')
+	get empty() {
+		console.error('this must not be called', this.noProp)
+		return this.noProp
+	}
+
+	@computed('empty')
+	get empty2() {
+		console.error('this must not be called 2')
+	}
+
 	// @watch('isConnected', 'x')
 	// w() {
 	// 	console.log('isConnected changed', this.isConnected, this.x)

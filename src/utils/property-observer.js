@@ -2,7 +2,6 @@ let observedPropsByComponent = new WeakMap
 let observersByComponent = new WeakMap
 
 export let observeHostProperty = (host, property, fn) => {
-	// console.log('ob')
 	observeProperty(host, property)
 	let observer = (prop, oldVal, newVal) => {
 		if (prop === property) {

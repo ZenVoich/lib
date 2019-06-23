@@ -70,14 +70,14 @@ export class TemplateRoot {
 		}
 		else {
 			this.#unobservers = [...this.relatedPaths].map((path) => {
-				return observe(host, this.getState(), path, (oldVal, newVal) => {
+				return observe(host, this._getState(), path, (oldVal, newVal) => {
 					this.updatePath(path)
 				})
 			})
 		}
 	}
 
-	getState() {
+	_getState() {
 		let hostState = {localName: this.host.localName}
 		this.relatedProps.forEach((prop) => {
 			hostState[prop] = this.host[prop]
@@ -99,7 +99,7 @@ export class TemplateRoot {
 		if (!this.host) {
 			return
 		}
-		let state = this.getState()
+		let state = this._getState()
 		this.parts.forEach((part) => {
 			part.update(state, immediate)
 		})
@@ -109,7 +109,7 @@ export class TemplateRoot {
 		if (!this.host) {
 			return
 		}
-		let state = this.getState()
+		let state = this._getState()
 		this.parts.forEach((part) => {
 			for (let path of part.relatedPaths) {
 				if (path === prop || path.startsWith(prop + '.')) {
@@ -124,7 +124,7 @@ export class TemplateRoot {
 		if (!this.host) {
 			return
 		}
-		let state = this.getState()
+		let state = this._getState()
 		this.parts.forEach((part) => {
 			if (part.relatedPaths.has(path)) {
 				part.updatePath(state, path, immediate)
