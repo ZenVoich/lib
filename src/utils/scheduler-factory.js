@@ -58,7 +58,7 @@ export let createScheduler = (schedule) => {
 		}
 		requests.add(id)
 
-		throttle(id, () => {
+		throttle(null, () => {
 			requests.delete(id)
 			fn()
 			if (!requests.size) {

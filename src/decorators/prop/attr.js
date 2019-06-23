@@ -15,7 +15,7 @@ export let attr = (descriptor) => {
 		if (host.__renderingProps.has(prop)) {
 			return
 		}
-		requestRender(host, prop, () => {
+		requestRender(host, 'attr:' + prop, () => {
 			host.__renderingProps.add(prop)
 			let value = host[prop]
 			if (!value) {

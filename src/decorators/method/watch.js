@@ -55,7 +55,7 @@ export let watch = (...paths) => {
 						super()
 
 						pathsInfo.forEach((info) => {
-							observe(this, info.path, observer)
+							observe(this, this, info.path, observer)
 						})
 					}
 				}
