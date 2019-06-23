@@ -112,7 +112,7 @@ export class TemplateRoot {
 		let state = this.getState()
 		this.parts.forEach((part) => {
 			for (let path of part.relatedPaths) {
-				if (path.startsWith(prop + '.')) {
+				if (path === prop || path.startsWith(prop + '.')) {
 					part.updatePath(state, prop, immediate)
 					break
 				}

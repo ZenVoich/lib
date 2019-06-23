@@ -190,7 +190,7 @@ export class BindingsTemplatePart extends TemplatePart {
 		}
 		if (this.dirtyCheck) {
 			for (let p of binding.source.relatedPaths) {
-				if (p.startsWith(path + '.')) {
+				if (p === path || p.startsWith(path + '.')) {
 					return true
 				}
 			}
