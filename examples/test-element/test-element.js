@@ -63,6 +63,20 @@ class TestElement extends HTMLElement {
 	// 	console.log('proxy.nested changed')
 	// }
 
+	inputValue = '<b>x</b>'
+
+	@watch('inputValue')
+	watchInputValue() {
+		console.log('inputValue changed', this.inputValue)
+	}
+
+	date = new Date
+
+	@watch('date?')
+	dateChanged() {
+		console.log('date changed', this.date)
+	}
+
 	increment() {
 		// for (var i = 0; i <= 100000; i++) {
 		// for (var i = 0; i <= 1000; i++) {

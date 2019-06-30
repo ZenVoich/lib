@@ -26,7 +26,10 @@ Binding in slot: <slot name=sl>{prop}</slot>
 <button @click="{increment}">Increment</button>
 
 <div>
-	Contenteditable: <span contenteditable>{prop}</span>
+	Contenteditable: <span contenteditable>{prop}</span><br>
+	Contenteditable two-way binding innerHTML: <span contenteditable :inner-html="{inputValue}"></span><br>
+	Contenteditable two-way binding innerText: <span contenteditable :inner-text="{inputValue}"></span><br>
+	Contenteditable two-way binding textContent: <span contenteditable :text-content="{inputValue}"></span>
 </div>
 
 Slot: <slot>Default slot value {prop}</slot>
@@ -71,6 +74,7 @@ Computed pp: {pp}
 
 <br>
 <input @input="{onInput}">
+<input type="date" :value-as-date="{date}">
 
 <br>
 <br>
