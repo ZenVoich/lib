@@ -1,4 +1,4 @@
-import {define, watch, debounce, attr, computed, notify, type} from '../../src/lib.js'
+import {define, watch, debounce, attr, computed, notify, type, listen} from '../../src/lib.js'
 import {TemplateRoot} from '../../src/bindings.js'
 import {proxyObject} from '../../src/data-flow/proxy-object.js'
 
@@ -115,6 +115,35 @@ class TestElement extends HTMLElement {
 
 		this.shadowRoot.querySelector('#content').innerHTML = ''
 		this.shadowRoot.querySelector('#content').append(templateRoot.content)
+	}
+
+	// @listen('button', 'click')
+	// buttonClick(e) {
+	// 	console.log('button click')
+	// }
+
+	// @listen('outside', 'click')
+	// buttonClick(e) {
+	// 	console.log('outside click')
+	// }
+
+	dragging = false
+
+	@listen('host', 'pointerdown')
+	dragStart(e) {
+		this.dragging = true
+		// console.log('down')
+	}
+
+	@listen('body', 'pointerup', ['dragging'])
+	dragEnd() {
+		this.dragging = false
+		// console.log('up')
+	}
+
+	@listen('body', 'pointermove', ['dragging'])
+	dragMove() {
+		console.log('move')
 	}
 }
 
