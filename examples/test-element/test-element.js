@@ -1,12 +1,11 @@
-import {define, watch, debounce, attr, computed, notify, type, listen} from '../../src/lib.js'
+import {define, template, styles, watch, debounce, attr, computed, notify, type, listen} from '../../src/lib.js'
 import {TemplateRoot} from '../../src/bindings.js'
 import {proxyObject} from '../../src/data-flow/proxy-object.js'
 
 @define('test-element')
+@template(import('./test-element.html'))
+@styles(import('./test-element.css'))
 class TestElement extends HTMLElement {
-	static template = import('./test-element.html')
-	static styles = import('./test-element.css')
-
 	@type(Number)
 	x = 2
 

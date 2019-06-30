@@ -1,5 +1,5 @@
 import {bindings} from './bindings.js'
-import {template} from './template.js'
+import {initTemplate} from './init-template.js'
 
 export let define = (name) => {
 	return (descriptor) => {
@@ -8,7 +8,7 @@ export let define = (name) => {
 			finisher(Class) {
 				Promise.all([Class.template, Class.styles]).then(async () => {
 					@bindings
-					@template
+					@initTemplate
 					class NewClass extends Class {
 						connectedCallback() {
 							super.connectedCallback && super.connectedCallback()

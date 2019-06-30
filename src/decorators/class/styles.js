@@ -1,9 +1,9 @@
-export let template = (template) => {
+export let styles = (styles) => {
 	return (descriptor) => {
 		return {
 			...descriptor,
 			finisher(Class) {
-				Class.template = template
+				Class.styles = styles
 			}
 		}
 	}
