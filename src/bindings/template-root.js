@@ -1,7 +1,6 @@
 import {parseSkeleton, fromSkeleton} from './template-parser.js'
 import {observeHostProperty} from '../utils/property-observer.js'
 import {observe} from '../data-flow/observer.js'
-import {observePath} from '../data-flow/proxy-object.js'
 
 export class TemplateRoot {
 	host
@@ -72,7 +71,7 @@ export class TemplateRoot {
 			this.#unobservers = [...this.relatedPaths].map((path) => {
 				return observe(host, this._getState(), path, (oldVal, newVal) => {
 					this.updatePath(path)
-				})
+				}, !!this.contextStates.length)
 			})
 		}
 	}

@@ -66,6 +66,8 @@ let observeProperty = (host, prop) => {
 	let value = setter || getter ? null : host[prop]
 
 	Object.defineProperty(host, prop, {
+		enumerable: true,
+		configurable: true,
 		set(val) {
 			let oldVal = getter ? getter.call(host) : value
 			// if ((['boolean', 'number', 'string'].includes(typeof oldVal) || ['boolean', 'number', 'string'].includes(typeof val)) && val === oldVal) {

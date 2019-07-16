@@ -25,9 +25,9 @@ export class RepeatTemplatePart extends TemplatePart {
 			key: match[3] || '',
 			itemsSourceExpression,
 			itemTemplateRootSkeleton: TemplateRoot.parseSkeleton(template),
-			relatedPaths: new Set([...itemsSourceExpression.relatedPaths].map((path) => {
+			relatedPaths: new Set([...itemsSourceExpression.relatedPaths, ...[...itemsSourceExpression.relatedPaths].map((path) => {
 				return path + '.length'
-			}))
+			})])
 		}
 	}
 

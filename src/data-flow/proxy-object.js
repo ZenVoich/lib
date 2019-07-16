@@ -18,6 +18,7 @@ export class ProxyObject {
 }
 
 export let proxyObject = (object) => {
+	return object
 	if (proxyObjects.has(object)) {
 		return object
 	}
@@ -171,7 +172,7 @@ export let getByPath = (obj, path) => {
 	return obj
 }
 
-export let notifyPath = (object, path, oldVal, newVal) => {
+export let notifyPath = (object, path, oldVal, newVal, stack = []) => {
 	let observersByPath = observersByObject.get(object)
 	if (observersByPath) {
 		observersByPath.forEach((observers, observerPath) => {
@@ -196,8 +197,11 @@ export let notifyPath = (object, path, oldVal, newVal) => {
 	let parents = nesting.get(object)
 	if (parents) {
 		parents.forEach((parentProps, parent) => {
+			if (parent === object || stack.includes(parent)) {
+				return
+			}
 			parentProps.forEach((parentProp) => {
-				notifyPath(parent, `${parentProp}.${path}`, oldVal, newVal)
+				notifyPath(parent, `${parentProp}.${path}`, oldVal, newVal, [...stack, object])
 			})
 		})
 	}
@@ -205,7 +209,7 @@ export let notifyPath = (object, path, oldVal, newVal) => {
 
 // note: path=a.b will match a.b and a.b.c observers
 // note: nestedOnly=true, path=a.b will match a.b.c observer but will not a.b
-let hasObservers = (object, path, nestedOnly = false) => {
+let hasObservers = (object, path, nestedOnly = false, stack = []) => {
 	let observersByPath = observersByObject.get(object)
 	if (observersByPath) {
 		for (let [p, observers] of observersByPath) {
@@ -224,8 +228,11 @@ let hasObservers = (object, path, nestedOnly = false) => {
 	let parents = nesting.get(object)
 	if (parents) {
 		for (let [parent, parentProps] of parents) {
+			if (parent === object || stack.includes(parent)) {
+				continue
+			}
 			for (let parentProp of parentProps) {
-				if (hasObservers(parent, `${parentProp}`)) {
+				if (hasObservers(parent, `${parentProp}`, [...stack, object])) {
 					return true
 				}
 			}
@@ -236,4 +243,5 @@ let hasObservers = (object, path, nestedOnly = false) => {
 window.proxyObject = proxyObject
 window.observePath = observePath
 window.proxyObjects = proxyObjects
-window.observersByObject = observersByObject
+// window.observersByObject = observersByObject
+window.hasObservers = hasObservers
