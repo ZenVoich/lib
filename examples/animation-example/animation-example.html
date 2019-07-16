@@ -1,14 +1,18 @@
 <style>
 	:host {
 		display: block;
+		--fast: 0.2s;
+		--slow: 1s;
 	}
 
 	@keyframes fade {
 		0% {
 			opacity: 0;
+			background: white;
 		}
 		100% {
 			opacity: 1;
+			background: white;
 		}
 	}
 
@@ -26,6 +30,6 @@
 
 <button @click="{toggle}">Toggle</button>
 
-<div #attach-if="{shown}" #animation="fade 1s">Fade {shown}</div>
+<div #attach-if="{shown}" #animation="fade var(--fast)">Fade {shown}</div>
 <div #attach-if="{shown}" #animation="fly 3s">Fly</div>
 <div>Static</div>

@@ -6,6 +6,7 @@ import {requestRender} from '../../utils/renderer.js'
 import {sub, unsub} from '../../utils/pub-sub.js'
 
 let tempEl = document.createElement('div')
+tempEl.style.display = 'none'
 
 let stringToMs = (str) => {
 	return parseFloat(str) * (str.endsWith('ms') ? 1 : 1000)
@@ -20,30 +21,16 @@ export class AnimationTemplatePart extends TemplatePart {
 		let animation = template.getAttribute(attribute)
 		template.removeAttribute(attribute)
 
-		tempEl.style.animation = animation
-
-		// linear by default
-		let easing = tempEl.style.animationTimingFunction
-		if (easing === 'ease' && !animation.includes('ease')) {
-			easing = 'linear'
-		}
-
 		return {
 			type: attribute.split('-')[1],
-			animationName: tempEl.style.animationName,
-			timing: {
-				delay: stringToMs(tempEl.style.animationDelay),
-				duration: stringToMs(tempEl.style.animationDuration),
-				easing: easing,
-			},
+			animationString: animation,
 		}
 	}
 
 	static fromSkeleton(skeleton, template) {
 		let part = new AnimationTemplatePart(template)
 		part.type = skeleton.type
-		part.animationName = skeleton.animationName
-		part.timing = skeleton.timing
+		part.animationString = skeleton.animationString
 		return part
 	}
 
@@ -53,6 +40,7 @@ export class AnimationTemplatePart extends TemplatePart {
 	element = null
 
 	type = '' // '' | in | out
+	animationString = ''
 	animationName = ''
 	timing = null
 
@@ -105,7 +93,8 @@ export class AnimationTemplatePart extends TemplatePart {
 		this.phase = phase
 
 		if (!this.animation) {
-			this.animation = this.element.animate(this.getKeyframes(), this.timing)
+			let timing = this.getTiming()
+			this.animation = this.element.animate(this.getKeyframes(), timing)
 			this.animation.onfinish = () => {
 				if (this.phase === 'intro') {
 					this.resolveIntro()
@@ -117,6 +106,34 @@ export class AnimationTemplatePart extends TemplatePart {
 		}
 		this.animation.playbackRate = this.phase === 'intro' ? 1 : -1
 		this.animation.play()
+	}
+
+	getTiming() {
+		if (this.timing) {
+			return this.timing
+		}
+		this.host.shadowRoot.appendChild(tempEl)
+		tempEl.style.animation = this.animationString
+
+		let computedStyle = getComputedStyle(tempEl)
+
+		// linear by default
+		let easing = computedStyle.animationTimingFunction
+		if (easing === 'ease' && !this.animationString.includes('ease')) {
+			easing = 'linear'
+		}
+
+		this.animationName = computedStyle.animationName
+
+		this.timing = {
+			delay: stringToMs(computedStyle.animationDelay),
+			duration: stringToMs(computedStyle.animationDuration),
+			easing: easing,
+		}
+
+		tempEl.remove()
+
+		return this.timing
 	}
 
 	getKeyframes() {
