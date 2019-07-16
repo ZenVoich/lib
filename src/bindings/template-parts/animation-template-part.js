@@ -174,7 +174,7 @@ export class AnimationTemplatePart extends TemplatePart {
 			}
 
 			let keyframe = {offset}
-			Object.keys(rule.style).forEach((key) => {
+			![...rule.style].forEach((key) => {
 				let value = rule.style[key]
 				if (value && isNaN(parseInt(key))) {
 					keyframe[key] = value
