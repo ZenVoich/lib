@@ -69,9 +69,23 @@ export class TemplateRoot {
 		}
 		else {
 			this.#unobservers = [...this.relatedPaths].map((path) => {
-				return observe(host, this._getState(), path, (oldVal, newVal) => {
+				let target = host
+
+				if (this.contextStates.length) {
+					let prop = path.split('.')[0]
+
+					for (let i = this.contextStates.length - 1; i >= 0; i--) {
+						let state = this.contextStates[i]
+						if (Object.keys(state).includes(prop)) {
+							target = state
+							break
+						}
+					}
+				}
+
+				return observe(target, path, (oldVal, newVal) => {
 					this.updatePath(path)
-				}, !!this.contextStates.length)
+				})
 			})
 		}
 	}

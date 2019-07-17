@@ -2,15 +2,7 @@ import {observeHostProperty} from '../utils/property-observer.js'
 // import {observePath, canObserve} from '../data-flow/proxy-object.js'
 import {observePath, canObserve} from '../data-flow/observe-path.js'
 
-let observeNew = (host, state, path, fn, composedSate = false) => {
-	let target = host
-	if (composedSate) {
-		target = state
-	}
-	return observePath(target, path, (oldVal, newVal) => {
-		fn(oldVal, newVal, path, state, host)
-	})
-}
+let observeNew = observePath
 
 let observeOld = (host, state, path, fn, ok=false) => {
 	let pathAr = path.split('.')

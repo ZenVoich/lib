@@ -25,12 +25,6 @@ export let computed = (...paths) => {
 			})
 		}
 
-		let observer = (oldVal, newVal, path, state, host) => {
-			requestMicrotask(host, 'computed:' + descriptor.key, () => {
-				notifyHostProperty(host, descriptor.key)
-			})
-		}
-
 		return {
 			...descriptor,
 			finisher(Class) {
@@ -41,7 +35,11 @@ export let computed = (...paths) => {
 						super()
 
 						pathsInfo.forEach((info) => {
-							observe(this, this, info.path, observer)
+							observe(this, info.path, () => {
+								requestMicrotask(this, 'computed:' + descriptor.key, () => {
+									notifyHostProperty(this, descriptor.key)
+								})
+							})
 						})
 					}
 

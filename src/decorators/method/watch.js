@@ -21,32 +21,6 @@ export let watch = (...paths) => {
 			pathsInfo.push(info)
 		})
 
-		let observer = (oldVal, newVal, path, state, host) => {
-			let isPathRelated = pathsInfo.find((info) => {
-				return path === info.path
-			})
-			let canCall = isPathRelated && pathsInfo.every((info) => {
-				if (info.mandatory) {
-					return getByPath(state, info.path) != null
-				}
-				return true
-			})
-			if (!canCall) {
-				return
-			}
-			requestMicrotask(host, 'watch:' + descriptor.key, () => {
-				if (pathsInfo.length === 1) {
-					host[descriptor.key].call(host, oldVal)
-				}
-				else {
-					let oldValues = pathsInfo.map((info) => {
-						return info.path === path ? oldVal : getByPath(state, info.path)
-					})
-					host[descriptor.key].call(host, ...oldValues)
-				}
-			})
-		}
-
 		return {
 			...descriptor,
 			finisher(Class) {
@@ -55,7 +29,28 @@ export let watch = (...paths) => {
 						super()
 
 						pathsInfo.forEach((info) => {
-							observe(this, this, info.path, observer)
+							observe(this, info.path, (oldVal, newVal, path) => {
+								let canCall = pathsInfo.every((info) => {
+									if (info.mandatory) {
+										return getByPath(this, info.path) != null
+									}
+									return true
+								})
+								if (!canCall) {
+									return
+								}
+								requestMicrotask(this, 'watch:' + descriptor.key, () => {
+									if (pathsInfo.length === 1) {
+										this[descriptor.key].call(this, oldVal)
+									}
+									else {
+										let oldValues = pathsInfo.map((info) => {
+											return info.path === path ? oldVal : getByPath(this, info.path)
+										})
+										this[descriptor.key].call(this, ...oldValues)
+									}
+								})
+							})
 						})
 					}
 				}

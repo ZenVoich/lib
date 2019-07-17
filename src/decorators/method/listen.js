@@ -76,15 +76,10 @@ export let listen = (selector, event, paths, options) => {
 
 						if (pathsInfo.length) {
 							pathsInfo.forEach((info) => {
-								observe(this, this, info.path, (oldVal, newVal, path, state, host) => {
-									let isPathRelated = pathsInfo.find((info) => {
-										return path === info.path
+								observe(this, info.path, (oldVal, newVal, path) => {
+									requestMicrotask(this, 'listen:' + descriptor.key, () => {
+										checkState(this)
 									})
-									if (isPathRelated) {
-										requestMicrotask(host, 'listen:' + descriptor.key, () => {
-											checkState(state)
-										})
-									}
 								})
 							})
 						}
