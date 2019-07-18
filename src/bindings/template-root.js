@@ -1,5 +1,4 @@
 import {parseSkeleton, fromSkeleton} from './template-parser.js'
-import {observeHostProperty} from '../utils/property-observer.js'
 import {observe} from '../data-flow/observer.js'
 
 export class TemplateRoot {
@@ -62,7 +61,7 @@ export class TemplateRoot {
 		if (dirtyCheck) {
 			this.#unobservers = [...this.relatedPaths].map((path) => {
 				let prop = path.split('.')[0]
-				return observeHostProperty(host, prop, (oldVal, newVal) => {
+				return observe(host, prop, (oldVal, newVal) => {
 					this.updateProp(prop)
 				})
 			})
@@ -108,13 +107,13 @@ export class TemplateRoot {
 		})
 	}
 
-	update(immediate) {
+	update(immediate, ignoreUndefined = false) {
 		if (!this.host) {
 			return
 		}
 		let state = this._getState()
 		this.parts.forEach((part) => {
-			part.update(state, immediate)
+			part.update(state, immediate, ignoreUndefined)
 		})
 	}
 

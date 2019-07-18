@@ -1,4 +1,3 @@
-import {observeHostProperty} from '../utils/property-observer.js'
 // import {observePath, canObserve} from '../data-flow/proxy-object.js'
 import {observePath, canObserve} from '../data-flow/observe-path.js'
 

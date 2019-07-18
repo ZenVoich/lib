@@ -58,15 +58,24 @@ export class Binding {
 		return this.source.relatedPaths.has(path)
 	}
 
-	pushValue(state) {
+	pushValue(state, ignoreUndefined) {
 		if (this.#phase !== 'idle') {
 			return
 		}
 		perf.markStart('binding.pushValue:' + this.target.constructor.name)
 
 		if (state && this.direction !== 'upward') {
+			let value = this.source.getValue(state)
+
+			// do not rewrite initial props of target elements if the value is undefined and this is the initial render
+			if (ignoreUndefined && this.direction !== 'downward' && value === undefined && !['innerHTML', 'innerText', 'textContent'].includes(this.target.propertyName)) {
+				return
+			}
+
 			this.#phase = 'push'
-			this.target.setValue(this.source.getValue(state), state)
+
+			this.target.setValue(value, state)
+
 			enqueueMicrotask(() => {
 				this.#phase = 'idle'
 			})

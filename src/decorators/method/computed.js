@@ -1,7 +1,7 @@
 import {requestMicrotask} from '../../utils/microtask.js'
-import {notifyHostProperty} from '../../utils/property-observer.js'
 import {observe} from '../../data-flow/observer.js'
-import {getByPath} from '../../data-flow/proxy-object.js'
+import {notifyProp} from '../../data-flow/observe-prop.js'
+import {getByPath} from '../../utils/get-by-path.js'
 
 export let computed = (...paths) => {
 	return (descriptor) => {
@@ -37,7 +37,7 @@ export let computed = (...paths) => {
 						pathsInfo.forEach((info) => {
 							observe(this, info.path, () => {
 								requestMicrotask(this, 'computed:' + descriptor.key, () => {
-									notifyHostProperty(this, descriptor.key)
+									notifyProp(this, descriptor.key)
 								})
 							})
 						})

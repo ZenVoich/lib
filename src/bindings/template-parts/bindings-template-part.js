@@ -59,7 +59,7 @@ export class BindingsTemplatePart extends TemplatePart {
 		this.isConnected = false
 	}
 
-	update(state, immediate) {
+	update(state, immediate, ignoreUndefined) {
 		// host render chunk
 		perf.markStart('bindings.update')
 
@@ -74,7 +74,7 @@ export class BindingsTemplatePart extends TemplatePart {
 
 			this.bindings.forEach((binding) => {
 				if (binding.target.constructor.updatePhase === 'microtask') {
-					binding.pushValue(state)
+					binding.pushValue(state, ignoreUndefined)
 				}
 			})
 		}
@@ -97,7 +97,7 @@ export class BindingsTemplatePart extends TemplatePart {
 
 			this.bindings.forEach((binding) => {
 				if (binding.target.constructor.updatePhase === 'animationFrame') {
-					binding.pushValue(state)
+					binding.pushValue(state, ignoreUndefined)
 				}
 			})
 		}

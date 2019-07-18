@@ -1,7 +1,7 @@
 import {requestMicrotask} from '../../utils/microtask.js'
 import {requestRender} from '../../utils/renderer.js'
 import {toKebabCase, toCamelCase} from '../../utils/case.js'
-import {observeHostProperty} from '../../utils/property-observer.js'
+import {observePath} from '../../data-flow/observe-path.js'
 
 export let attr = (descriptor) => {
 	if (descriptor.kind !== 'field' && !descriptor.descriptor.get) {
@@ -47,7 +47,7 @@ export let attr = (descriptor) => {
 					super()
 
 					// on property change
-					observeHostProperty(this, property, propObserver)
+					observePath(this, property, propObserver)
 
 					// react on props already inited in constructor
 					propObserver(null, null, property, this)

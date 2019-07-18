@@ -1,4 +1,4 @@
-import {observeHostProperty} from '../../utils/property-observer.js'
+import {observePath} from '../../data-flow/observe-path.js'
 
 export let type = (type, required = false) => {
 	return (descriptor) => {
@@ -27,7 +27,7 @@ export let type = (type, required = false) => {
 						super()
 
 						// on property change
-						observeHostProperty(this, property, propObserver)
+						observePath(this, property, propObserver)
 
 						// react on props already inited in constructor
 						propObserver(null, null, property, this)

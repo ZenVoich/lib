@@ -1,6 +1,6 @@
 import {requestMicrotask} from '../../utils/microtask.js'
 import {observe} from '../../data-flow/observer.js'
-import {getByPath} from '../../data-flow/proxy-object.js'
+import {getByPath} from '../../utils/get-by-path.js'
 
 export let listen = (selector, event, paths, options) => {
 	if (!options && !Array.isArray(paths)) {

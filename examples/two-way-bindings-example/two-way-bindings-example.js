@@ -9,7 +9,12 @@ class A extends HTMLElement {
 	static template = import('./two-way-bindings-example.html')
 	static styles = import('./two-way-bindings-example.css')
 
-	checked = false
+	// checked = false
+
+	// @watch('checked')
+	// a() {
+	// 	console.log('a', this.checked)
+	// }
 
 	toggle() {
 		this.checked = !this.checked

@@ -22,7 +22,7 @@ export let observeProp = (object, prop, fn) => {
 
 window.observeProp = observeProp
 
-let notifyProp = (object, prop, oldVal, newVal) => {
+export let notifyProp = (object, prop, oldVal, newVal) => {
 	let observersByProp = observersByObject.get(object)
 	if (!observersByProp) {
 		return
@@ -37,14 +37,7 @@ let notifyProp = (object, prop, oldVal, newVal) => {
 
 let mutationMehtods = ['push', 'pop', 'shift', 'unshift', 'splice']
 
-// let accessorsDefined = new WeakMap
 let defineAccessors = (object, prop) => {
-	// let accessorsByProp = accessorsDefined.get(object)
-	// if (accessorsDefined.has(object)) {
-	// 	return
-	// }
-	// accessorsDefined.add(object)
-
 	// array
 	if (prop === 'length' && Array.isArray(object)) {
 		mutationMehtods.forEach((method) => {

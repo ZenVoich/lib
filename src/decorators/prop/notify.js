@@ -1,5 +1,5 @@
 import {requestMicrotask} from '../../utils/microtask.js'
-import {observeHostProperty} from '../../utils/property-observer.js'
+import {observePath} from '../../data-flow/observe-path.js'
 
 export let notify = (descriptor) => {
 	if (descriptor.kind !== 'field') {
@@ -12,15 +12,19 @@ export let notify = (descriptor) => {
 				constructor() {
 					super()
 
-					observeHostProperty(this, descriptor.key, propObserver)
+					let notify = () => {
+						requestMicrotask(this, 'notify:' + descriptor.key, () => {
+							this.dispatchEvent(new CustomEvent(`${descriptor.key}-changed`))
+						})
+					}
+
+					observePath(this, descriptor.key, notify)
+
+					if (this[descriptor.key] !== undefined) {
+						notify()
+					}
 				}
 			}
 		}
 	}
-}
-
-let propObserver = (oldVal, newVal, prop, host) => {
-	requestMicrotask(host, prop, () => {
-		host.dispatchEvent(new CustomEvent(`${prop}-changed`))
-	})
 }
