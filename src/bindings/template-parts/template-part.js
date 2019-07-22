@@ -4,6 +4,6 @@ export class TemplatePart {
 	static parse(root, attr) {}
 	connect(host) {}
 	disconnect() {}
-	update(state) {}
-	updatePath(state, path) {}
+	update(state, paths, ignoreUndefined) {}
+	render(state, paths, ignoreUndefined) {}
 }

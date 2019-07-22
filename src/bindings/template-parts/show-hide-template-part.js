@@ -52,7 +52,8 @@ export class ShowHideTemplatePart extends TemplatePart {
 	connect(host) {
 		this.host = host
 		this.childTemplateRoot.connect(host)
-		this.childTemplateRoot.update(true)
+		this.childTemplateRoot.update()
+		this.childTemplateRoot.render()
 	}
 
 	disconnect() {
@@ -60,29 +61,7 @@ export class ShowHideTemplatePart extends TemplatePart {
 		this.childTemplateRoot.disconnect()
 	}
 
-	update(state, immediate) {
-		if (immediate) {
-			this._render(state)
-		}
-		else {
-			requestRender(this.host, this, () => {
-				this._render(state)
-			})
-		}
-	}
-
-	updatePath(state, path, immediate) {
-		if (immediate) {
-			this._render(state)
-		}
-		else {
-			requestRender(this.host, this, () => {
-				this._render(state)
-			})
-		}
-	}
-
-	_render(state) {
+	render(state) {
 		let value = this.sourceExpression.getValue(state)
 		let show = this.type === 'show' ? !!value : !value
 

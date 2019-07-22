@@ -55,7 +55,7 @@ export class AttachDetachTemplatePart extends TemplatePart {
 
 	connect(host) {
 		this.host = host
-		this._render(host, true)
+		this.render(host)
 	}
 
 	disconnect() {
@@ -63,34 +63,12 @@ export class AttachDetachTemplatePart extends TemplatePart {
 		this.childTemplateRoot.disconnect()
 	}
 
-	update(state, immediate) {
-		if (immediate) {
-			this._render(state, immediate)
-		}
-		else {
-			requestRender(this.host, this, () => {
-				this._render(state, immediate)
-			})
-		}
-	}
-
-	updatePath(state, path, immediate) {
-		if (immediate) {
-			this._render(state, immediate)
-		}
-		else {
-			requestRender(this.host, this, () => {
-				this._render(state, immediate)
-			})
-		}
-	}
-
 	_shouldAttach(state) {
 		let value = this.sourceExpression.getValue(state)
 		return this.type === 'attach' ? !!value : !value
 	}
 
-	async _render(state, immediate) {
+	async render(state) {
 		let attach = this._shouldAttach(state)
 
 		if (this.attached == attach) {
@@ -103,15 +81,16 @@ export class AttachDetachTemplatePart extends TemplatePart {
 			if (!this.fragmentContainer.isConnected) {
 				this.comment.replaceWith(this.fragmentContainer.content)
 				this.childTemplateRoot.connect(this.host)
-				this.childTemplateRoot.update(true)
+				this.childTemplateRoot.update()
+				this.childTemplateRoot.render()
 			}
-			if (!immediate) {
+			if (this.firstRendered) {
 				pub(this.template, 'intro')
 			}
 		}
 		// detach
 		else if (!attach && this.fragmentContainer.isConnected) {
-			if (!immediate) {
+			if (this.firstRendered) {
 				await pub(this.template, 'outro')
 			}
 			if (this.fragmentContainer.isConnected) {
@@ -119,5 +98,6 @@ export class AttachDetachTemplatePart extends TemplatePart {
 				this.childTemplateRoot.disconnect()
 			}
 		}
+		this.firstRendered = true
 	}
 }

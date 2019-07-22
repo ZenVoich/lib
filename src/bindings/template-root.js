@@ -1,5 +1,7 @@
 import {parseSkeleton, fromSkeleton} from './template-parser.js'
 import {observe} from '../data-flow/observer.js'
+import {requestMicrotask} from '../utils/microtask.js'
+import {requestRender} from '../utils/renderer.js'
 
 export class TemplateRoot {
 	host
@@ -7,7 +9,12 @@ export class TemplateRoot {
 	relatedProps
 	parts = []
 	contextStates = []
-	#unobservers = []
+
+	#unobserveList = []
+	#updatePendingPaths = new Set
+	#renderPendingPaths = new Set
+	#updatePathsThrottler = Symbol()
+	#renderPathsThrottler = Symbol()
 
 	static parseSkeleton(template) {
 		return {
@@ -59,7 +66,7 @@ export class TemplateRoot {
 		})
 
 		if (dirtyCheck) {
-			this.#unobservers = [...this.relatedPaths].map((path) => {
+			this.#unobserveList = [...this.relatedPaths].map((path) => {
 				let prop = path.split('.')[0]
 				return observe(host, prop, (oldVal, newVal) => {
 					this.updateProp(prop)
@@ -67,7 +74,7 @@ export class TemplateRoot {
 			})
 		}
 		else {
-			this.#unobservers = [...this.relatedPaths].map((path) => {
+			this.#unobserveList = [...this.relatedPaths].map((path) => {
 				let target = host
 
 				if (this.contextStates.length) {
@@ -83,7 +90,8 @@ export class TemplateRoot {
 				}
 
 				return observe(target, path, (oldVal, newVal) => {
-					this.updatePath(path)
+					this.requestUpdatePath(path)
+					this.requestRenderPath(path)
 				})
 			})
 		}
@@ -102,45 +110,65 @@ export class TemplateRoot {
 		this.parts.forEach((part) => {
 			part.disconnect()
 		})
-		this.#unobservers.forEach((unobserver) => {
-			unobserver()
+		this.#unobserveList.forEach((unobserve) => {
+			unobserve()
 		})
 	}
 
-	update(immediate, ignoreUndefined = false) {
+	update(paths, ignoreUndefined = false) {
+		this.action('update', paths, ignoreUndefined)
+	}
+
+	render(paths, ignoreUndefined = false) {
+		this.action('render', paths, ignoreUndefined)
+	}
+
+	action(action, paths, ignoreUndefined = false) {
 		if (!this.host) {
 			return
 		}
 		let state = this._getState()
 		this.parts.forEach((part) => {
-			part.update(state, immediate, ignoreUndefined)
-		})
-	}
-
-	updateProp(prop, immediate) {
-		if (!this.host) {
-			return
-		}
-		let state = this._getState()
-		this.parts.forEach((part) => {
-			for (let path of part.relatedPaths) {
-				if (path === prop || path.startsWith(prop + '.')) {
-					part.updatePath(state, prop, immediate)
-					break
+			if (paths) {
+				for (let path of paths) {
+					if (part.relatedPaths.has(path)) {
+						part[action](state, paths, ignoreUndefined)
+						break
+					}
 				}
 			}
-		})
-	}
-
-	updatePath(path, immediate) {
-		if (!this.host) {
-			return
-		}
-		let state = this._getState()
-		this.parts.forEach((part) => {
-			if (part.relatedPaths.has(path)) {
-				part.updatePath(state, path, immediate)
+			else {
+				part[action](state, null, ignoreUndefined)
 			}
 		})
 	}
+
+	requestUpdatePath(path) {
+		this.#updatePendingPaths.add(path)
+		requestMicrotask(this.host, this.#updatePathsThrottler, () => {
+			this.update(this.#updatePendingPaths)
+		})
+	}
+
+	requestRenderPath(path) {
+		this.#renderPendingPaths.add(path)
+		requestRender(this.host, this.#renderPathsThrottler, () => {
+			this.render(this.#renderPendingPaths)
+		})
+	}
+
+	// updateProp(prop) {
+	// 	if (!this.host) {
+	// 		return
+	// 	}
+	// 	let state = this._getState()
+	// 	this.parts.forEach((part) => {
+	// 		for (let path of part.relatedPaths) {
+	// 			if (path === prop || path.startsWith(prop + '.')) {
+	// 				part.updatePath(state, prop)
+	// 				break
+	// 			}
+	// 		}
+	// 	})
+	// }
 }

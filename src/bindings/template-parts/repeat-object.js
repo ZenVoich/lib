@@ -39,7 +39,11 @@ export class RepeatObject {
 		this.item = null
 	}
 
-	update(immediate) {
-		this.templateRoot.update(immediate)
+	update() {
+		this.templateRoot.update()
+	}
+
+	render() {
+		this.templateRoot.render()
 	}
 }

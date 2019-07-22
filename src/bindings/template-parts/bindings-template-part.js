@@ -12,16 +12,6 @@ export class BindingsTemplatePart extends TemplatePart {
 
 	bindings = [] // [Binding]
 
-	#isComponenInMicrotaskQueue = false
-	#isComponenInRenderQueue = false
-	#pathsInRenderQueue = new Set
-	#pathsInMicrotaskQueue = new Set
-
-	#microtaskThrottler = Symbol()
-	#renderThrottler = Symbol()
-	#pathsMicrotaskThrottler = Symbol()
-	#pathsRenderThrottler = Symbol()
-
 	static parseSkeleton(root) {
 		return parseSkeleton(root)
 	}
@@ -59,129 +49,35 @@ export class BindingsTemplatePart extends TemplatePart {
 		this.isConnected = false
 	}
 
-	update(state, immediate, ignoreUndefined) {
-		// host render chunk
-		perf.markStart('bindings.update')
-
-		// microtask phase bindings
-		this.#isComponenInMicrotaskQueue = true
-		let update = () => {
-			this.#isComponenInMicrotaskQueue = false
-
-			if (!this.isConnected) {
-				return
-			}
-
-			this.bindings.forEach((binding) => {
-				if (binding.target.constructor.updatePhase === 'microtask') {
-					binding.pushValue(state, ignoreUndefined)
-				}
-			})
-		}
-
-		if (immediate) {
-			update()
-		}
-		else {
-			requestMicrotask(this.host, this.#microtaskThrottler, update)
-		}
-
-		// animationFrame phase bindings
-		this.#isComponenInRenderQueue = true
-		let render = () => {
-			this.#isComponenInRenderQueue = false
-
-			if (!this.isConnected) {
-				return
-			}
-
-			this.bindings.forEach((binding) => {
-				if (binding.target.constructor.updatePhase === 'animationFrame') {
-					binding.pushValue(state, ignoreUndefined)
-				}
-			})
-		}
-
-		if (immediate) {
-			render()
-		}
-		else {
-			requestRender(this.host, this.#renderThrottler, render)
-		}
-
-		perf.markEnd('bindings.update')
+	update(state, paths, ignoreUndefined) {
+		this.action('microtask', state, paths, ignoreUndefined)
 	}
 
-	updatePath(state, path, immediate) {
-		perf.markStart('bindings.updatePath')
+	render(state, paths, ignoreUndefined) {
+		this.action('animationFrame', state, paths, ignoreUndefined)
+	}
 
-		// microtask phase bindings
-		if (!this.#isComponenInMicrotaskQueue) {
-			this.#pathsInMicrotaskQueue.add(path)
-
-			let update = () => {
-				if (!this.isConnected) {
-					return
-				}
-
-				let relatedBindings = new Set
-				this.#pathsInMicrotaskQueue.forEach((path) => {
-					this.bindings.forEach((binding) => {
-						if (this._isBindingRelated(binding, path, 'microtask')) {
-							relatedBindings.add(binding)
-						}
-					})
-				})
-
-				this.#pathsInMicrotaskQueue.clear()
-
-				relatedBindings.forEach((binding) => {
-					binding.pushValue(state)
-				})
-			}
-
-			if (immediate) {
-				update()
-			}
-			else {
-				requestMicrotask(this.host, this.#pathsMicrotaskThrottler, update)
-			}
+	action(phase, state, paths, ignoreUndefined) {
+		if (!this.isConnected) {
+			return
 		}
 
-		// animationFrame phase bindings
-		if (!this.#isComponenInRenderQueue) {
-			this.#pathsInRenderQueue.add(path)
-
-			let render = () => {
-				if (!this.isConnected) {
-					return
-				}
-
-				let relatedBindings = new Set
-				this.#pathsInRenderQueue.forEach((path) => {
-					this.bindings.forEach((binding) => {
-						if (this._isBindingRelated(binding, path, 'animationFrame')) {
-							relatedBindings.add(binding)
-						}
-					})
-				})
-				this.#pathsInRenderQueue.clear()
-
-				relatedBindings.forEach((binding) => {
-					binding.pushValue(state)
-				})
+		this.bindings.forEach((binding) => {
+			if (binding.target.constructor.updatePhase !== phase) {
+				return
 			}
-
-
-			if (immediate) {
-				render()
+			if (paths) {
+				for (let path of paths) {
+					if (this._isBindingRelated(binding, path, phase)) {
+						binding.pushValue(state, ignoreUndefined)
+						break
+					}
+				}
 			}
 			else {
-				requestRender(this.host, this.#pathsRenderThrottler, render)
+				binding.pushValue(state, ignoreUndefined)
 			}
-		}
-
-		perf.markEnd('bindings.updatePath')
+		})
 	}
 
 	_isBindingRelated(binding, path, phase) {

@@ -85,32 +85,25 @@ export class RepeatTemplatePart extends TemplatePart {
 		// todo: clear physical elements?
 	}
 
-	update(state, immediate) {
-		this._render(state, immediate)
-	}
-
-	updatePath(state, path, immediate) {
-		this._render(state, immediate)
-	}
-
-	_render(state, immediate) {
+	render(state) {
 		this.items = this.itemsSourceExpression.getValue(state) || []
 
 		if (this.key) {
-			this._renderSorted(state, immediate)
+			this._renderSorted(state)
 		}
 		else {
-			this._renderPlain(state, immediate)
+			this._renderPlain(state)
 		}
 	}
 
-	_createRepeatObject(state, item, index, immediate) {
+	_createRepeatObject(state, item, index) {
 		let itemTemplateRoot = TemplateRoot.fromSkeleton(this.itemTemplateRootSkeleton)
 		itemTemplateRoot.contextStates = [...this.parentTemplateRoot.contextStates, {[this.as]: item}]
 
 		let repeatObject = new RepeatObject(itemTemplateRoot, this.as)
 		repeatObject.connect(this.host, item, {dirtyCheck: this.dirtyCheck})
-		repeatObject.update(immediate)
+		repeatObject.update()
+		repeatObject.render()
 
 		if (this.key) {
 			this._repeatObjectsByKey.set(item[this.key], repeatObject)
@@ -139,7 +132,7 @@ export class RepeatTemplatePart extends TemplatePart {
 	}
 
 	// ensure element count and update templates
-	_renderPlain(state, immediate) {
+	_renderPlain(state) {
 		// update existing elements
 		this._repeatObjectsByIndex.forEach((repeatObject, i) => {
 			let item = this.items[i]
@@ -148,110 +141,94 @@ export class RepeatTemplatePart extends TemplatePart {
 				repeatObject.templateRoot.contextStates = [...this.parentTemplateRoot.contextStates, {[this.as]: item}]
 				repeatObject.connect(this.host, item, {dirtyCheck: this.dirtyCheck})
 			}
-			repeatObject.update(immediate)
+			repeatObject.update()
+			repeatObject.render()
 		})
 
-		let render = () => {
-			// add new elements
-			let existingCount = this._repeatObjectsByIndex.size
-			let diff = this.items.length - existingCount
-			if (diff > 0) {
-				for (let i = 0; i < diff; i++) {
-					let item = this.items[existingCount + i]
-					let repeatObject = this._createRepeatObject(state, item, existingCount + i, true)
-					this.repeatContainer.append(repeatObject.fragmentContainer.content)
-				}
-			}
-			// remove extra elements
-			else if (diff < 0) {
-				for (let i = 0; i > diff; i--) {
-					this._removeElement(null, existingCount - 1 + i)
-				}
+		// add new elements
+		let existingCount = this._repeatObjectsByIndex.size
+		let diff = this.items.length - existingCount
+		if (diff > 0) {
+			for (let i = 0; i < diff; i++) {
+				let item = this.items[existingCount + i]
+				let repeatObject = this._createRepeatObject(state, item, existingCount + i)
+				this.repeatContainer.append(repeatObject.fragmentContainer.content)
 			}
 		}
-
-		if (immediate) {
-			render()
-		}
-		else {
-			requestRender(this.host, this, render)
+		// remove extra elements
+		else if (diff < 0) {
+			for (let i = 0; i > diff; i--) {
+				this._removeElement(null, existingCount - 1 + i)
+			}
 		}
 	}
 
 	// sort existing elements by key
-	_renderSorted(state, immediate) {
+	_renderSorted(state) {
 		// update elements
 		if (this.dirtyCheck) {
 			this.items.forEach((item, index) => {
 				let repeatObject = this._repeatObjectsByKey.get(item[this.key])
 				if (repeatObject) {
-					repeatObject.update(immediate)
+					repeatObject.update()
+					repeatObject.render()
 				}
 			})
 		}
 
-		let render = () => {
-			// remove elements
-			let currentKeys = new Set(this._repeatObjectsByKey.keys())
-			this.items.forEach((item) => {
-				currentKeys.delete(item[this.key])
-			})
-			currentKeys.forEach((key) => {
-				this._removeElement(key)
-			})
+		// remove elements
+		let currentKeys = new Set(this._repeatObjectsByKey.keys())
+		this.items.forEach((item) => {
+			currentKeys.delete(item[this.key])
+		})
+		currentKeys.forEach((key) => {
+			this._removeElement(key)
+		})
 
-			// add elements
-			this.items.forEach((item, index) => {
-				let hasPhysical = this._repeatObjectsByKey.has(item[this.key])
-				if (!hasPhysical) {
-					let repeatObject = this._createRepeatObject(state, item, index, true)
-					this._placeElement(item, repeatObject.fragmentContainer, null, index)
-				}
-			})
-
-			// sort elements
-			let x = 0
-			let sort = () => {
-				x++
-				if (x > 10) {
-					console.log('loop')
-					return
-				}
-
-				let itemsInfo = this.items.map((item, newIndex) => {
-					let repeatObject = this._repeatObjectsByKey.get(item[this.key])
-					let oldIndex = this._actualOrder.indexOf(item[this.key])
-					return {
-						item,
-						repeatObject,
-						oldIndex,
-						newIndex,
-						diffIndex: Math.abs(oldIndex - newIndex),
-					}
-				}).filter((itemInfo) => {
-					return itemInfo.diffIndex
-				}).sort((a, b) => {
-					return b.diffIndex - a.diffIndex
-				})
-
-				if (!itemsInfo.length) {
-					return
-				}
-
-				let itemInfo = itemsInfo[0]
-				this._placeElement(itemInfo.item, itemInfo.repeatObject.fragmentContainer, itemInfo.oldIndex, itemInfo.newIndex)
-
-				sort()
+		// add elements
+		this.items.forEach((item, index) => {
+			let hasPhysical = this._repeatObjectsByKey.has(item[this.key])
+			if (!hasPhysical) {
+				let repeatObject = this._createRepeatObject(state, item, index)
+				this._placeElement(item, repeatObject.fragmentContainer, null, index)
 			}
+		})
+
+		// sort elements
+		let x = 0
+		let sort = () => {
+			x++
+			if (x > 10) {
+				console.log('loop')
+				return
+			}
+
+			let itemsInfo = this.items.map((item, newIndex) => {
+				let repeatObject = this._repeatObjectsByKey.get(item[this.key])
+				let oldIndex = this._actualOrder.indexOf(item[this.key])
+				return {
+					item,
+					repeatObject,
+					oldIndex,
+					newIndex,
+					diffIndex: Math.abs(oldIndex - newIndex),
+				}
+			}).filter((itemInfo) => {
+				return itemInfo.diffIndex
+			}).sort((a, b) => {
+				return b.diffIndex - a.diffIndex
+			})
+
+			if (!itemsInfo.length) {
+				return
+			}
+
+			let itemInfo = itemsInfo[0]
+			this._placeElement(itemInfo.item, itemInfo.repeatObject.fragmentContainer, itemInfo.oldIndex, itemInfo.newIndex)
+
 			sort()
 		}
-
-		if (immediate) {
-			render()
-		}
-		else {
-			requestRender(this.host, this, render)
-		}
+		sort()
 	}
 
 	_placeElement(item, fragmentContainer, oldIndex, newIndex) {

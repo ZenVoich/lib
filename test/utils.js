@@ -5,7 +5,8 @@ export let createTemplateRoot = (html, state, {dirtyCheck = false} = {}) => {
 	template.innerHTML = html
 	let templateRoot = TemplateRoot.parse(template)
 	templateRoot.connect(state, dirtyCheck)
-	templateRoot.update(true)
+	templateRoot.update()
+	templateRoot.render()
 	return templateRoot
 }
 

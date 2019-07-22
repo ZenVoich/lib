@@ -9,6 +9,8 @@ class TestElement extends HTMLElement {
 	@type(Number)
 	x = 2
 
+	y = 2
+
 	@attr
 	prop = 3
 
@@ -29,6 +31,12 @@ class TestElement extends HTMLElement {
 	@computed('prop', 'obj')
 	get tt() {
 		return this.prop + this.obj.val
+	}
+
+	@computed('y')
+	get yy() {
+		// console.trace('yy', this.y)
+		return this.y + 1
 	}
 
 	@computed('tt')
@@ -85,6 +93,10 @@ class TestElement extends HTMLElement {
 		this.obj.val++
 		this.obj = this.obj
 		this.array.push(0)
+
+		if (this.x % 5 === 0) {
+			this.y++
+		}
 
 		if (this.x % 5 !== 0) {
 			this.proxy.p++
