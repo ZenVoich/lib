@@ -16,10 +16,10 @@ export let unsub = (target, handler) => {
 	}
 }
 
-export let pub = (target, data) => {
+export let pub = (target, ...args) => {
 	let handlers = handlersByTarget.get(target)
 	if (handlers) {
-		return Promise.all([...handlers].map((handler) => handler(data)))
+		return Promise.all([...handlers].map((handler) => handler(...args)))
 	}
 	return Promise.resolve()
 }

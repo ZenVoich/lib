@@ -70,6 +70,10 @@ export class FragmentContainer {
 	}
 
 	before(element) {
+		if (this.simpleMode) {
+			this.element.before(element)
+			return
+		}
 		this.startComment.before(element)
 	}
 }

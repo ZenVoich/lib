@@ -1,7 +1,7 @@
 import {TemplatePart} from './template-part.js'
 import {TemplateRoot} from '../template-root.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
-import {requestRender} from '../../utils/renderer.js'
+import {pub} from '../../utils/pub-sub.js'
 
 export class ShowHideTemplatePart extends TemplatePart {
 	static parseSkeleton(template, attribute) {
@@ -37,6 +37,7 @@ export class ShowHideTemplatePart extends TemplatePart {
 
 	type // show | hide
 	shown
+	template
 
 	element
 	childTemplateRoot
@@ -47,6 +48,11 @@ export class ShowHideTemplatePart extends TemplatePart {
 		this.element = template.content.firstElementChild
 		template.replaceWith(this.element)
 		this.shown = true
+		this.template = template
+
+		requestAnimationFrame(() => {
+			this.firstRendered = true
+		})
 	}
 
 	connect(host) {
@@ -61,7 +67,7 @@ export class ShowHideTemplatePart extends TemplatePart {
 		this.childTemplateRoot.disconnect()
 	}
 
-	render(state) {
+	async render(state) {
 		let value = this.sourceExpression.getValue(state)
 		let show = this.type === 'show' ? !!value : !value
 
@@ -72,8 +78,14 @@ export class ShowHideTemplatePart extends TemplatePart {
 
 		if (show) {
 			this.element.style.removeProperty('display')
+			if (this.firstRendered) {
+				pub(this.template, 'intro', {simpleMode: true, element: this.element})
+			}
 		}
 		else {
+			if (this.firstRendered) {
+				await pub(this.template, 'outro', {simpleMode: true, element: this.element})
+			}
 			this.element.style.setProperty('display', 'none', 'important')
 		}
 	}

@@ -13,8 +13,8 @@ export class TemplateRoot {
 	#unobserveList = []
 	#updatePendingPaths = new Set
 	#renderPendingPaths = new Set
-	#updatePathsThrottler = Symbol()
-	#renderPathsThrottler = Symbol()
+	#updateThrottler = Symbol()
+	#renderThrottler = Symbol()
 
 	static parseSkeleton(template) {
 		return {
@@ -145,14 +145,14 @@ export class TemplateRoot {
 
 	requestUpdatePath(path) {
 		this.#updatePendingPaths.add(path)
-		requestMicrotask(this.host, this.#updatePathsThrottler, () => {
+		requestMicrotask(this.host, this.#updateThrottler, () => {
 			this.update(this.#updatePendingPaths)
 		})
 	}
 
 	requestRenderPath(path) {
 		this.#renderPendingPaths.add(path)
-		requestRender(this.host, this.#renderPathsThrottler, () => {
+		requestRender(this.host, this.#renderThrottler, () => {
 			this.render(this.#renderPendingPaths)
 		})
 	}

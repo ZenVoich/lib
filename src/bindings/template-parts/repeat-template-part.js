@@ -3,7 +3,7 @@ import {RepeatContainer} from './repeat-container.js'
 import {RepeatObject} from './repeat-object.js'
 import {TemplateRoot} from '../template-root.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
-import {requestRender} from '../../utils/renderer.js'
+import {pub} from '../../utils/pub-sub.js'
 
 export class RepeatTemplatePart extends TemplatePart {
 	static parseSkeleton(template, attribute) {
@@ -61,6 +61,10 @@ export class RepeatTemplatePart extends TemplatePart {
 		this.template = template
 		this.repeatContainer = new RepeatContainer(this.template)
 		this.template.remove()
+
+		requestAnimationFrame(() => {
+			this.firstRendered = true
+		})
 	}
 
 	connect(host, {dirtyCheck = false} = {}) {
@@ -114,20 +118,27 @@ export class RepeatTemplatePart extends TemplatePart {
 		return repeatObject
 	}
 
-	_removeElement(key, index) {
+	async _removeElement(key, index) {
 		if (this.key) {
 			let repeatObject = this._repeatObjectsByKey.get(key)
-			repeatObject.remove()
 
 			this._repeatObjectsByKey.delete(key)
 			index = this._actualOrder.indexOf(key)
 			this._actualOrder.splice(index, 1)
+
+			if (this.firstRendered) {
+				await pub(this.template, 'outro', repeatObject.fragmentContainer)
+			}
+			repeatObject.remove()
 		}
 		else {
 			let repeatObject = this._repeatObjectsByIndex.get(index)
-			repeatObject.remove()
-
 			this._repeatObjectsByIndex.delete(index)
+
+			if (this.firstRendered) {
+				await pub(this.template, 'outro', repeatObject.fragmentContainer)
+			}
+			repeatObject.remove()
 		}
 	}
 
@@ -191,6 +202,10 @@ export class RepeatTemplatePart extends TemplatePart {
 			if (!hasPhysical) {
 				let repeatObject = this._createRepeatObject(state, item, index)
 				this._placeElement(item, repeatObject.fragmentContainer, null, index)
+
+				if (this.firstRendered) {
+					pub(this.template, 'intro', repeatObject.fragmentContainer)
+				}
 			}
 		})
 

@@ -2,7 +2,6 @@ import {TemplatePart} from './template-part.js'
 import {FragmentContainer} from './fragment-container.js'
 import {TemplateRoot} from '../template-root.js'
 import {parseSourceExpressionMemoized} from '../bindings-parser.js'
-import {requestRender} from '../../utils/renderer.js'
 import {pub} from '../../utils/pub-sub.js'
 
 export class AttachDetachTemplatePart extends TemplatePart {
@@ -63,13 +62,9 @@ export class AttachDetachTemplatePart extends TemplatePart {
 		this.childTemplateRoot.disconnect()
 	}
 
-	_shouldAttach(state) {
-		let value = this.sourceExpression.getValue(state)
-		return this.type === 'attach' ? !!value : !value
-	}
-
 	async render(state) {
-		let attach = this._shouldAttach(state)
+		let value = this.sourceExpression.getValue(state)
+		let attach = this.type === 'attach' ? !!value : !value
 
 		if (this.attached == attach) {
 			return
@@ -85,13 +80,13 @@ export class AttachDetachTemplatePart extends TemplatePart {
 				this.childTemplateRoot.render()
 			}
 			if (this.firstRendered) {
-				pub(this.template, 'intro')
+				pub(this.template, 'intro', this.fragmentContainer)
 			}
 		}
 		// detach
 		else if (!attach && this.fragmentContainer.isConnected) {
 			if (this.firstRendered) {
-				await pub(this.template, 'outro')
+				await pub(this.template, 'outro', this.fragmentContainer)
 			}
 			if (this.fragmentContainer.isConnected) {
 				this.fragmentContainer.replaceWith(this.comment)

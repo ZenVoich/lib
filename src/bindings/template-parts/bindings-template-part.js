@@ -1,6 +1,4 @@
 import {TemplatePart} from './template-part.js'
-import {requestMicrotask} from '../../utils/microtask.js'
-import {requestRender} from '../../utils/renderer.js'
 import {parseSkeleton, fromSkeleton} from '../bindings-parser.js'
 import {perf} from '../../utils/perf.js'
 
@@ -16,20 +14,14 @@ export class BindingsTemplatePart extends TemplatePart {
 		return parseSkeleton(root)
 	}
 
-	static fromSkeleton(skeleton, root) {
-		return new BindingsTemplatePart(fromSkeleton(skeleton, root))
+	static fromSkeleton({bindingSkeletons, relatedPaths}, root) {
+		return new BindingsTemplatePart(fromSkeleton(bindingSkeletons, root), relatedPaths)
 	}
 
-	constructor(bindings) {
+	constructor(bindings, relatedPaths) {
 		super()
 		this.bindings = bindings
-
-		this.relatedPaths = new Set
-		bindings.forEach((binding) => {
-			binding.source.relatedPaths.forEach((path) => {
-				this.relatedPaths.add(path)
-			})
-		})
+		this.relatedPaths = relatedPaths
 	}
 
 	connect(host, {dirtyCheck = false} = {}) {

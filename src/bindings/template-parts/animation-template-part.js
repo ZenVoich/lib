@@ -1,8 +1,4 @@
 import {TemplatePart} from './template-part.js'
-import {FragmentContainer} from './fragment-container.js'
-import {TemplateRoot} from '../template-root.js'
-import {parseSourceExpressionMemoized} from '../bindings-parser.js'
-import {requestRender} from '../../utils/renderer.js'
 import {sub, unsub} from '../../utils/pub-sub.js'
 
 let tempEl = document.createElement('div')
@@ -36,35 +32,28 @@ export class AnimationTemplatePart extends TemplatePart {
 
 	host = null
 	relatedPaths = new Set
-	template = null
-	element = null
 
 	type = '' // '' | in | out
 	animationString = ''
 	animationName = ''
-	timing = null
 
-	phase = 'idle' // idle | intro | outro
-	animation = null
+	timing = null
 	keyframes = null
-	resolveIntro = null
-	resolveOutro = null
+	animationByElement = new WeakMap
 
 	constructor(template) {
 		super()
-		this.template = template
-		this.element = template.content.children[0]
-		// this.elements = [...template.content.children]
 
-		sub(this.template, (action) => {
-			return this[action]()
+		sub(template, (action, fragmentContainer) => {
+			if (!fragmentContainer.simpleMode) {
+				throw `#animation does not work on <template> tag`
+			}
+			if (action === 'intro' || action === 'outro') {
+				return new Promise((resolve) => {
+					this.animate(action, resolve, fragmentContainer.element)
+				})
+			}
 		})
-
-		this.onAnimationEnd = () => {
-			this.element.style.animation = ''
-			resolve()
-			this.phase = 'idle'
-		}
 	}
 
 	connect(host) {
@@ -75,37 +64,16 @@ export class AnimationTemplatePart extends TemplatePart {
 		this.host = null
 	}
 
-	intro() {
-		this.animate('intro')
-		return new Promise((resolve) => {
-			this.resolveIntro = resolve
-		})
-	}
-
-	outro() {
-		this.animate('outro')
-		return new Promise((resolve) => {
-			this.resolveOutro = resolve
-		})
-	}
-
-	animate(phase) {
-		this.phase = phase
-
-		if (!this.animation) {
+	animate(phase, resolve, element) {
+		let animation = this.animationByElement.get(element)
+		if (!animation) {
 			let timing = this.getTiming()
-			this.animation = this.element.animate(this.getKeyframes(), timing)
-			this.animation.onfinish = () => {
-				if (this.phase === 'intro') {
-					this.resolveIntro()
-				}
-				else {
-					this.resolveOutro()
-				}
-			}
+			animation = element.animate(this.getKeyframes(), timing)
+			this.animationByElement.set(element, animation)
 		}
-		this.animation.playbackRate = this.phase === 'intro' ? 1 : -1
-		this.animation.play()
+		animation.onfinish = resolve
+		animation.playbackRate = phase === 'intro' ? 1 : -1
+		animation.play()
 	}
 
 	getTiming() {

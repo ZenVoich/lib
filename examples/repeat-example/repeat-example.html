@@ -21,7 +21,7 @@
 
 
 
-<template #repeat="{items by key}" class="item" .item="{item}">
+<div #repeat="{items by key}" #animation="fade 1s" class="item" .item="{item}">
 	<!-- <div class="div" #attach-if="{item.show}"> -->
 		<div .item="{item}" @click="{onClick}">Item: {item.value} (nested {item.nested.val})(parent binding: <span>{pi}</span> nested: {nested.val}) R: <random-number></random-number> <random-number></random-number></div>
 		<random-number #show-if="{show}"></random-number>
@@ -39,7 +39,7 @@
 			<div #repeat="{item.nested.items as itm}">parent repeat item: {item.value}, parent binding: <span>{pi}</span> item: {itm.val}</div>
 		</div>
 	<!-- </div> -->
-</template>
+</div>
 
 <div #attach-if="{!items.length}">(empty)</div>
 

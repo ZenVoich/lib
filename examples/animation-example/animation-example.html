@@ -8,11 +8,9 @@
 	@keyframes fade {
 		0% {
 			opacity: 0;
-			background: white;
 		}
 		100% {
 			opacity: 1;
-			background: white;
 		}
 	}
 
@@ -31,5 +29,6 @@
 <button @click="{toggle}">Toggle</button>
 
 <div #attach-if="{shown}" #animation="fade var(--fast)">Fade {shown}</div>
-<div #attach-if="{shown}" #animation="fly 3s">Fly</div>
+<div #attach-if="{shown}" #animation="fly 3s">#attach fly</div>
+<div #show-if="{shown}" #animation="fly 3s">#show fly</div>
 <div>Static</div>

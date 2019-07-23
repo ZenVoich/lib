@@ -1,6 +1,5 @@
 import {define} from '../../src/lib.js'
 import {perf} from '../../src/utils.js'
-import {proxyObject} from '../../src/data-flow/proxy-object.js'
 
 import './random-number.js'
 
@@ -17,7 +16,19 @@ class RepeatExample extends HTMLElement {
 
 	constructor() {
 		super()
-		this.items = proxyObject([])
+		this.items = []
+		this.items = [{
+				show: true,
+				key: 0,
+				value: 0,
+				nested: {val: 'aaa', items: [
+					{id: 1, val: 1},
+					{id: 2, val: 2},
+					{id: 3, val: 3},
+					{id: 4, val: 4},
+					{id: 5, val: 5},
+				]},
+			}]
 	}
 
 	connectedCallback() {
@@ -45,18 +56,18 @@ class RepeatExample extends HTMLElement {
 
 		for (let i = 0; i < count; i++) {
 			let rand = Math.random()
-			this.items[toStart ? 'unshift' : 'push'](proxyObject({
+			this.items[toStart ? 'unshift' : 'push']({
 				show: true,
 				key: rand,
 				value: rand,
-				nested: proxyObject({val: 'aaa', items: proxyObject([
-					proxyObject({id: 1, val: 1}),
-					proxyObject({id: 2, val: 2}),
-					proxyObject({id: 3, val: 3}),
-					proxyObject({id: 4, val: 4}),
-					proxyObject({id: 5, val: 5}),
-				])}),
-			}))
+				nested: {val: 'aaa', items: [
+					{id: 1, val: 1},
+					{id: 2, val: 2},
+					{id: 3, val: 3},
+					{id: 4, val: 4},
+					{id: 5, val: 5},
+				]},
+			})
 			// this.items = this.items
 		}
 
@@ -106,7 +117,7 @@ class RepeatExample extends HTMLElement {
 	}
 
 	removeAll() {
-		this.items = proxyObject([])
+		this.items = []
 	}
 
 	updateProp() {
@@ -124,7 +135,7 @@ class RepeatExample extends HTMLElement {
 	}
 
 	clearSecondItem() {
-		this.items[1].nested.items = proxyObject([])
+		this.items[1].nested.items = []
 	}
 }
 

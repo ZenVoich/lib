@@ -21,6 +21,8 @@ export let parseSkeleton = (root) => {
 	perf.markStart('bindings.parseSkeleton')
 
 	let bindingSkeletons = new Map
+	let relatedPaths = new Set
+
 	let walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT)
 	let curNode = walker.nextNode()
 	let nodeIndex = -1
@@ -29,6 +31,11 @@ export let parseSkeleton = (root) => {
 		if (!bindingSkeleton) {
 			return
 		}
+
+		bindingSkeleton.source.relatedPaths.forEach((path) => {
+			relatedPaths.add(path)
+		})
+
 		let skeletons = bindingSkeletons.get(nodeIndex)
 		if (!skeletons) {
 			skeletons = new Set
@@ -71,7 +78,7 @@ export let parseSkeleton = (root) => {
 
 	perf.markEnd('bindings.parseSkeleton')
 
-	return bindingSkeletons
+	return {bindingSkeletons, relatedPaths}
 }
 
 export let fromSkeleton = (bindingSkeletons, root) => {
