@@ -17,18 +17,18 @@ class RepeatExample extends HTMLElement {
 	constructor() {
 		super()
 		this.items = []
-		this.items = [{
-				show: true,
-				key: 0,
-				value: 0,
-				nested: {val: 'aaa', items: [
-					{id: 1, val: 1},
-					{id: 2, val: 2},
-					{id: 3, val: 3},
-					{id: 4, val: 4},
-					{id: 5, val: 5},
-				]},
-			}]
+		// this.items = [{
+		// 		show: true,
+		// 		key: 0,
+		// 		value: 0,
+		// 		nested: {val: 'aaa', items: [
+		// 			{id: 1, val: 1},
+		// 			{id: 2, val: 2},
+		// 			{id: 3, val: 3},
+		// 			{id: 4, val: 4},
+		// 			{id: 5, val: 5},
+		// 		]},
+		// 	}]
 	}
 
 	connectedCallback() {
@@ -45,6 +45,44 @@ class RepeatExample extends HTMLElement {
 	onClick(e) {
 		e.currentTarget.item.value += 10
 		// this.items = this.items
+	}
+
+	slide(element) {
+		let style = getComputedStyle(element);
+		let opacity = +style.opacity;
+		let height = parseFloat(style.height);
+		let paddingTop = parseFloat(style.paddingTop);
+		let paddingBottom = parseFloat(style.paddingBottom);
+		let marginTop = parseFloat(style.marginTop);
+		let marginBottom = parseFloat(style.marginBottom);
+		let borderTopWidth = parseFloat(style.borderTopWidth);
+		let borderBottomWidth = parseFloat(style.borderBottomWidth);
+
+		return {
+			duration: 300,
+			tick(t) {
+				element.style.overflow = 'hidden'
+				element.style.opacity = Math.min(t * 3, 1) * opacity
+				element.style.height = t * height + 'px'
+				element.style.paddingTop = t * paddingTop + 'px'
+				element.style.paddingBottom = t * paddingBottom + 'px'
+				element.style.marginTop = t * marginTop + 'px'
+				element.style.marginBottom = t * marginBottom + 'px'
+				element.style.borderTopWidth = t * borderTopWidth + 'px'
+				element.style.borderBottomWidth = t * borderBottomWidth + 'px'
+			},
+			finish() {
+				element.style.overflow = ''
+				element.style.opacity = ''
+				element.style.height = ''
+				element.style.paddingTop = ''
+				element.style.paddingBottom = ''
+				element.style.marginTop = ''
+				element.style.marginBottom = ''
+				element.style.borderTopWidth = ''
+				element.style.borderBottomWidth = ''
+			}
+		}
 	}
 
 	_isBig(num) {

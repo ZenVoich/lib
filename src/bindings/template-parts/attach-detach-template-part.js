@@ -50,6 +50,10 @@ export class AttachDetachTemplatePart extends TemplatePart {
 		this.fragmentContainer = new FragmentContainer(template.content)
 		template.replaceWith(this.comment)
 		this.attached = false
+
+		requestAnimationFrame(() => {
+			this.firstRendered = true
+		})
 	}
 
 	connect(host) {
@@ -93,6 +97,5 @@ export class AttachDetachTemplatePart extends TemplatePart {
 				this.childTemplateRoot.disconnect()
 			}
 		}
-		this.firstRendered = true
 	}
 }

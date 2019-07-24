@@ -1,4 +1,5 @@
 import {TemplatePart} from './template-part.js'
+import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 import {sub, unsub} from '../../utils/pub-sub.js'
 
 let tempEl = document.createElement('div')
@@ -8,23 +9,27 @@ let stringToMs = (str) => {
 	return parseFloat(str) * (str.endsWith('ms') ? 1 : 1000)
 }
 
-export class AnimationTemplatePart extends TemplatePart {
+export class AnimationCssTemplatePart extends TemplatePart {
 	static parseSkeleton(template, attribute) {
 		if (!['#animation', '#animation-in', '#animation-out'].includes(attribute)) {
 			return
 		}
 
-		let animation = template.getAttribute(attribute)
+		let animationString = template.getAttribute(attribute)
+		if (!animationString) {
+			return
+		}
+
 		template.removeAttribute(attribute)
 
 		return {
 			type: attribute.split('-')[1],
-			animationString: animation,
+			animationString,
 		}
 	}
 
 	static fromSkeleton(skeleton, template) {
-		let part = new AnimationTemplatePart(template)
+		let part = new AnimationCssTemplatePart(template)
 		part.type = skeleton.type
 		part.animationString = skeleton.animationString
 		return part
@@ -43,7 +48,6 @@ export class AnimationTemplatePart extends TemplatePart {
 
 	constructor(template) {
 		super()
-
 		sub(template, (action, fragmentContainer) => {
 			if (!fragmentContainer.simpleMode) {
 				throw `#animation does not work on <template> tag`

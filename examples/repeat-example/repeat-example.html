@@ -21,7 +21,7 @@
 
 
 
-<div #repeat="{items by key}" #animation="fade 1s" class="item" .item="{item}">
+<div #repeat="{items by key}" #animation="{slide}" class="item" .item="{item}">
 	<!-- <div class="div" #attach-if="{item.show}"> -->
 		<div .item="{item}" @click="{onClick}">Item: {item.value} (nested {item.nested.val})(parent binding: <span>{pi}</span> nested: {nested.val}) R: <random-number></random-number> <random-number></random-number></div>
 		<random-number #show-if="{show}"></random-number>

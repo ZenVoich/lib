@@ -4,7 +4,6 @@ import {perf} from '../../utils/perf.js'
 
 export class BindingsTemplatePart extends TemplatePart {
 	host = null
-	isConnected = false
 	dirtyCheck = false
 	relatedPaths
 
@@ -30,7 +29,6 @@ export class BindingsTemplatePart extends TemplatePart {
 		})
 		this.host = host
 		this.dirtyCheck = dirtyCheck
-		this.isConnected = true
 	}
 
 	disconnect() {
@@ -38,7 +36,6 @@ export class BindingsTemplatePart extends TemplatePart {
 			binding.disconnect()
 		})
 		this.host = null
-		this.isConnected = false
 	}
 
 	update(state, paths, ignoreUndefined) {
@@ -50,7 +47,7 @@ export class BindingsTemplatePart extends TemplatePart {
 	}
 
 	action(phase, state, paths, ignoreUndefined) {
-		if (!this.isConnected) {
+		if (!this.host) {
 			return
 		}
 
@@ -82,7 +79,8 @@ export class BindingsTemplatePart extends TemplatePart {
 					return true
 				}
 			}
-		} else {
+		}
+		else {
 			return binding.isPathRelated(path)
 		}
 	}

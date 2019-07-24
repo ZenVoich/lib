@@ -2,7 +2,8 @@ import {BindingsTemplatePart} from './template-parts/bindings-template-part.js'
 import {ShowHideTemplatePart} from './template-parts/show-hide-template-part.js'
 import {AttachDetachTemplatePart} from './template-parts/attach-detach-template-part.js'
 import {RepeatTemplatePart} from './template-parts/repeat-template-part.js'
-import {AnimationTemplatePart} from './template-parts/animation-template-part.js'
+import {AnimationJsTemplatePart} from './template-parts/animation-js-template-part.js'
+import {AnimationCssTemplatePart} from './template-parts/animation-css-template-part.js'
 import {perf} from '../utils/perf.js'
 
 export let parseSkeleton = (template) => {
@@ -31,9 +32,9 @@ export let parseSkeleton = (template) => {
 	}
 
 	partSkeletons.set(-1, [{
-			partClass: BindingsTemplatePart,
-			partSkeleton: BindingsTemplatePart.parseSkeleton(template.content),
-		}])
+		partClass: BindingsTemplatePart,
+		partSkeleton: BindingsTemplatePart.parseSkeleton(template.content),
+	}])
 	perf.markEnd('template.parseSkeleton')
 
 	return partSkeletons
@@ -105,7 +106,8 @@ let templatePartClasses = [
 	ShowHideTemplatePart,
 	AttachDetachTemplatePart,
 	RepeatTemplatePart,
-	AnimationTemplatePart,
+	AnimationJsTemplatePart,
+	AnimationCssTemplatePart,
 ]
 let parseDirectiveElement = (element) => {
 	let skeletons = []

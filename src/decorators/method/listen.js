@@ -59,9 +59,9 @@ export let listen = (selector, event, paths, options) => {
 						}
 
 						let isListening = false
-						let checkState = (state) => {
+						let checkState = () => {
 							let canListen = pathsInfo.every((info) => {
-								let value = getByPath(state, info.path)
+								let value = getByPath(this, info.path)
 								return info.negate ? !value : value
 							})
 							if (canListen && !isListening) {
@@ -78,13 +78,13 @@ export let listen = (selector, event, paths, options) => {
 							pathsInfo.forEach((info) => {
 								observe(this, info.path, (oldVal, newVal, path) => {
 									requestMicrotask(this, 'listen:' + descriptor.key, () => {
-										checkState(this)
+										checkState()
 									})
 								})
 							})
 						}
 						else {
-							checkState(this)
+							checkState()
 						}
 					}
 				}
