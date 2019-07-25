@@ -31,11 +31,6 @@ export class RepeatTemplatePart extends TemplatePart {
 		}
 	}
 
-	static fromSkeleton(skeleton, template) {
-		let part = new RepeatTemplatePart({...skeleton, template})
-		return part
-	}
-
 	relatedPaths
 
 	#host
@@ -52,7 +47,7 @@ export class RepeatTemplatePart extends TemplatePart {
 	#repeatObjectsByKey = new Map
 	#repeatObjectsByIndex = new Map
 
-	constructor({template, as, key, itemsSourceExpression, itemTemplateRootSkeleton, relatedPaths}) {
+	constructor({as, key, itemsSourceExpression, itemTemplateRootSkeleton, relatedPaths}, template) {
 		super()
 
 		this.#template = template
@@ -104,7 +99,7 @@ export class RepeatTemplatePart extends TemplatePart {
 	}
 
 	_createRepeatObject(state, item, index) {
-		let itemTemplateRoot = TemplateRoot.fromSkeleton(this.#itemTemplateRootSkeleton)
+		let itemTemplateRoot = new TemplateRoot(this.#itemTemplateRootSkeleton)
 		itemTemplateRoot.contextStates = [...this.parentTemplateRoot.contextStates, {[this.#as]: item}]
 
 		let repeatObject = new RepeatObject(itemTemplateRoot, this.#as)

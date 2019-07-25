@@ -1,7 +1,7 @@
 import {SourceExpression} from './source-expression.js'
-import {varName} from './regex.js'
+import {varNameRegex} from './regex.js'
 
-let regex = new RegExp(`^(${varName})$`, 'ig')
+let regex = new RegExp(`^(${varNameRegex})$`, 'ig')
 
 export class PropertySourceExpression extends SourceExpression {
 	static parse(text) {

@@ -48,7 +48,7 @@ export let fromSkeleton = (partsSkeletons, template) => {
 	let elementIndex = -1
 
 	let [bindingsSkeletonInfo] = partsSkeletons.get(-1)
-	let part = bindingsSkeletonInfo.partClass.fromSkeleton(bindingsSkeletonInfo.partSkeleton, template.content)
+	let part = new bindingsSkeletonInfo.partClass(bindingsSkeletonInfo.partSkeleton, template.content)
 	parts.push(part)
 
 	while (true) {
@@ -61,7 +61,7 @@ export let fromSkeleton = (partsSkeletons, template) => {
 			let tempNode = curNode
 			curNode = walker.nextNode()
 			skeletons.forEach((skeletonInfo) => {
-				let part = skeletonInfo.partClass.fromSkeleton(skeletonInfo.partSkeleton, tempNode)
+				let part = new skeletonInfo.partClass(skeletonInfo.partSkeleton, tempNode)
 				parts.push(part)
 			})
 		}

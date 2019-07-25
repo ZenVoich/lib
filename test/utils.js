@@ -3,7 +3,7 @@ import {TemplateRoot} from '../src/bindings/template-root.js'
 export let createTemplateRoot = (html, state, {dirtyCheck = false} = {}) => {
 	let template = document.createElement('template')
 	template.innerHTML = html
-	let templateRoot = TemplateRoot.parse(template)
+	let templateRoot = new TemplateRoot(TemplateRoot.parseSkeleton(template))
 	templateRoot.connect(state, dirtyCheck)
 	templateRoot.update()
 	templateRoot.render()

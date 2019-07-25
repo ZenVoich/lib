@@ -4,6 +4,28 @@ import {requestMicrotask} from '../utils/microtask.js'
 import {requestRender} from '../utils/renderer.js'
 
 export class TemplateRoot {
+	static parseSkeleton(template) {
+		let partSkeletons = parseSkeleton(template)
+		let relatedPaths = new Set
+		let relatedProps = new Set
+
+		partSkeletons.forEach((items) => {
+			items.forEach(({partSkeleton}) => {
+				partSkeleton.relatedPaths.forEach((path) => {
+					relatedPaths.add(path)
+					relatedProps.add(path.split('.')[0])
+				})
+			})
+		})
+
+		return {
+			skeletonTemplate: template,
+			partSkeletons,
+			relatedPaths,
+			relatedProps,
+		}
+	}
+
 	contextStates = []
 
 	#host
@@ -18,48 +40,9 @@ export class TemplateRoot {
 	#updateThrottler = Symbol()
 	#renderThrottler = Symbol()
 
-	static parseSkeleton(template) {
-		return {
-			skeletonTemplate: template,
-			partSkeletons: parseSkeleton(template),
-		}
-	}
-
-	static fromSkeleton(skeleton, template) {
-		template = template || skeleton.skeletonTemplate.cloneNode(true)
-		let parts = fromSkeleton(skeleton.partSkeletons, template)
-
-		if (!skeleton.relatedPaths) {
-			let relatedPaths = new Set
-			parts.forEach((part) => {
-				part.relatedPaths.forEach((path) => {
-					relatedPaths.add(path)
-				})
-			})
-			skeleton.relatedPaths = relatedPaths
-
-			skeleton.relatedProps = new Set
-			relatedPaths.forEach((path) => {
-				skeleton.relatedProps.add(path.split('.')[0])
-			})
-		}
-
-		return new TemplateRoot({
-			template,
-			parts,
-			relatedPaths: skeleton.relatedPaths,
-			relatedProps: skeleton.relatedProps,
-		})
-		return templateRoot
-	}
-
-	static parse(template) {
-		return this.fromSkeleton(this.parseSkeleton(template))
-	}
-
-	constructor({template, parts, relatedPaths, relatedProps}) {
-		this.#template = template
-		this.#parts = parts
+	constructor({skeletonTemplate, partSkeletons, relatedPaths, relatedProps}, template) {
+		this.#template = template || skeletonTemplate.cloneNode(true)
+		this.#parts = fromSkeleton(partSkeletons, this.#template)
 		this.#relatedPaths = relatedPaths
 		this.#relatedProps = relatedProps
 

@@ -13,13 +13,9 @@ export class BindingsTemplatePart extends TemplatePart {
 		return parseSkeleton(root)
 	}
 
-	static fromSkeleton({bindingSkeletons, relatedPaths}, root) {
-		return new BindingsTemplatePart(fromSkeleton(bindingSkeletons, root), relatedPaths)
-	}
-
-	constructor(bindings, relatedPaths) {
+	constructor({bindingSkeletons, relatedPaths}, root) {
 		super()
-		this.bindings = bindings
+		this.bindings = fromSkeleton(bindingSkeletons, root)
 		this.relatedPaths = relatedPaths
 	}
 

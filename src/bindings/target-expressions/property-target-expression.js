@@ -13,22 +13,17 @@ export class PropertyTargetExpression extends TargetExpression {
 		if (propertyName === 'innerHtml') {
 			propertyName = 'innerHTML'
 		}
-		return {
-			class: this,
-			propertyName,
-			twoWayBind: attribute[0] === ':',
-		}
-	}
-
-	static fromSkeleton(skeleton, element) {
-		let target = new PropertyTargetExpression
-		target.element = element
-		target.propertyName = skeleton.propertyName
-		return target
+		return {propertyName}
 	}
 
 	element = null
 	propertyName = ''
+
+	constructor({propertyName}, element) {
+		super()
+		this.element = element
+		this.propertyName = propertyName
+	}
 
 	setValue(value) {
 		this.element[this.propertyName] = value

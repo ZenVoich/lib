@@ -1,5 +1,5 @@
 import {SourceExpression} from './source-expression.js'
-import {varName} from './regex.js'
+import {varNameRegex} from './regex.js'
 
 export class ValueSourceExpression extends SourceExpression {
 	static parse(text) {

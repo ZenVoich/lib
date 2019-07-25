@@ -6,31 +6,29 @@ export class NodeTargetExpression extends TargetExpression {
 
 	static parseSkeleton(node) {
 		return {
-			class: this,
 			isTextNode: node.nodeType === document.TEXT_NODE,
 		}
 	}
 
-	static fromSkeleton(skeleton, node) {
-		let target = new NodeTargetExpression
-		target.node = node
-		target.isTextNode = skeleton.isTextNode
-		return target
+	#isTextNode = false
+	#node = null
+
+	constructor({isTextNode}, node) {
+		super()
+		this.#isTextNode = isTextNode
+		this.#node = node
 	}
 
-	node = null
-	isTextNode = false
-
 	setValue(value) {
-		if (this.isTextNode) {
-			this.node.nodeValue = value
+		if (this.#isTextNode) {
+			this.#node.nodeValue = value
 		}
 		else {
-			this.node.textContent = value
+			this.#node.textContent = value
 		}
 	}
 
 	getValue() {
-		return this.node.textContent
+		return this.#node.textContent
 	}
 }

@@ -23,16 +23,6 @@ export class AttachDetachTemplatePart extends TemplatePart {
 		}
 	}
 
-	static fromSkeleton(skeleton, template) {
-		return new AttachDetachTemplatePart({
-			template,
-			type: skeleton.type,
-			sourceExpression: skeleton.sourceExpression,
-			childTemplateRoot: TemplateRoot.fromSkeleton(skeleton.childTemplateRootSkeleton, template),
-			relatedPaths: skeleton.relatedPaths,
-		})
-	}
-
 	relatedPaths
 
 	#host
@@ -45,12 +35,12 @@ export class AttachDetachTemplatePart extends TemplatePart {
 	#childTemplateRoot
 	#sourceExpression
 
-	constructor({template, type, sourceExpression, childTemplateRoot, relatedPaths}) {
+	constructor({type, sourceExpression, childTemplateRootSkeleton, relatedPaths}, template) {
 		super()
 		this.#template = template
 		this.#type = type
 		this.#sourceExpression = sourceExpression
-		this.#childTemplateRoot = childTemplateRoot
+		this.#childTemplateRoot = new TemplateRoot(childTemplateRootSkeleton, template)
 		this.relatedPaths = relatedPaths
 
 		this.#fragmentContainer = new FragmentContainer(template.content)

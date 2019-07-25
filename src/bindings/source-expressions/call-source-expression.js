@@ -1,9 +1,9 @@
 import {SourceExpression} from './source-expression.js'
-import {varName, valueRegex} from './regex.js'
+import {varNameRegex, valueRegex} from './regex.js'
 import {parse as parseSourceExpression} from './source-expression-parser.js'
 
 let argRegex = new RegExp(`${valueRegex}`, 'ig')
-let regex = new RegExp(`^(${varName})\\((${valueRegex}(?:\\s*,\\s*${valueRegex})*)?\\)$`, 'ig')
+let regex = new RegExp(`^(${varNameRegex})\\((${valueRegex}(?:\\s*,\\s*${valueRegex})*)?\\)$`, 'ig')
 
 export class CallSourceExpression extends SourceExpression {
 	static parse(text) {

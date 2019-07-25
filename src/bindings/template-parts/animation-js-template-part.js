@@ -19,25 +19,23 @@ export class AnimationJsTemplatePart extends TemplatePart {
 		return {
 			type: attribute.split('-')[1],
 			animationSourceExpr,
+			relatedPaths: new Set,
 		}
 	}
 
-	static fromSkeleton(skeleton, template) {
-		return new AnimationJsTemplatePart({template, ...skeleton})
-	}
-
-	relatedPaths = new Set
+	relatedPaths
 
 	#host
 	#type = '' // '' | in | out
 	#animationSourceExpr
 	#activeAnimation // {phase, elapsed}
 
-	constructor({template, type, animationSourceExpr}) {
+	constructor({type, animationSourceExpr, relatedPaths}, template) {
 		super()
 
 		this.#type = type
 		this.#animationSourceExpr = animationSourceExpr
+		this.relatedPaths = relatedPaths
 
 		sub(template, (action, fragmentContainer) => {
 			if (!fragmentContainer.simpleMode) {

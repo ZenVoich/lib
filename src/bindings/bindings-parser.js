@@ -96,7 +96,7 @@ export let fromSkeleton = (bindingSkeletons, root) => {
 		let skeletons = bindingSkeletons.get(nodeIndex)
 		if (skeletons) {
 			skeletons.forEach((skeleton) => {
-				let target = skeleton.targetSkeleton.class.fromSkeleton(skeleton.targetSkeleton, curNode)
+				let target = new skeleton.targetSkeleton.class(skeleton.targetSkeleton, curNode)
 				bindings.push(new Binding(skeleton.direction, skeleton.source, target))
 			})
 		}

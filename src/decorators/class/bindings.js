@@ -16,13 +16,17 @@ export let bindings = (descriptor) => {
 					}
 
 					let templateRoot
-					if (templateRootSkeleton) {
-						templateRoot = TemplateRoot.fromSkeleton(templateRootSkeleton)
-					}
-					else {
+					// if (templateRootSkeleton) {
+					// 	templateRoot = new TemplateRoot(templateRootSkeleton)
+					// }
+					// else {
+					// 	templateRootSkeleton = TemplateRoot.parseSkeleton(this.__templateElement)
+					// 	templateRoot = new TemplateRoot(templateRootSkeleton, this.__templateElement.cloneNode(true))
+					// }
+					if (!templateRootSkeleton) {
 						templateRootSkeleton = TemplateRoot.parseSkeleton(this.__templateElement)
-						templateRoot = TemplateRoot.fromSkeleton(templateRootSkeleton, this.__templateElement.cloneNode(true))
 					}
+					templateRoot = new TemplateRoot(templateRootSkeleton)
 
 					this.shadowRoot.append(templateRoot.content)
 

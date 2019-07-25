@@ -17,55 +17,53 @@ export class AttributeValuePartTargetExpression extends TargetExpression {
 		}
 
 		return {
-			class: this,
 			attributeName: attr,
 			attributeValuePart: value,
 		}
 	}
 
-	static fromSkeleton(skeleton, element) {
-		let target = new AttributeValuePartTargetExpression
-		target.element = element
-		target.attributeName = skeleton.attributeName
-		target.attributeValuePart = skeleton.attributeValuePart
-		return target
+	#element = null
+	#attributeName = ''
+	#attributeValuePart = ''
+
+	constructor({attributeName, attributeValuePart}, element) {
+		super()
+		this.#element = element
+		this.#attributeName = attributeName
+		this.#attributeValuePart = attributeValuePart
 	}
 
-	element = null
-	attributeName = ''
-	attributeValuePart = ''
-
 	setValue(value) {
-		if (this.attributeName === 'class') {
-			this.element.classList.toggle(this.attributeValuePart, !!value)
+		if (this.#attributeName === 'class') {
+			this.#element.classList.toggle(this.#attributeValuePart, !!value)
 			return
 		}
 
-		if (this.attributeName === 'style') {
-			this.element.style[this.attributeValuePart] = value
+		if (this.#attributeName === 'style') {
+			this.#element.style[this.#attributeValuePart] = value
 			return
 		}
 
-		let attrVal = this.element.getAttribute(this.attributeName) || ''
+		let attrVal = this.#element.getAttribute(this.#attributeName) || ''
 		let parts = attrVal.split(' ').filter(a => a)
-		let index = parts.indexOf(this.attributeValuePart)
+		let index = parts.indexOf(this.#attributeValuePart)
 
 		if (index !== -1) {
 			parts.splice(index, 1)
 
 			if (!parts.length) {
-				this.element.removeAttribute(this.attributeName)
+				this.#element.removeAttribute(this.#attributeName)
 				return
 			}
 		}
 		else {
-			parts.push(this.attributeValuePart)
+			parts.push(this.#attributeValuePart)
 		}
 
-		this.element.setAttribute(this.attributeName, parts.join(' '))
+		this.#element.setAttribute(this.#attributeName, parts.join(' '))
 	}
 
 	getValue() {
-		return this.element.getAttribute(this.attributeName)
+		return this.#element.getAttribute(this.#attributeName)
 	}
 }

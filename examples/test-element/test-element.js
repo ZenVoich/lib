@@ -134,7 +134,7 @@ class TestElement extends HTMLElement {
 		}
 		this.unboxed = true
 
-		let templateRoot = TemplateRoot.parse(this.shadowRoot.querySelector('#template'))
+		let templateRoot = new TemplateRoot(TemplateRoot.parseSkeleton(this.shadowRoot.querySelector('#template')))
 		templateRoot.connect(this)
 		templateRoot.update()
 		templateRoot.render()

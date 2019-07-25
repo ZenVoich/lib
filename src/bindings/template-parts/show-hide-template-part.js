@@ -22,18 +22,6 @@ export class ShowHideTemplatePart extends TemplatePart {
 		}
 	}
 
-	static fromSkeleton(skeleton, template) {
-		let childTemplateRoot = TemplateRoot.fromSkeleton(skeleton.childTemplateRootSkeleton, template)
-
-		return new ShowHideTemplatePart({
-			template: template,
-			type: skeleton.type,
-			sourceExpression: skeleton.sourceExpression,
-			childTemplateRoot: childTemplateRoot,
-			relatedPaths: skeleton.relatedPaths,
-		})
-	}
-
 	relatedPaths
 
 	#host
@@ -45,13 +33,13 @@ export class ShowHideTemplatePart extends TemplatePart {
 	#childTemplateRoot
 	#sourceExpression
 
-	constructor({template, type, sourceExpression, childTemplateRoot, relatedPaths}) {
+	constructor({type, sourceExpression, childTemplateRootSkeleton, relatedPaths}, template) {
 		super()
 
 		this.#template = template
 		this.#type = type
 		this.#sourceExpression = sourceExpression
-		this.#childTemplateRoot = childTemplateRoot
+		this.#childTemplateRoot = new TemplateRoot(childTemplateRootSkeleton, template)
 		this.relatedPaths = relatedPaths
 
 		this.#element = template.content.firstElementChild

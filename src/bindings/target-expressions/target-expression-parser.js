@@ -24,15 +24,9 @@ export let parseSkeleton = (parseType, ...args) => {
 	let target
 	targetExprClasses[parseType].find((exprClass) => {
 		target = exprClass.parseSkeleton(...args)
-		return target
-	})
-	return target
-}
-
-export let parse = (parseType, ...args) => {
-	let target
-	targetExprClasses[parseType].find((exprClass) => {
-		target = exprClass.parse(...args)
+		if (target) {
+			target.class = exprClass
+		}
 		return target
 	})
 	return target

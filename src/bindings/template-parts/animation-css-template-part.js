@@ -25,29 +25,27 @@ export class AnimationCssTemplatePart extends TemplatePart {
 		return {
 			type: attribute.split('-')[1],
 			animationString,
+			relatedPaths: new Set,
 		}
 	}
 
-	static fromSkeleton(skeleton, template) {
-		return new AnimationCssTemplatePart({template, ...skeleton})
-	}
+	relatedPaths
 
-	relatedPaths = new Set
-
-	#host = null
+	#host
 	#type = '' // '' | in | out
 	#animationString = ''
 	#animationName = ''
 
-	#timing = null
-	#keyframes = null
+	#timing
+	#keyframes
 	#animationByElement = new WeakMap
 
-	constructor({template, type, animationString}) {
+	constructor({type, animationString, relatedPaths}, template) {
 		super()
 
 		this.#type = type
 		this.#animationString = animationString
+		this.relatedPaths = relatedPaths
 
 		sub(template, (action, fragmentContainer) => {
 			if (!fragmentContainer.simpleMode) {
