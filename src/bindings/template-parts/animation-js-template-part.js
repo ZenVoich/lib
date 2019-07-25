@@ -23,22 +23,22 @@ export class AnimationJsTemplatePart extends TemplatePart {
 	}
 
 	static fromSkeleton(skeleton, template) {
-		let part = new AnimationJsTemplatePart(template)
-		part.type = skeleton.type
-		part.animationSourceExpr = skeleton.animationSourceExpr
-		return part
+		return new AnimationJsTemplatePart({template, ...skeleton})
 	}
 
-	host = null
 	relatedPaths = new Set
 
-	type = '' // '' | in | out
-	animationSourceExpr = null
-	activeAnimation // {phase, elapsed}
+	#host
+	#type = '' // '' | in | out
+	#animationSourceExpr
+	#activeAnimation // {phase, elapsed}
 
-	constructor(template) {
-
+	constructor({template, type, animationSourceExpr}) {
 		super()
+
+		this.#type = type
+		this.#animationSourceExpr = animationSourceExpr
+
 		sub(template, (action, fragmentContainer) => {
 			if (!fragmentContainer.simpleMode) {
 				throw `#animation does not work on <template> tag`
@@ -52,23 +52,23 @@ export class AnimationJsTemplatePart extends TemplatePart {
 	}
 
 	connect(host) {
-		this.host = host
+		this.#host = host
 	}
 
 	disconnect() {
-		this.host = null
+		this.#host = null
 	}
 
 	animate(phase, resolve, element) {
-		if (this.activeAnimation) {
-			this.activeAnimation = {phase, resolve}
+		if (this.#activeAnimation) {
+			this.#activeAnimation = {phase, resolve}
 			return
 		}
 
-		this.activeAnimation = {phase, resolve}
+		this.#activeAnimation = {phase, resolve}
 
-		let fn = this.animationSourceExpr.getValue(this.host)
-		let {tick, finish = ()=>{}, duration = 300} = fn.call(this.host, element)
+		let fn = this.#animationSourceExpr.getValue(this.#host)
+		let {tick, finish = ()=>{}, duration = 300} = fn.call(this.#host, element)
 
 		let prevTime
 		let elapsed = phase === 'intro' ? 0 : duration
@@ -77,12 +77,12 @@ export class AnimationJsTemplatePart extends TemplatePart {
 		let loop = () => {
 			let now = Date.now()
 			let diff = now - (prevTime || Date.now())
-			elapsed = this.activeAnimation.phase === 'intro' ? elapsed + diff : elapsed - diff
+			elapsed = this.#activeAnimation.phase === 'intro' ? elapsed + diff : elapsed - diff
 
-			if (this.activeAnimation.phase === 'intro' ? elapsed > duration : elapsed < 0) {
+			if (this.#activeAnimation.phase === 'intro' ? elapsed > duration : elapsed < 0) {
 				finish()
-				this.activeAnimation.resolve()
-				this.activeAnimation = null
+				this.#activeAnimation.resolve()
+				this.#activeAnimation = null
 				return
 			}
 

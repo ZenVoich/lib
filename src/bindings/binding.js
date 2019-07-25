@@ -2,86 +2,96 @@ import {perf} from '../utils/perf.js'
 import {enqueueMicrotask} from '../utils/microtask.js'
 
 export class Binding {
-	direction = '' // downward | upward | two-way
-	source // SourceExpression
-	target // TargetExpression
+	#host
+	#direction = '' // downward | upward | two-way
+	#source // SourceExpression
+	#target // TargetExpression
+
 	#phase = 'idle' // idle | push | pull
 	#backwardEvent
 	#backwardListener
 
 	constructor(direction, source, target) {
-		this.direction = direction
-		this.source = source
-		this.target = target
+		this.#direction = direction
+		this.#source = source
+		this.#target = target
 
-		if (this.direction !== 'downward') {
-			if (['input', 'textarea', 'select'].includes(this.target.element.localName)) {
+		if (this.#direction !== 'downward') {
+			if (['input', 'textarea', 'select'].includes(this.#target.element.localName)) {
 				this.#backwardEvent = 'input'
 			}
-			else if (['innerHTML', 'innerText', 'textContent'].includes(this.target.propertyName)) {
+			else if (['innerHTML', 'innerText', 'textContent'].includes(this.#target.propertyName)) {
 				this.#backwardEvent = 'input'
 			}
 			else {
-				this.#backwardEvent = `${this.target.propertyName}-changed`
+				this.#backwardEvent = `${this.#target.propertyName}-changed`
 			}
 			this.#backwardListener = () => {
-				this.pullValue(this.host)
+				this.pullValue(this.#host)
 			}
 		}
+	}
+
+	get relatedPaths() {
+		return this.#source.relatedPaths
+	}
+
+	get targetUpdatePhase() {
+		return this.#target.constructor.updatePhase
 	}
 
 	connect(host) {
-		if (this.host) {
+		if (this.#host) {
 			return
 		}
-		this.host = host
+		this.#host = host
 
-		if (this.direction !== 'downward') {
-			this.target.element.addEventListener(this.#backwardEvent, this.#backwardListener)
+		if (this.#direction !== 'downward') {
+			this.#target.element.addEventListener(this.#backwardEvent, this.#backwardListener)
 		}
-		this.target.connect(host)
+		this.#target.connect(host)
 	}
 
 	disconnect() {
-		if (!this.host) {
+		if (!this.#host) {
 			return
 		}
-		this.host = null
+		this.#host = null
 
-		if (this.direction !== 'downward') {
-			this.target.element.removeEventListener(this.#backwardEvent, this.#backwardListener)
+		if (this.#direction !== 'downward') {
+			this.#target.element.removeEventListener(this.#backwardEvent, this.#backwardListener)
 		}
-		this.target.disconnect()
+		this.#target.disconnect()
 	}
 
 	isPathRelated(path) {
-		return this.source.relatedPaths.has(path)
+		return this.#source.relatedPaths.has(path)
 	}
 
 	pushValue(state, ignoreUndefined) {
 		if (this.#phase !== 'idle') {
 			return
 		}
-		perf.markStart('binding.pushValue:' + this.target.constructor.name)
+		perf.markStart('binding.pushValue:' + this.#target.constructor.name)
 
-		if (state && this.direction !== 'upward') {
-			let value = this.source.getValue(state)
+		if (state && this.#direction !== 'upward') {
+			let value = this.#source.getValue(state)
 
 			// do not rewrite initial props of target elements if the value is undefined and this is the initial render
-			if (ignoreUndefined && this.direction !== 'downward' && value === undefined && !['innerHTML', 'innerText', 'textContent'].includes(this.target.propertyName)) {
+			if (ignoreUndefined && this.#direction !== 'downward' && value === undefined && !['innerHTML', 'innerText', 'textContent'].includes(this.#target.propertyName)) {
 				return
 			}
 
 			this.#phase = 'push'
 
-			this.target.setValue(value, state)
+			this.#target.setValue(value, state)
 
 			enqueueMicrotask(() => {
 				this.#phase = 'idle'
 			})
 		}
 
-		perf.markEnd('binding.pushValue:' + this.target.constructor.name)
+		perf.markEnd('binding.pushValue:' + this.#target.constructor.name)
 	}
 
 	pullValue(state) {
@@ -89,9 +99,9 @@ export class Binding {
 			return
 		}
 
-		if (state && this.direction !== 'downward') {
+		if (state && this.#direction !== 'downward') {
 			this.#phase = 'pull'
-			this.source.setValue(state, this.target.getValue())
+			this.#source.setValue(state, this.#target.getValue())
 			enqueueMicrotask(() => {
 				this.#phase = 'idle'
 			})

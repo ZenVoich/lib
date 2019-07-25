@@ -29,25 +29,26 @@ export class AnimationCssTemplatePart extends TemplatePart {
 	}
 
 	static fromSkeleton(skeleton, template) {
-		let part = new AnimationCssTemplatePart(template)
-		part.type = skeleton.type
-		part.animationString = skeleton.animationString
-		return part
+		return new AnimationCssTemplatePart({template, ...skeleton})
 	}
 
-	host = null
 	relatedPaths = new Set
 
-	type = '' // '' | in | out
-	animationString = ''
-	animationName = ''
+	#host = null
+	#type = '' // '' | in | out
+	#animationString = ''
+	#animationName = ''
 
-	timing = null
-	keyframes = null
-	animationByElement = new WeakMap
+	#timing = null
+	#keyframes = null
+	#animationByElement = new WeakMap
 
-	constructor(template) {
+	constructor({template, type, animationString}) {
 		super()
+
+		this.#type = type
+		this.#animationString = animationString
+
 		sub(template, (action, fragmentContainer) => {
 			if (!fragmentContainer.simpleMode) {
 				throw `#animation does not work on <template> tag`
@@ -61,19 +62,19 @@ export class AnimationCssTemplatePart extends TemplatePart {
 	}
 
 	connect(host) {
-		this.host = host
+		this.#host = host
 	}
 
 	disconnect() {
-		this.host = null
+		this.#host = null
 	}
 
 	animate(phase, resolve, element) {
-		let animation = this.animationByElement.get(element)
+		let animation = this.#animationByElement.get(element)
 		if (!animation) {
 			let timing = this.getTiming()
 			animation = element.animate(this.getKeyframes(), timing)
-			this.animationByElement.set(element, animation)
+			this.#animationByElement.set(element, animation)
 		}
 		animation.onfinish = resolve
 		animation.playbackRate = phase === 'intro' ? 1 : -1
@@ -81,23 +82,23 @@ export class AnimationCssTemplatePart extends TemplatePart {
 	}
 
 	getTiming() {
-		if (this.timing) {
-			return this.timing
+		if (this.#timing) {
+			return this.#timing
 		}
-		this.host.shadowRoot.appendChild(tempEl)
-		tempEl.style.animation = this.animationString
+		this.#host.shadowRoot.appendChild(tempEl)
+		tempEl.style.animation = this.#animationString
 
 		let computedStyle = getComputedStyle(tempEl)
 
 		// linear by default
 		let easing = computedStyle.animationTimingFunction
-		if (easing === 'ease' && !this.animationString.includes('ease')) {
+		if (easing === 'ease' && !this.#animationString.includes('ease')) {
 			easing = 'linear'
 		}
 
-		this.animationName = computedStyle.animationName
+		this.#animationName = computedStyle.animationName
 
-		this.timing = {
+		this.#timing = {
 			delay: stringToMs(computedStyle.animationDelay),
 			duration: stringToMs(computedStyle.animationDuration),
 			easing: easing,
@@ -105,23 +106,23 @@ export class AnimationCssTemplatePart extends TemplatePart {
 
 		tempEl.remove()
 
-		return this.timing
+		return this.#timing
 	}
 
 	getKeyframes() {
-		if (this.keyframes !== null) {
-			return this.keyframes
+		if (this.#keyframes !== null) {
+			return this.#keyframes
 		}
 
-		let sheets = [...(this.host.shadowRoot.adoptedStyleSheets || [])]
-		![...this.host.shadowRoot.querySelectorAll('style')].forEach((style) => {
+		let sheets = [...(this.#host.shadowRoot.adoptedStyleSheets || [])]
+		![...this.#host.shadowRoot.querySelectorAll('style')].forEach((style) => {
 			sheets.push(style.sheet)
 		})
 
 		let keyframeRule
 		sheets.find((sheet) => {
 			return [...sheet.cssRules].find((rule) => {
-				if (rule.type === CSSRule.KEYFRAMES_RULE && rule.name === this.animationName) {
+				if (rule.type === CSSRule.KEYFRAMES_RULE && rule.name === this.#animationName) {
 					keyframeRule = rule
 					return true
 				}
@@ -129,11 +130,11 @@ export class AnimationCssTemplatePart extends TemplatePart {
 		})
 
 		if (!keyframeRule) {
-			this.keyframes = false
+			this.#keyframes = false
 			return
 		}
 
-		this.keyframes = [...keyframeRule.cssRules].map((rule) => {
+		this.#keyframes = [...keyframeRule.cssRules].map((rule) => {
 			let offset
 			if (rule.keyText === 'from') {
 				offset = 0
@@ -155,6 +156,6 @@ export class AnimationCssTemplatePart extends TemplatePart {
 			return keyframe
 		})
 
-		return this.keyframes
+		return this.#keyframes
 	}
 }

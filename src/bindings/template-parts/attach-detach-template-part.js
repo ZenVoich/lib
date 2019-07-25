@@ -24,32 +24,39 @@ export class AttachDetachTemplatePart extends TemplatePart {
 	}
 
 	static fromSkeleton(skeleton, template) {
-		let part = new AttachDetachTemplatePart(template)
-		part.type = skeleton.type
-		part.sourceExpression = skeleton.sourceExpression
-		part.childTemplateRoot = TemplateRoot.fromSkeleton(skeleton.childTemplateRootSkeleton, template)
-		part.relatedPaths = skeleton.relatedPaths
-		return part
+		return new AttachDetachTemplatePart({
+			template,
+			type: skeleton.type,
+			sourceExpression: skeleton.sourceExpression,
+			childTemplateRoot: TemplateRoot.fromSkeleton(skeleton.childTemplateRootSkeleton, template),
+			relatedPaths: skeleton.relatedPaths,
+		})
 	}
 
-	host
 	relatedPaths
 
-	type // attach | detach
-	attached
-	comment = new Comment
-	template
+	#host
+	#type // attach | detach
+	#attached
+	#comment = new Comment
+	#template
 
-	fragmentContainer
-	childTemplateRoot
-	sourceExpression
+	#fragmentContainer
+	#childTemplateRoot
+	#sourceExpression
 
-	constructor(template) {
+	constructor({template, type, sourceExpression, childTemplateRoot, relatedPaths}) {
 		super()
-		this.template = template
-		this.fragmentContainer = new FragmentContainer(template.content)
-		template.replaceWith(this.comment)
-		this.attached = false
+		this.#template = template
+		this.#type = type
+		this.#sourceExpression = sourceExpression
+		this.#childTemplateRoot = childTemplateRoot
+		this.relatedPaths = relatedPaths
+
+		this.#fragmentContainer = new FragmentContainer(template.content)
+		this.#attached = false
+
+		template.replaceWith(this.#comment)
 
 		requestAnimationFrame(() => {
 			this.firstRendered = true
@@ -57,44 +64,44 @@ export class AttachDetachTemplatePart extends TemplatePart {
 	}
 
 	connect(host) {
-		this.host = host
+		this.#host = host
 		this.render(host)
 	}
 
 	disconnect() {
-		this.host = null
-		this.childTemplateRoot.disconnect()
+		this.#host = null
+		this.#childTemplateRoot.disconnect()
 	}
 
 	async render(state) {
-		let value = this.sourceExpression.getValue(state)
-		let attach = this.type === 'attach' ? !!value : !value
+		let value = this.#sourceExpression.getValue(state)
+		let attach = this.#type === 'attach' ? !!value : !value
 
-		if (this.attached == attach) {
+		if (this.#attached == attach) {
 			return
 		}
-		this.attached = attach
+		this.#attached = attach
 
 		// attach
 		if (attach) {
-			if (!this.fragmentContainer.isConnected) {
-				this.comment.replaceWith(this.fragmentContainer.content)
-				this.childTemplateRoot.connect(this.host)
-				this.childTemplateRoot.update()
-				this.childTemplateRoot.render()
+			if (!this.#fragmentContainer.isConnected) {
+				this.#comment.replaceWith(this.#fragmentContainer.content)
+				this.#childTemplateRoot.connect(this.#host)
+				this.#childTemplateRoot.update()
+				this.#childTemplateRoot.render()
 			}
 			if (this.firstRendered) {
-				pub(this.template, 'intro', this.fragmentContainer)
+				pub(this.#template, 'intro', this.#fragmentContainer)
 			}
 		}
 		// detach
-		else if (!attach && this.fragmentContainer.isConnected) {
+		else if (!attach && this.#fragmentContainer.isConnected) {
 			if (this.firstRendered) {
-				await pub(this.template, 'outro', this.fragmentContainer)
+				await pub(this.#template, 'outro', this.#fragmentContainer)
 			}
-			if (this.fragmentContainer.isConnected) {
-				this.fragmentContainer.replaceWith(this.comment)
-				this.childTemplateRoot.disconnect()
+			if (this.#fragmentContainer.isConnected) {
+				this.#fragmentContainer.replaceWith(this.#comment)
+				this.#childTemplateRoot.disconnect()
 			}
 		}
 	}

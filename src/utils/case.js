@@ -1,4 +1,5 @@
 let kebabCaseRegex = /([A-Z][^A-Z]*)/
+
 export let toKebabCase = (str) => {
 	return str.split(kebabCaseRegex).filter(x => x).join('-').toLowerCase()
 }

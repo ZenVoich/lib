@@ -24,31 +24,40 @@ export class ShowHideTemplatePart extends TemplatePart {
 
 	static fromSkeleton(skeleton, template) {
 		let childTemplateRoot = TemplateRoot.fromSkeleton(skeleton.childTemplateRootSkeleton, template)
-		let part = new ShowHideTemplatePart(template)
-		part.type = skeleton.type
-		part.sourceExpression = skeleton.sourceExpression
-		part.childTemplateRoot = childTemplateRoot
-		part.relatedPaths = skeleton.relatedPaths
-		return part
+
+		return new ShowHideTemplatePart({
+			template: template,
+			type: skeleton.type,
+			sourceExpression: skeleton.sourceExpression,
+			childTemplateRoot: childTemplateRoot,
+			relatedPaths: skeleton.relatedPaths,
+		})
 	}
 
-	host
 	relatedPaths
 
-	type // show | hide
-	shown
-	template
+	#host
+	#type // show | hide
+	#shown
 
-	element
-	childTemplateRoot
-	sourceExpression
+	#template
+	#element
+	#childTemplateRoot
+	#sourceExpression
 
-	constructor(template) {
+	constructor({template, type, sourceExpression, childTemplateRoot, relatedPaths}) {
 		super()
-		this.element = template.content.firstElementChild
-		template.replaceWith(this.element)
-		this.shown = true
-		this.template = template
+
+		this.#template = template
+		this.#type = type
+		this.#sourceExpression = sourceExpression
+		this.#childTemplateRoot = childTemplateRoot
+		this.relatedPaths = relatedPaths
+
+		this.#element = template.content.firstElementChild
+		this.#shown = true
+
+		template.replaceWith(this.#element)
 
 		requestAnimationFrame(() => {
 			this.firstRendered = true
@@ -56,37 +65,37 @@ export class ShowHideTemplatePart extends TemplatePart {
 	}
 
 	connect(host) {
-		this.host = host
-		this.childTemplateRoot.connect(host)
-		this.childTemplateRoot.update()
-		this.childTemplateRoot.render()
+		this.#host = host
+		this.#childTemplateRoot.connect(host)
+		this.#childTemplateRoot.update()
+		this.#childTemplateRoot.render()
 	}
 
 	disconnect() {
-		this.host = null
-		this.childTemplateRoot.disconnect()
+		this.#host = null
+		this.#childTemplateRoot.disconnect()
 	}
 
 	async render(state) {
-		let value = this.sourceExpression.getValue(state)
-		let show = this.type === 'show' ? !!value : !value
+		let value = this.#sourceExpression.getValue(state)
+		let show = this.#type === 'show' ? !!value : !value
 
-		if (this.shown === show) {
+		if (this.#shown === show) {
 			return
 		}
-		this.shown = show
+		this.#shown = show
 
 		if (show) {
-			this.element.style.removeProperty('display')
+			this.#element.style.removeProperty('display')
 			if (this.firstRendered) {
-				pub(this.template, 'intro', {simpleMode: true, element: this.element})
+				pub(this.#template, 'intro', {simpleMode: true, element: this.#element})
 			}
 		}
 		else {
 			if (this.firstRendered) {
-				await pub(this.template, 'outro', {simpleMode: true, element: this.element})
+				await pub(this.#template, 'outro', {simpleMode: true, element: this.#element})
 			}
-			this.element.style.setProperty('display', 'none', 'important')
+			this.#element.style.setProperty('display', 'none', 'important')
 		}
 	}
 }

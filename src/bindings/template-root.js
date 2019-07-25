@@ -4,11 +4,13 @@ import {requestMicrotask} from '../utils/microtask.js'
 import {requestRender} from '../utils/renderer.js'
 
 export class TemplateRoot {
-	host
-	relatedPaths
-	relatedProps
-	parts = []
 	contextStates = []
+
+	#host
+	#template
+	#parts = []
+	#relatedPaths
+	#relatedProps
 
 	#unobserveList = []
 	#updatePendingPaths = new Set
@@ -24,30 +26,30 @@ export class TemplateRoot {
 	}
 
 	static fromSkeleton(skeleton, template) {
-		let templateRoot = new TemplateRoot
-		templateRoot.template = template || skeleton.skeletonTemplate.cloneNode(true)
-		templateRoot.parts = fromSkeleton(skeleton.partSkeletons, templateRoot.template)
-
-		templateRoot.parts.forEach((part) => {
-			part.parentTemplateRoot = templateRoot
-		})
+		template = template || skeleton.skeletonTemplate.cloneNode(true)
+		let parts = fromSkeleton(skeleton.partSkeletons, template)
 
 		if (!skeleton.relatedPaths) {
 			let relatedPaths = new Set
-			templateRoot.parts.forEach((part) => {
+			parts.forEach((part) => {
 				part.relatedPaths.forEach((path) => {
 					relatedPaths.add(path)
 				})
 			})
 			skeleton.relatedPaths = relatedPaths
+
 			skeleton.relatedProps = new Set
 			relatedPaths.forEach((path) => {
 				skeleton.relatedProps.add(path.split('.')[0])
 			})
 		}
-		templateRoot.relatedPaths = skeleton.relatedPaths
-		templateRoot.relatedProps = skeleton.relatedProps
 
+		return new TemplateRoot({
+			template,
+			parts,
+			relatedPaths: skeleton.relatedPaths,
+			relatedProps: skeleton.relatedProps,
+		})
 		return templateRoot
 	}
 
@@ -55,18 +57,29 @@ export class TemplateRoot {
 		return this.fromSkeleton(this.parseSkeleton(template))
 	}
 
+	constructor({template, parts, relatedPaths, relatedProps}) {
+		this.#template = template
+		this.#parts = parts
+		this.#relatedPaths = relatedPaths
+		this.#relatedProps = relatedProps
+
+		this.#parts.forEach((part) => {
+			part.parentTemplateRoot = this
+		})
+	}
+
 	get content() {
-		return this.template.content
+		return this.#template.content
 	}
 
 	connect(host, dirtyCheck = false) {
-		this.host = host
-		this.parts.forEach((part) => {
+		this.#host = host
+		this.#parts.forEach((part) => {
 			part.connect(host, {dirtyCheck})
 		})
 
 		if (dirtyCheck) {
-			this.#unobserveList = [...this.relatedPaths].map((path) => {
+			this.#unobserveList = [...this.#relatedPaths].map((path) => {
 				let prop = path.split('.')[0]
 				return observe(host, prop, (oldVal, newVal) => {
 					this.updateProp(prop)
@@ -74,7 +87,7 @@ export class TemplateRoot {
 			})
 		}
 		else {
-			this.#unobserveList = [...this.relatedPaths].map((path) => {
+			this.#unobserveList = [...this.#relatedPaths].map((path) => {
 				let target = host
 
 				if (this.contextStates.length) {
@@ -98,16 +111,16 @@ export class TemplateRoot {
 	}
 
 	_getState() {
-		let hostState = {localName: this.host.localName}
-		this.relatedProps.forEach((prop) => {
-			hostState[prop] = this.host[prop]
+		let hostState = {localName: this.#host.localName}
+		this.#relatedProps.forEach((prop) => {
+			hostState[prop] = this.#host[prop]
 		})
 		return Object.assign(hostState, ...this.contextStates)
 	}
 
 	disconnect() {
-		this.host = null
-		this.parts.forEach((part) => {
+		this.#host = null
+		this.#parts.forEach((part) => {
 			part.disconnect()
 		})
 		this.#unobserveList.forEach((unobserve) => {
@@ -124,11 +137,11 @@ export class TemplateRoot {
 	}
 
 	action(action, paths, ignoreUndefined = false) {
-		if (!this.host) {
+		if (!this.#host) {
 			return
 		}
 		let state = this._getState()
-		this.parts.forEach((part) => {
+		this.#parts.forEach((part) => {
 			if (paths) {
 				for (let path of paths) {
 					if (part.relatedPaths.has(path)) {
@@ -145,24 +158,24 @@ export class TemplateRoot {
 
 	requestUpdatePath(path) {
 		this.#updatePendingPaths.add(path)
-		requestMicrotask(this.host, this.#updateThrottler, () => {
+		requestMicrotask(this.#host, this.#updateThrottler, () => {
 			this.update(this.#updatePendingPaths)
 		})
 	}
 
 	requestRenderPath(path) {
 		this.#renderPendingPaths.add(path)
-		requestRender(this.host, this.#renderThrottler, () => {
+		requestRender(this.#host, this.#renderThrottler, () => {
 			this.render(this.#renderPendingPaths)
 		})
 	}
 
 	// updateProp(prop) {
-	// 	if (!this.host) {
+	// 	if (!this.#host) {
 	// 		return
 	// 	}
 	// 	let state = this._getState()
-	// 	this.parts.forEach((part) => {
+	// 	this.#parts.forEach((part) => {
 	// 		for (let path of part.relatedPaths) {
 	// 			if (path === prop || path.startsWith(prop + '.')) {
 	// 				part.updatePath(state, prop)

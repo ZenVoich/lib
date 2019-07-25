@@ -52,7 +52,7 @@ export class BindingsTemplatePart extends TemplatePart {
 		}
 
 		this.bindings.forEach((binding) => {
-			if (binding.target.constructor.updatePhase !== phase) {
+			if (binding.targetUpdatePhase !== phase) {
 				return
 			}
 			if (paths) {
@@ -70,11 +70,11 @@ export class BindingsTemplatePart extends TemplatePart {
 	}
 
 	_isBindingRelated(binding, path, phase) {
-		if (binding.target.constructor.updatePhase !== phase) {
+		if (binding.targetUpdatePhase !== phase) {
 			return false
 		}
 		if (this.dirtyCheck) {
-			for (let p of binding.source.relatedPaths) {
+			for (let p of binding.relatedPaths) {
 				if (p === path || p.startsWith(path + '.')) {
 					return true
 				}
