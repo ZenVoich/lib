@@ -29,6 +29,7 @@ export class AnimationJsTemplatePart extends TemplatePart {
 	#type = '' // '' | in | out
 	#animationSourceExpr
 	#activeAnimation // {phase, elapsed}
+	#parentSubscribed = false
 
 	constructor({type, animationSourceExpr, relatedPaths}, template) {
 		super()
@@ -37,19 +38,15 @@ export class AnimationJsTemplatePart extends TemplatePart {
 		this.#animationSourceExpr = animationSourceExpr
 		this.relatedPaths = relatedPaths
 
-		sub(template, (action, fragmentContainer) => {
-			if (!fragmentContainer.simpleMode) {
-				throw `#animation does not work on <template> tag`
-			}
-			if (action === 'intro' || action === 'outro') {
-				return new Promise((resolve) => {
-					this.animate(action, resolve, fragmentContainer.element)
-				})
-			}
-		})
+		sub(template, (...args) => this._onAction(...args))
 	}
 
 	connect(host) {
+		if (!this.#parentSubscribed) {
+			this.#parentSubscribed = true
+			sub(this.parentTemplateRoot, (...args) => this._onAction(...args))
+		}
+
 		this.#host = host
 	}
 
@@ -57,7 +54,18 @@ export class AnimationJsTemplatePart extends TemplatePart {
 		this.#host = null
 	}
 
-	animate(phase, resolve, element) {
+	_onAction(action, fragmentContainer) {
+		if (!fragmentContainer.simpleMode) {
+			throw `#animation does not work on <template> tag`
+		}
+		if (action === 'intro' || action === 'outro') {
+			return new Promise((resolve) => {
+				this._animate(action, resolve, fragmentContainer.element)
+			})
+		}
+	}
+
+	_animate(phase, resolve, element) {
 		if (this.#activeAnimation) {
 			this.#activeAnimation = {phase, resolve}
 			return

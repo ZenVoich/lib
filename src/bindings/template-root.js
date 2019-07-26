@@ -51,6 +51,10 @@ export class TemplateRoot {
 		})
 	}
 
+	get parts() {
+		return this.#parts
+	}
+
 	get content() {
 		return this.#template.content
 	}
@@ -94,7 +98,7 @@ export class TemplateRoot {
 	}
 
 	_getState() {
-		let hostState = {localName: this.#host.localName}
+		let hostState = {}
 		this.#relatedProps.forEach((prop) => {
 			hostState[prop] = this.#host[prop]
 		})

@@ -89,6 +89,10 @@ class RepeatExample extends HTMLElement {
 		return num > 0.5
 	}
 
+	_shouldHide(num) {
+		return num > 50
+	}
+
 	add(count, toStart) {
 		perf.markStart('add')
 

@@ -100,6 +100,7 @@ export class RepeatTemplatePart extends TemplatePart {
 
 	_createRepeatObject(state, item, index) {
 		let itemTemplateRoot = new TemplateRoot(this.#itemTemplateRootSkeleton)
+
 		itemTemplateRoot.contextStates = [...this.parentTemplateRoot.contextStates, {[this.#as]: item}]
 
 		let repeatObject = new RepeatObject(itemTemplateRoot, this.#as)
@@ -125,7 +126,7 @@ export class RepeatTemplatePart extends TemplatePart {
 			this.#actualOrder.splice(index, 1)
 
 			if (this.firstRendered) {
-				await pub(this.#template, 'outro', repeatObject.fragmentContainer)
+				await pub(repeatObject.templateRoot, 'outro', repeatObject.fragmentContainer)
 			}
 			repeatObject.remove()
 		}
@@ -134,7 +135,7 @@ export class RepeatTemplatePart extends TemplatePart {
 			this.#repeatObjectsByIndex.delete(index)
 
 			if (this.firstRendered) {
-				await pub(this.#template, 'outro', repeatObject.fragmentContainer)
+				await pub(repeatObject.templateRoot, 'outro', repeatObject.fragmentContainer)
 			}
 			repeatObject.remove()
 		}
@@ -202,7 +203,7 @@ export class RepeatTemplatePart extends TemplatePart {
 				this._placeElement(item, repeatObject.fragmentContainer, null, index)
 
 				if (this.firstRendered) {
-					pub(this.#template, 'intro', repeatObject.fragmentContainer)
+					pub(repeatObject.templateRoot, 'intro', repeatObject.fragmentContainer)
 				}
 			}
 		})

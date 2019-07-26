@@ -34,6 +34,7 @@
 		<random-number #attach-if="{!show}"></random-number>
 		<random-number #attach-if="{!show}"></random-number>
 		<random-number #attach-if="{!show}"></random-number>
+		<div #hide-if="{_shouldHide(item.value)}">< 50</div>
 
 		<div class="nested-items">
 			<div #repeat="{item.nested.items as itm}">parent repeat item: {item.value}, parent binding: <span>{pi}</span> item: {itm.val}</div>

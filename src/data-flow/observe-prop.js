@@ -45,9 +45,9 @@ let defineAccessors = (object, prop) => {
 				enumerable: false,
 				writable: true,
 				configurable: true,
-				value(...items) {
+				value(...args) {
 					let oldLength = object.length
-					Array.prototype[method].call(object, ...items)
+					Array.prototype[method].call(object, ...args)
 					if (oldLength !== object.length) {
 						notifyProp(object, prop, oldLength, object.length)
 					}

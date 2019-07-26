@@ -1,7 +1,9 @@
 export class TemplatePart {
-	host
+	parentTemplateRoot
 	relatedPaths
-	static parse(root, attr) {}
+
+	static parseSkeleton(template, attribute) {}
+
 	connect(host) {}
 	disconnect() {}
 	update(state, paths, ignoreUndefined) {}

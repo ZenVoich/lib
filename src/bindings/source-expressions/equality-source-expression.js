@@ -19,12 +19,12 @@ export class EqualitySourceExpression extends SourceExpression {
 				return parseSourceExpression(arg, {negate})
 			})
 
-			return new EqualitySourceExpression({leftExpr, operator: match[2], rightExpr})
+			return new EqualitySourceExpression({operator: match[2], leftExpr, rightExpr})
 		}
 	}
 
-	leftExpr // SourceExpression
 	operator = ''
+	leftExpr // SourceExpression
 	rightExpr // SourceExpression
 
 	constructor({leftExpr, operator, rightExpr} = {}) {

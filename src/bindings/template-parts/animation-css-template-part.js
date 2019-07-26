@@ -38,7 +38,8 @@ export class AnimationCssTemplatePart extends TemplatePart {
 
 	#timing
 	#keyframes
-	#animationByElement = new WeakMap
+	#animation
+	#parentSubscribed = false
 
 	constructor({type, animationString, relatedPaths}, template) {
 		super()
@@ -47,19 +48,15 @@ export class AnimationCssTemplatePart extends TemplatePart {
 		this.#animationString = animationString
 		this.relatedPaths = relatedPaths
 
-		sub(template, (action, fragmentContainer) => {
-			if (!fragmentContainer.simpleMode) {
-				throw `#animation does not work on <template> tag`
-			}
-			if (action === 'intro' || action === 'outro') {
-				return new Promise((resolve) => {
-					this.animate(action, resolve, fragmentContainer.element)
-				})
-			}
-		})
+		sub(template, (...args) => this.onAction(...args))
 	}
 
 	connect(host) {
+		if (!this.#parentSubscribed) {
+			this.#parentSubscribed = true
+			sub(this.parentTemplateRoot, (...args) => this.onAction(...args))
+		}
+
 		this.#host = host
 	}
 
@@ -67,19 +64,28 @@ export class AnimationCssTemplatePart extends TemplatePart {
 		this.#host = null
 	}
 
-	animate(phase, resolve, element) {
-		let animation = this.#animationByElement.get(element)
-		if (!animation) {
-			let timing = this.getTiming()
-			animation = element.animate(this.getKeyframes(), timing)
-			this.#animationByElement.set(element, animation)
+	onAction(action, fragmentContainer) {
+		if (!fragmentContainer.simpleMode) {
+			throw `#animation does not work on <template> tag`
 		}
-		animation.onfinish = resolve
-		animation.playbackRate = phase === 'intro' ? 1 : -1
-		animation.play()
+		if (action === 'intro' || action === 'outro') {
+			return new Promise((resolve) => {
+				this._animate(action, resolve, fragmentContainer.element)
+			})
+		}
 	}
 
-	getTiming() {
+	_animate(phase, resolve, element) {
+		if (!this.#animation) {
+			let timing = this._getTiming()
+			this.#animation = element.animate(this._getKeyframes(), timing)
+		}
+		this.#animation.onfinish = resolve
+		this.#animation.playbackRate = phase === 'intro' ? 1 : -1
+		this.#animation.play()
+	}
+
+	_getTiming() {
 		if (this.#timing) {
 			return this.#timing
 		}
@@ -107,8 +113,8 @@ export class AnimationCssTemplatePart extends TemplatePart {
 		return this.#timing
 	}
 
-	getKeyframes() {
-		if (this.#keyframes !== null) {
+	_getKeyframes() {
+		if (this.#keyframes) {
 			return this.#keyframes
 		}
 

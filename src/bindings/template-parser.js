@@ -31,7 +31,12 @@ export let parseSkeleton = (template) => {
 		curNode = walker.nextNode()
 	}
 
-	partSkeletons.set(-1, [{
+	let skeletons = parseDirectiveElement(ensureDirectiveTemplate(template))
+	if (skeletons.length) {
+		partSkeletons.set('root', skeletons)
+	}
+
+	partSkeletons.set('bindings', [{
 		partClass: BindingsTemplatePart,
 		partSkeleton: BindingsTemplatePart.parseSkeleton(template.content),
 	}])
@@ -47,9 +52,17 @@ export let fromSkeleton = (partsSkeletons, template) => {
 	let curNode = walker.nextNode()
 	let elementIndex = -1
 
-	let [bindingsSkeletonInfo] = partsSkeletons.get(-1)
+	let [bindingsSkeletonInfo] = partsSkeletons.get('bindings')
 	let part = new bindingsSkeletonInfo.partClass(bindingsSkeletonInfo.partSkeleton, template.content)
 	parts.push(part)
+
+	let rootSkeletonsInfo = partsSkeletons.get('root')
+	if (rootSkeletonsInfo) {
+		rootSkeletonsInfo.forEach((skeletonInfo) => {
+			let part = new skeletonInfo.partClass(skeletonInfo.partSkeleton, template)
+			parts.push(part)
+		})
+	}
 
 	while (true) {
 		if (!curNode) {
@@ -93,7 +106,6 @@ let ensureDirectiveTemplate = (element) => {
 	// move directive attributes to <template> tag
 	element.getAttributeNames().forEach((attr) => {
 		if (attr.startsWith('#')) {
-			// template.setAttribute(attr.slice(1), element.getAttribute(attr))
 			template.attributes.setNamedItem(element.attributes[attr].cloneNode())
 			element.removeAttribute(attr)
 		}
@@ -134,11 +146,12 @@ let parseDirectiveElement = (element) => {
 		return
 	}
 
-	attrs.forEach((attr) => {
+	attrs.find((attr) => {
 		if (attr[0] !== '#') {
 			return
 		}
-		templatePartClasses.forEach((templatePartClass) => {
+		return templatePartClasses.find((templatePartClass) => {
+			let val = element.getAttribute(attr)
 			let partSkeleton = templatePartClass.parseSkeleton(element, attr)
 
 			if (partSkeleton) {
@@ -146,6 +159,11 @@ let parseDirectiveElement = (element) => {
 					partClass: templatePartClass,
 					partSkeleton: partSkeleton,
 				})
+
+				if (attr === '#repeat') {
+					return true
+				}
+				// return true
 			}
 		})
 	})
