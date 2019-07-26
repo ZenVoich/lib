@@ -1,4 +1,4 @@
-import {define, template, styles, watch, debounce, attr, computed, notify, type, listen} from '../../src/lib.js'
+import {define, template, styles, watch, debounce, attr, computed, type, listen} from '../../src/lib.js'
 import {TemplateRoot} from '../../src/bindings.js'
 import {proxyObject} from '../../src/data-flow/proxy-object.js'
 

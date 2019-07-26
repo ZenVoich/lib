@@ -13,7 +13,10 @@ export class PropertyTargetExpression extends TargetExpression {
 		if (propertyName === 'innerHtml') {
 			propertyName = 'innerHTML'
 		}
-		return {propertyName}
+		return {
+			propertyName,
+			twoWayBind: attribute[0] === ':',
+		}
 	}
 
 	element = null

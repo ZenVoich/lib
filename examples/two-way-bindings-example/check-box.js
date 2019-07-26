@@ -1,6 +1,6 @@
 import {define} from '../../src/decorators/class/define.js'
 import {attr} from '../../src/decorators/prop/attr.js'
-import {notify} from '../../src/decorators/prop/notify.js'
+import {upstream} from '../../src/decorators/prop/upstream.js'
 import {watch} from '../../src/decorators/method/watch.js'
 
 @define('check-box')
@@ -10,7 +10,7 @@ class TestElement extends HTMLElement {
 	`
 
 	@attr
-	@notify
+	@upstream
 	checked = true
 
 	// @watch('checked')

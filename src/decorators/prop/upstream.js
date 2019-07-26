@@ -1,9 +1,9 @@
 import {requestMicrotask} from '../../utils/microtask.js'
 import {observePath} from '../../data-flow/observe-path.js'
 
-export let notify = (descriptor) => {
+export let upstream = (descriptor) => {
 	if (descriptor.kind !== 'field') {
-		throw '@notify decorator can only be applied to a property'
+		throw '@upstream decorator can only be applied to a property'
 	}
 	return {
 		...descriptor,

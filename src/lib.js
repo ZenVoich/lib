@@ -9,5 +9,5 @@ export {debounce} from './decorators/method/debounce.js'
 export {listen} from './decorators/method/listen.js'
 
 export {attr} from './decorators/prop/attr.js'
-export {notify} from './decorators/prop/notify.js'
+export {upstream} from './decorators/prop/upstream.js'
 export {type} from './decorators/prop/type.js'
