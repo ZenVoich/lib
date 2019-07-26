@@ -55,6 +55,10 @@ export class TemplateRoot {
 		return this.#parts
 	}
 
+	get relatedPaths() {
+		return this.#relatedPaths
+	}
+
 	get content() {
 		return this.#template.content
 	}

@@ -54,6 +54,7 @@ export class ShowHideTemplatePart extends TemplatePart {
 
 	connect(host) {
 		this.#host = host
+		this.#childTemplateRoot.contextStates = [...this.parentTemplateRoot.contextStates, ...this.#childTemplateRoot.contextStates]
 		this.#childTemplateRoot.connect(host)
 		this.#childTemplateRoot.update()
 		this.#childTemplateRoot.render()

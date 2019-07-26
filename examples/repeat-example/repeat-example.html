@@ -22,8 +22,8 @@
 
 
 <div #repeat="{items by key}" #animation="{slide}" class="item" .item="{item}">
-	<!-- <div class="div" #attach-if="{item.show}"> -->
-		<div .item="{item}" @click="{onClick}">Item: {item.value} (nested {item.nested.val})(parent binding: <span>{pi}</span> nested: {nested.val}) R: <random-number></random-number> <random-number></random-number></div>
+	<div class="div" #attach-if="{item.show}">
+		<div .item="{item}" @click="{onClick}" #detach-if="{_shouldHide(item.value)}">Item: {item.value} (nested {item.nested.val})(parent binding: <span>{pi}</span> nested: {nested.val}) R: <random-number></random-number> <random-number></random-number></div>
 		<random-number #show-if="{show}"></random-number>
 		<random-number #show-if="{show}"></random-number>
 		<random-number #attach-if="{show}"></random-number>
@@ -39,7 +39,7 @@
 		<div class="nested-items">
 			<div #repeat="{item.nested.items as itm}">parent repeat item: {item.value}, parent binding: <span>{pi}</span> item: {itm.val}</div>
 		</div>
-	<!-- </div> -->
+	</div>
 </div>
 
 <div #attach-if="{!items.length}">(empty)</div>

@@ -55,6 +55,7 @@ export class AttachDetachTemplatePart extends TemplatePart {
 
 	connect(host) {
 		this.#host = host
+		this.#childTemplateRoot.contextStates = [...this.parentTemplateRoot.contextStates, ...this.#childTemplateRoot.contextStates]
 		this.render(host)
 	}
 
