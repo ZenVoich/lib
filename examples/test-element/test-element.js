@@ -1,8 +1,8 @@
-import {define, template, styles, watch, debounce, attr, computed, type, listen} from '../../src/lib.js'
+import {tag, template, styles, watch, debounce, attr, computed, type, listen} from '../../src/lib.js'
 import {TemplateRoot} from '../../src/bindings.js'
 import {proxyObject} from '../../src/data-flow/proxy-object.js'
 
-@define('test-element')
+@tag('test-element')
 @template(import('./test-element.html'))
 @styles(import('./test-element.css'))
 class TestElement extends HTMLElement {
@@ -174,7 +174,7 @@ class TestElement extends HTMLElement {
 }
 
 
-@define('t-t')
+@tag('t-t')
 class TT extends HTMLElement {
 	constructor() {
 		super()

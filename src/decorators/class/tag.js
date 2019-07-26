@@ -1,7 +1,7 @@
 import {bindings} from './bindings.js'
 import {initTemplate} from './init-template.js'
 
-export let define = (name) => {
+export let tag = (name) => {
 	return (descriptor) => {
 		return {
 			...descriptor,

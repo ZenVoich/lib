@@ -1,9 +1,9 @@
-import {define} from '../../src/decorators/class/define.js'
+import {tag} from '../../src/decorators/class/tag.js'
 import {attr} from '../../src/decorators/prop/attr.js'
 import {upstream} from '../../src/decorators/prop/upstream.js'
 import {watch} from '../../src/decorators/method/watch.js'
 
-@define('check-box')
+@tag('check-box')
 class TestElement extends HTMLElement {
 	static template = `
 		<input type=checkbox .checked={checked} @change={onChange}>

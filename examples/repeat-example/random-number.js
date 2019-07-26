@@ -1,6 +1,6 @@
-import {define, attr, computed} from '../../src/lib.js'
+import {tag, attr, computed} from '../../src/lib.js'
 
-@define('random-number')
+@tag('random-number')
 class RepeatExample extends HTMLElement {
 	static template = `<div @click="{generateClick}">{num}</div>`
 	static styles = `:host { display: inline-block; }`

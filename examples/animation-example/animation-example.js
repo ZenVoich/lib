@@ -1,6 +1,6 @@
-import {define} from '../../src/lib.js'
+import {tag} from '../../src/lib.js'
 
-@define('animation-example')
+@tag('animation-example')
 class AnimationExample extends HTMLElement {
 	static template = import('./animation-example.html')
 

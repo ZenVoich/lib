@@ -1,7 +1,7 @@
-import {define} from '../../src/lib.js'
+import {tag} from '../../src/lib.js'
 import {afterNextRender} from '../../src/utils.js'
 
-@define('dbmon-table')
+@tag('dbmon-table')
 class DbmonTable extends HTMLElement {
 	static template = import('./dbmon-table.html')
 	static styles = import('./dbmon/styles.css')

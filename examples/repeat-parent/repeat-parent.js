@@ -1,8 +1,8 @@
-import {define} from '../../src/lib.js'
+import {tag} from '../../src/lib.js'
 import {perf} from '../../src/utils.js'
 import {proxyObject} from '../../src/data-flow/proxy-object.js'
 
-@define('repeat-parent')
+@tag('repeat-parent')
 class RepeatParent extends HTMLElement {
 	static template = import('./repeat-parent.html')
 

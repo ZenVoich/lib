@@ -1,9 +1,9 @@
-import {define} from '../../src/lib.js'
+import {tag} from '../../src/lib.js'
 import {perf} from '../../src/utils.js'
 
 import './random-number.js'
 
-@define('repeat-example')
+@tag('repeat-example')
 class RepeatExample extends HTMLElement {
 	static template = import('./repeat-example.html')
 	static styles = import('./repeat-example.css')

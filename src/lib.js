@@ -1,4 +1,4 @@
-export {define} from './decorators/class/define.js'
+export {tag} from './decorators/class/tag.js'
 export {template} from './decorators/class/template.js'
 export {styles} from './decorators/class/styles.js'
 export {dirtyCheck} from './decorators/class/dirty-check.js'
