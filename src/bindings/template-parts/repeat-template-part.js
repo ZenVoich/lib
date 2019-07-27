@@ -146,9 +146,9 @@ export class RepeatTemplatePart extends TemplatePart {
 			let repeatObject = this.#repeatObjectsByIndex.get(index)
 			this.#repeatObjectsByIndex.delete(index)
 
-			if (this.firstRendered) {
-				await pub(repeatObject.templateRoot, 'outro', repeatObject.fragmentContainer)
-			}
+			// if (this.firstRendered) {
+			// 	await pub(repeatObject.templateRoot, 'outro', repeatObject.fragmentContainer)
+			// }
 			repeatObject.remove()
 		}
 	}
@@ -162,6 +162,10 @@ export class RepeatTemplatePart extends TemplatePart {
 				repeatObject.disconnect()
 				repeatObject.templateRoot.contextStates = [...this.parentTemplateRoot.contextStates, this._makeContextState(item, i)]
 				repeatObject.connect(this.#host, item, {dirtyCheck: this.#dirtyCheck})
+
+				// if (this.firstRendered) {
+				// 	pub(repeatObject.templateRoot, 'intro', repeatObject.fragmentContainer)
+				// }
 			}
 			repeatObject.update()
 			repeatObject.render()
