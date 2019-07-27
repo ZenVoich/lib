@@ -1,9 +1,12 @@
 <style>
 	:host {
 		display: block;
-		min-width: 250px;
 		--fast: 0.2s;
 		--slow: 1s;
+	}
+
+	span {
+		display: inline-block;
 	}
 
 	@keyframes fade {
@@ -25,12 +28,39 @@
 			transform: translate(0);
 		}
 	}
+
+	@keyframes rotate {
+		from {
+			transform: scale(2) rotate(-900deg);
+			opacity: 0;
+		}
+		to {
+			transform: scale(1) rotate(0deg);
+			opacity: 1;
+		}
+	}
 </style>
 
 <button @click="{toggle}">Toggle</button>
 
-<div #attach="{shown}" #animation="fade var(--fast)">Fade {shown}</div>
-<div #attach="{shown}" #animation="fly 3s">#attach fly</div>
-<div #show="{shown}" #animation="fly 3s">#show fly</div>
-<div #show="{shown}" #animation="{typewriter}">#show typewriter lalala Hello, World!</div>
+<div>
+	<span #attach="{shown}" #animation="fade var(--slow)">Fade {shown}</span>
+</div>
+
+<div>
+	<span #show="{shown}" #animation="fly 3s linear">#show fly</span>
+</div>
+
+<div>
+	<span #show="{shown}" #animation="rotate 2s">#show rotate</span>
+</div>
+
+<div>
+	<span #attach="{shown}" #animation-in="rotate 3s" #animation-out="fly 3s linear">#attach rotate in, fly out</span>
+</div>
+
+<div>
+	<span #show="{shown}" #animation-in="{typewriter}">#show typewriter lalala Hello, World!</span>
+</div>
+
 <div>Static</div>

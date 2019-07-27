@@ -16,8 +16,16 @@ export class AnimationJsTemplatePart extends TemplatePart {
 
 		template.removeAttribute(attribute)
 
+		let type = attribute.split('-')[1]
+		if (type === 'in') {
+			type ='intro'
+		}
+		else if (type === 'out') {
+			type ='outro'
+		}
+
 		return {
-			type: attribute.split('-')[1],
+			type,
 			animationSourceExpr,
 			relatedPaths: new Set,
 		}
@@ -26,7 +34,7 @@ export class AnimationJsTemplatePart extends TemplatePart {
 	relatedPaths
 
 	#host
-	#type = '' // '' | in | out
+	#type = '' // '' | intro | outro
 	#animationSourceExpr
 	#activeAnimation // {phase, elapsed}
 	#parentSubscribed = false
@@ -58,6 +66,14 @@ export class AnimationJsTemplatePart extends TemplatePart {
 		if (!fragmentContainer.simpleMode) {
 			throw `#animation does not work on <template> tag`
 		}
+		if (this.#type && this.#activeAnimation) {
+			this.#activeAnimation.finish()
+			cancelAnimationFrame(this.#activeAnimation.raf)
+			this.#activeAnimation = null
+		}
+		if (this.#type && this.#type !== action) {
+			return
+		}
 		if (action === 'intro' || action === 'outro') {
 			return new Promise((resolve) => {
 				this._animate(action, resolve, fragmentContainer.element)
@@ -66,15 +82,15 @@ export class AnimationJsTemplatePart extends TemplatePart {
 	}
 
 	_animate(phase, resolve, element) {
-		if (this.#activeAnimation) {
+		if (this.#activeAnimation && !this.#type) {
 			this.#activeAnimation = {phase, resolve}
-			return
 		}
 
 		this.#activeAnimation = {phase, resolve}
 
 		let fn = this.#animationSourceExpr.getValue(this.#host)
 		let {tick, finish = ()=>{}, duration = 300} = fn.call(this.#host, element)
+		this.#activeAnimation.finish = finish
 
 		let prevTime
 		let elapsed = phase === 'intro' ? 0 : duration
@@ -100,7 +116,7 @@ export class AnimationJsTemplatePart extends TemplatePart {
 			else {
 				firstRendered = true
 			}
-			requestAnimationFrame(loop)
+			this.#activeAnimation.raf = requestAnimationFrame(loop)
 		}
 		loop()
 	}

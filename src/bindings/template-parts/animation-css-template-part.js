@@ -22,8 +22,16 @@ export class AnimationCssTemplatePart extends TemplatePart {
 
 		template.removeAttribute(attribute)
 
+		let type = attribute.split('-')[1]
+		if (type === 'in') {
+			type ='intro'
+		}
+		else if (type === 'out') {
+			type ='outro'
+		}
+
 		return {
-			type: attribute.split('-')[1],
+			type,
 			animationString,
 			relatedPaths: new Set,
 		}
@@ -32,7 +40,7 @@ export class AnimationCssTemplatePart extends TemplatePart {
 	relatedPaths
 
 	#host
-	#type = '' // '' | in | out
+	#type = '' // '' | intro | outro
 	#animationString = ''
 	#animationName = ''
 
@@ -68,6 +76,9 @@ export class AnimationCssTemplatePart extends TemplatePart {
 		if (!fragmentContainer.simpleMode) {
 			throw `#animation does not work on <template> tag`
 		}
+		if (this.#type && this.#type !== action) {
+			return
+		}
 		if (action === 'intro' || action === 'outro') {
 			return new Promise((resolve) => {
 				this._animate(action, resolve, fragmentContainer.element)
@@ -80,6 +91,24 @@ export class AnimationCssTemplatePart extends TemplatePart {
 			let timing = this._getTiming()
 			this.#animation = element.animate(this._getKeyframes(), timing)
 		}
+
+		// element.getAnimations().forEach((animation) => {
+		// 	if (animation !== this.#animation) {
+		// 		console.log(this.#animation.onfinish)
+		// 		if (phase == 'intro') {
+		// 			animation.cancel()
+		// 		}
+		// 		else {
+		// 			animation.dispatchEvent(new CustomEvent('do-not-resolve'))
+		// 		}
+		// 		this.#animation.currentTime = 0
+		// 	}
+		// })
+
+		// this.#animation.addEventListener('do-not-resolve', () => {
+		// 	this.#animation.onfinish = null
+		// })
+
 		this.#animation.onfinish = resolve
 		this.#animation.playbackRate = phase === 'intro' ? 1 : -1
 		this.#animation.play()
@@ -93,12 +122,7 @@ export class AnimationCssTemplatePart extends TemplatePart {
 		tempEl.style.animation = this.#animationString
 
 		let computedStyle = getComputedStyle(tempEl)
-
-		// linear by default
 		let easing = computedStyle.animationTimingFunction
-		if (easing === 'ease' && !this.#animationString.includes('ease')) {
-			easing = 'linear'
-		}
 
 		this.#animationName = computedStyle.animationName
 
@@ -106,6 +130,8 @@ export class AnimationCssTemplatePart extends TemplatePart {
 			delay: stringToMs(computedStyle.animationDelay),
 			duration: stringToMs(computedStyle.animationDuration),
 			easing: easing,
+			// composite: 'add',
+			// iterationComposite: 'accumulate',
 		}
 
 		tempEl.remove()

@@ -133,6 +133,8 @@ let parseDirectiveElement = (element) => {
 		'#detach',
 		'#repeat',
 		'#animation',
+		'#animation-in',
+		'#animation-out',
 	]
 	let unknownDirective = attrs.find(attr => attr.startsWith('#') && !directiveWhitelist.includes(attr))
 	if (unknownDirective) {
