@@ -5,7 +5,7 @@ import {pub} from '../../utils/pub-sub.js'
 
 export class ShowHideTemplatePart extends TemplatePart {
 	static parseSkeleton(template, attribute) {
-		if (!['#show-if', '#hide-if'].includes(attribute)) {
+		if (!['#show', '#hide'].includes(attribute)) {
 			return
 		}
 

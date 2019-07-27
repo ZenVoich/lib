@@ -50,20 +50,20 @@ Array: {array.length}
 
 <div>
 	<b>Show/Hide: {obj.val}</b>
-	<div #show-if="{isEven(obj.val)}">#show-if {obj.val}</div>
-	<div #hide-if="{isEven(obj.val, prop, ', tes, sa')}">#hide-if {obj.val}</div>
+	<div #show="{isEven(obj.val)}">#show {obj.val}</div>
+	<div #hide="{isEven(obj.val, prop, ', tes, sa')}">#hide {obj.val}</div>
 </div>
 
-<div #attach-if="{isEven(obj.val)}">#attach-if {obj.val}</div>
-<div #detach-if="{isEven(obj.val)}">#detach-if {obj.val}</div>
-<div #detach-if="{isEven(obj.val)}">
+<div #attach="{isEven(obj.val)}">#attach {obj.val}</div>
+<div #detach="{isEven(obj.val)}">#detach {obj.val}</div>
+<div #detach="{isEven(obj.val)}">
 	a
-	<div #attach-if="{isEven(obj.val)}">b</div>
-	<div #detach-if="{isEven(obj.val)}">c</div>
+	<div #attach="{isEven(obj.val)}">b</div>
+	<div #detach="{isEven(obj.val)}">c</div>
 </div>
-<template #attach-if="{isEven(obj.val)}">
-	<div>#attach-if template {obj.val}</div>
-	<div>#attach-if second child</div>
+<template #attach="{isEven(obj.val)}">
+	<div>#attach template {obj.val}</div>
+	<div>#attach second child</div>
 </template>
 <br>
 

@@ -22,19 +22,19 @@
 
 
 <div #repeat="{items by key}" #animation="{slide}" class="item" .item="{item}">
-	<div class="div" #attach-if="{item.show}">
-		<div .item="{item}" @click="{onClick}" #detach-if="{_shouldHide(item.value)}">Item: {item.value} (nested {item.nested.val})(parent binding: <span>{pi}</span> nested: {nested.val}) R: <random-number></random-number> <random-number></random-number></div>
-		<random-number #show-if="{show}"></random-number>
-		<random-number #show-if="{show}"></random-number>
-		<random-number #attach-if="{show}"></random-number>
-		<random-number #attach-if="{show}"></random-number>
-		<random-number #attach-if="{show}"></random-number>
-		<random-number #show-if="{!show}"></random-number>
-		<random-number #show-if="{!show}"></random-number>
-		<random-number #attach-if="{!show}"></random-number>
-		<random-number #attach-if="{!show}"></random-number>
-		<random-number #attach-if="{!show}"></random-number>
-		<div #hide-if="{_shouldHide(item.value)}">< 50</div>
+	<div class="div" #attach="{item.show}">
+		<div .item="{item}" @click="{onClick}" #detach="{_shouldHide(item.value)}">Item: {item.value} (nested {item.nested.val})(parent binding: <span>{pi}</span> nested: {nested.val}) R: <random-number></random-number> <random-number></random-number></div>
+		<random-number #show="{show}"></random-number>
+		<random-number #show="{show}"></random-number>
+		<random-number #attach="{show}"></random-number>
+		<random-number #attach="{show}"></random-number>
+		<random-number #attach="{show}"></random-number>
+		<random-number #show="{!show}"></random-number>
+		<random-number #show="{!show}"></random-number>
+		<random-number #attach="{!show}"></random-number>
+		<random-number #attach="{!show}"></random-number>
+		<random-number #attach="{!show}"></random-number>
+		<div #hide="{_shouldHide(item.value)}">< 50</div>
 
 		<div class="nested-items">
 			<div #repeat="{item.nested.items as itm}">parent repeat item: {item.value}, parent binding: <span>{pi}</span> item: {itm.val}</div>
@@ -42,7 +42,7 @@
 	</div>
 </div>
 
-<div #attach-if="{!items.length}">(empty)</div>
+<div #attach="{!items.length}">(empty)</div>
 
 <!-- <br>
 <button @click="{increment}">lib-repeat increment</button> -->

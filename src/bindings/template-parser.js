@@ -127,10 +127,10 @@ let parseDirectiveElement = (element) => {
 	let attrs = element.getAttributeNames()
 
 	let directiveWhitelist = [
-		'#show-if',
-		'#hide-if',
-		'#attach-if',
-		'#detach-if',
+		'#show',
+		'#hide',
+		'#attach',
+		'#detach',
 		'#repeat',
 		'#animation',
 	]

@@ -1,6 +1,6 @@
 <div class="test">
 	<check-box :checked={checked}></check-box>
-	<span #show-if={checked} @click={toggle}>Checked</span>
-	<span #hide-if={checked} @click={toggle}>Unchecked</span>
+	<span #show={checked} @click={toggle}>Checked</span>
+	<span #hide={checked} @click={toggle}>Unchecked</span>
 	<div>{checked}</div>
 </div>

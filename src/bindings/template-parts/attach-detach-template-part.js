@@ -6,7 +6,7 @@ import {pub} from '../../utils/pub-sub.js'
 
 export class AttachDetachTemplatePart extends TemplatePart {
 	static parseSkeleton(template, attribute) {
-		if (!['#attach-if', '#detach-if'].includes(attribute)) {
+		if (!['#attach', '#detach'].includes(attribute)) {
 			return
 		}
 
