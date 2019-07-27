@@ -5,12 +5,12 @@ export class RepeatObject {
 	host
 	item
 	templateRoot
+	contextState
 	fragmentContainer
-	as
 
-	constructor(templateRoot, as) {
+	constructor(templateRoot, contextState) {
 		this.templateRoot = templateRoot
-		this.as = as
+		this.contextState = contextState
 		this.fragmentContainer = new FragmentContainer(templateRoot.content)
 	}
 
@@ -37,6 +37,7 @@ export class RepeatObject {
 		this.disconnect()
 		this.fragmentContainer.remove()
 		this.item = null
+		this.contextState = null
 	}
 
 	update() {

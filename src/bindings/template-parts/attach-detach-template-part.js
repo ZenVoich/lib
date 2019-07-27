@@ -16,7 +16,7 @@ export class AttachDetachTemplatePart extends TemplatePart {
 		let childTemplateRootSkeleton = TemplateRoot.parseSkeleton(template)
 
 		return {
-			type: attribute.slice(1, -3),
+			type: attribute.slice(1),
 			sourceExpression,
 			childTemplateRootSkeleton,
 			relatedPaths: sourceExpression.relatedPaths,
@@ -56,7 +56,7 @@ export class AttachDetachTemplatePart extends TemplatePart {
 	connect(host) {
 		this.#host = host
 		this.#childTemplateRoot.contextStates = [...this.parentTemplateRoot.contextStates, ...this.#childTemplateRoot.contextStates]
-		this.render(host)
+		this.render(this.parentTemplateRoot._getState())
 	}
 
 	disconnect() {

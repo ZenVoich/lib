@@ -15,7 +15,7 @@ export class ShowHideTemplatePart extends TemplatePart {
 		let childTemplateRootSkeleton = TemplateRoot.parseSkeleton(template)
 
 		return {
-			type: attribute.slice(1, -3),
+			type: attribute.slice(1),
 			sourceExpression,
 			childTemplateRootSkeleton,
 			relatedPaths: sourceExpression.relatedPaths,

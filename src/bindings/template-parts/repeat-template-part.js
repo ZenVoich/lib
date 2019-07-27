@@ -11,7 +11,7 @@ export class RepeatTemplatePart extends TemplatePart {
 			return
 		}
 
-		let match = template.getAttribute(attribute).match(/\s*\{\s*(.+?)(?:\s*as\s+(.+?)\s*)?(?:\s*by\s+(.+?)\s*)?\s*\}\s*/)
+		let match = template.getAttribute(attribute).match(/\s*\{\s*(.+?)(?:\s*as\s+(.+?)(?:\s*,\s*(.+?))?\s*)?(?:\s*by\s+(.+?)\s*)?\s*\}\s*/)
 		let itemsSourceExpression = match && parseSourceExpressionMemoized(`{${match[1]}}`)
 
 		if (!itemsSourceExpression) {
@@ -22,7 +22,8 @@ export class RepeatTemplatePart extends TemplatePart {
 
 		return {
 			as: match[2] || 'item',
-			key: match[3] || '',
+			indexAs: match[3],
+			key: match[4] || '',
 			itemsSourceExpression,
 			itemTemplateRootSkeleton: TemplateRoot.parseSkeleton(template),
 			relatedPaths: new Set([...itemsSourceExpression.relatedPaths, ...[...itemsSourceExpression.relatedPaths].map((path) => {
@@ -43,15 +44,17 @@ export class RepeatTemplatePart extends TemplatePart {
 
 	#key = ''
 	#as = 'item'
+	#indexAs = ''
 	#actualOrder = []
 	#repeatObjectsByKey = new Map
 	#repeatObjectsByIndex = new Map
 
-	constructor({as, key, itemsSourceExpression, itemTemplateRootSkeleton, relatedPaths}, template) {
+	constructor({as, indexAs, key, itemsSourceExpression, itemTemplateRootSkeleton, relatedPaths}, template) {
 		super()
 
 		this.#template = template
 		this.#as = as
+		this.#indexAs = indexAs
 		this.#key = key
 		this.#itemsSourceExpression = itemsSourceExpression
 		this.#itemTemplateRootSkeleton = itemTemplateRootSkeleton
@@ -98,12 +101,21 @@ export class RepeatTemplatePart extends TemplatePart {
 		}
 	}
 
+	_makeContextState(item, index) {
+		let contextState = {[this.#as]: item}
+		if (this.#indexAs) {
+			contextState[this.#indexAs] = index
+		}
+		return contextState
+	}
+
 	_createRepeatObject(state, item, index) {
 		let itemTemplateRoot = new TemplateRoot(this.#itemTemplateRootSkeleton)
+		let contextState = this._makeContextState(item, index)
 
-		itemTemplateRoot.contextStates = [...this.parentTemplateRoot.contextStates, {[this.#as]: item}]
+		itemTemplateRoot.contextStates = [...this.parentTemplateRoot.contextStates, contextState]
 
-		let repeatObject = new RepeatObject(itemTemplateRoot, this.#as)
+		let repeatObject = new RepeatObject(itemTemplateRoot, contextState)
 		repeatObject.connect(this.#host, item, {dirtyCheck: this.#dirtyCheck})
 		repeatObject.update()
 		repeatObject.render()
@@ -148,7 +160,7 @@ export class RepeatTemplatePart extends TemplatePart {
 			let item = this.items[i]
 			if (repeatObject.item !== item) {
 				repeatObject.disconnect()
-				repeatObject.templateRoot.contextStates = [...this.parentTemplateRoot.contextStates, {[this.#as]: item}]
+				repeatObject.templateRoot.contextStates = [...this.parentTemplateRoot.contextStates, this._makeContextState(item, i)]
 				repeatObject.connect(this.#host, item, {dirtyCheck: this.#dirtyCheck})
 			}
 			repeatObject.update()
@@ -195,16 +207,20 @@ export class RepeatTemplatePart extends TemplatePart {
 			this._removeElement(key)
 		})
 
-		// add elements
 		this.items.forEach((item, index) => {
-			let hasPhysical = this.#repeatObjectsByKey.has(item[this.#key])
-			if (!hasPhysical) {
-				let repeatObject = this._createRepeatObject(state, item, index)
+			let repeatObject = this.#repeatObjectsByKey.get(item[this.#key])
+			// add element
+			if (!repeatObject) {
+				repeatObject = this._createRepeatObject(state, item, index)
 				this._placeElement(item, repeatObject.fragmentContainer, null, index)
 
 				if (this.firstRendered) {
 					pub(repeatObject.templateRoot, 'intro', repeatObject.fragmentContainer)
 				}
+			}
+			// update index
+			else if (this.#indexAs && repeatObject.contextState[this.#indexAs] !== index) {
+				repeatObject.contextState[this.#indexAs] = index
 			}
 		})
 
