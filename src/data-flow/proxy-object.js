@@ -18,7 +18,6 @@ export class ProxyObject {
 }
 
 export let proxyObject = (object) => {
-	return object
 	if (proxyObjects.has(object)) {
 		return object
 	}

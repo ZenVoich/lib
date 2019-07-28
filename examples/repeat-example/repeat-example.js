@@ -1,5 +1,6 @@
 import {tag} from '../../src/lib.js'
 import {perf} from '../../src/utils.js'
+import {proxyArray} from '../../src/data-flow/proxy-array.js'
 
 import './random-number.js'
 
@@ -16,7 +17,7 @@ class RepeatExample extends HTMLElement {
 
 	constructor() {
 		super()
-		this.items = []
+		this.items = proxyArray([])
 		// this.items = [{
 		// 		show: true,
 		// 		key: 0,
@@ -48,15 +49,15 @@ class RepeatExample extends HTMLElement {
 	}
 
 	slide(element) {
-		let style = getComputedStyle(element);
-		let opacity = +style.opacity;
-		let height = parseFloat(style.height);
-		let paddingTop = parseFloat(style.paddingTop);
-		let paddingBottom = parseFloat(style.paddingBottom);
-		let marginTop = parseFloat(style.marginTop);
-		let marginBottom = parseFloat(style.marginBottom);
-		let borderTopWidth = parseFloat(style.borderTopWidth);
-		let borderBottomWidth = parseFloat(style.borderBottomWidth);
+		let style = getComputedStyle(element)
+		let opacity = +style.opacity
+		let height = parseFloat(style.height)
+		let paddingTop = parseFloat(style.paddingTop)
+		let paddingBottom = parseFloat(style.paddingBottom)
+		let marginTop = parseFloat(style.marginTop)
+		let marginBottom = parseFloat(style.marginBottom)
+		let borderTopWidth = parseFloat(style.borderTopWidth)
+		let borderBottomWidth = parseFloat(style.borderBottomWidth)
 
 		return {
 			duration: 300,
@@ -90,26 +91,33 @@ class RepeatExample extends HTMLElement {
 	}
 
 	_shouldHide(num) {
-		return num > 50
+		return num > 250
+	}
+
+	createItem() {
+		let rand = Math.random()
+		return {
+			show: true,
+			key: rand,
+			value: rand,
+			nested: {
+				val: 'aaa',
+				items: [
+					{id: 1, val: 1},
+					{id: 2, val: 2},
+					{id: 3, val: 3},
+					{id: 4, val: 4},
+					{id: 5, val: 5},
+				]
+			},
+		}
 	}
 
 	add(count, toStart) {
 		perf.markStart('add')
 
 		for (let i = 0; i < count; i++) {
-			let rand = Math.random()
-			this.items[toStart ? 'unshift' : 'push']({
-				show: true,
-				key: rand,
-				value: rand,
-				nested: {val: 'aaa', items: [
-					{id: 1, val: 1},
-					{id: 2, val: 2},
-					{id: 3, val: 3},
-					{id: 4, val: 4},
-					{id: 5, val: 5},
-				]},
-			})
+			this.items[toStart ? 'unshift' : 'push'](this.createItem())
 			// this.items = this.items
 		}
 
@@ -159,7 +167,23 @@ class RepeatExample extends HTMLElement {
 	}
 
 	removeAll() {
-		this.items = []
+		this.items = proxyArray([])
+	}
+
+	swapFirstTwo() {
+		if (this.items.length < 2) {
+			return
+		}
+		var tmp = this.items[0]
+		this.items[0] = this.items[1]
+		this.items[1] = tmp
+		// this.items = this.items.slice()
+	}
+
+	replaceSecond() {
+		if (this.items.length > 1) {
+			this.items[1] = this.createItem()
+		}
 	}
 
 	updateProp() {

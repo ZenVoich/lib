@@ -104,6 +104,7 @@ export class AnimationJsTemplatePart extends TemplatePart {
 			if (this.#activeAnimation.phase === 'intro' ? elapsed > duration : elapsed < 0) {
 				finish()
 				this.#activeAnimation.resolve()
+				cancelAnimationFrame(this.#activeAnimation.raf)
 				this.#activeAnimation = null
 				return
 			}
