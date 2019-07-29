@@ -64,11 +64,22 @@ export class AttachDetachTemplatePart extends TemplatePart {
 		this.#childTemplateRoot.disconnect()
 	}
 
+	_connectChildTemplateRoot() {
+		if (!this.#childTemplateRoot.isConnected) {
+			this.#childTemplateRoot.connect(this.#host)
+			this.#childTemplateRoot.update()
+			this.#childTemplateRoot.render()
+		}
+	}
+
 	async render(state) {
 		let value = this.#sourceExpression.getValue(state)
 		let attach = this.#type === 'attach' ? !!value : !value
 
 		if (this.#attached == attach) {
+			if (attach) {
+				this._connectChildTemplateRoot();
+			}
 			return
 		}
 		this.#attached = attach
@@ -77,10 +88,9 @@ export class AttachDetachTemplatePart extends TemplatePart {
 		if (attach) {
 			if (!this.#fragmentContainer.isConnected) {
 				this.#comment.replaceWith(this.#fragmentContainer.content)
-				this.#childTemplateRoot.connect(this.#host)
-				this.#childTemplateRoot.update()
-				this.#childTemplateRoot.render()
 			}
+			this._connectChildTemplateRoot();
+
 			if (this.firstRendered) {
 				pub(this.#template, 'intro', this.#fragmentContainer)
 			}
@@ -92,6 +102,8 @@ export class AttachDetachTemplatePart extends TemplatePart {
 			}
 			if (this.#fragmentContainer.isConnected) {
 				this.#fragmentContainer.replaceWith(this.#comment)
+			}
+			if (this.#childTemplateRoot.isConnected) {
 				this.#childTemplateRoot.disconnect()
 			}
 		}

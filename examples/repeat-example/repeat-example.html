@@ -25,8 +25,8 @@
 
 
 <div #repeat="{items as item, i by key}" #animation="{slide}" class="item" .item="{item}">
-	<div class="div" #attach="{item.show}">
-		<div .item="{item}" @click="{onClick}" #detach="{_shouldHide(item.value)}">Item: {item.value} Index: {i} (nested {item.nested.val})(parent binding: <span>{pi}</span> nested: {nested.val}) R: <random-number></random-number> <random-number></random-number></div>
+	<div class="div" #attach="{item.show}" .item="{item}" @click="{onClick}">
+		<div #detach="{_shouldHide(item.value)}">Item: {item.value} Index: {i} (nested {item.nested.val})(parent binding: <span>{pi}</span> nested: {nested.val}) R: <random-number></random-number> <random-number></random-number></div>
 		<random-number #show="{show}"></random-number>
 		<random-number #show="{show}"></random-number>
 		<random-number #attach="{show}"></random-number>

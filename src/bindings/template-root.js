@@ -51,6 +51,10 @@ export class TemplateRoot {
 		})
 	}
 
+	get isConnected() {
+		return !!this.#host
+	}
+
 	get parts() {
 		return this.#parts
 	}
@@ -117,6 +121,7 @@ export class TemplateRoot {
 		this.#unobserveList.forEach((unobserve) => {
 			unobserve()
 		})
+		this.#unobserveList = []
 	}
 
 	update(paths, ignoreUndefined = false) {
