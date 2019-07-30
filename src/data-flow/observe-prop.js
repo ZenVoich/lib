@@ -48,7 +48,7 @@ let defineAccessors = (object, prop) => {
 				value(...args) {
 					let oldLength = object.length
 					Array.prototype[method].call(object, ...args)
-					if (oldLength !== object.length) {
+					if (oldLength !== object.length || method === 'splice' && args.length > 2) {
 						notifyProp(object, prop, oldLength, object.length)
 					}
 					return object.length
