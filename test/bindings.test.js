@@ -130,6 +130,24 @@ assertRender('<b .inner-html="{data}"></b>', {data: '<i>a</i>'}, '<b><i>a</i></b
 
 
 // properties
+assertElement('<b .prop></b>', {}, (el, tr) => {
+	if (el.prop !== '') {
+		return 'expected .prop to be "" (empty string), actual ' + el.prop
+	}
+})
+
+assertElement('<b .prop="{true}"></b>', {}, (el, tr) => {
+	if (el.prop !== true) {
+		return 'expected .prop to be true (boolean), actual ' + el.prop
+	}
+})
+
+assertElement('<b .prop="{false}"></b>', {}, (el, tr) => {
+	if (el.prop !== false) {
+		return 'expected .prop to be false (boolean), actual ' + el.prop
+	}
+})
+
 assertElement('<b .prop="123"></b>', {}, (el, tr) => {
 	if (el.prop !== '123') {
 		return 'expected .prop to be 123 (string), actual ' + el.prop

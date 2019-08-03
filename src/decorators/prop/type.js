@@ -3,7 +3,7 @@ import {observePath} from '../../data-flow/observe-path.js'
 export let type = (type, required = false) => {
 	return (descriptor) => {
 		if (descriptor.kind !== 'field' && !descriptor.descriptor.set) {
-			throw '@attr decorator can only be applied to a property or setter'
+			throw '@type decorator can only be applied to a property or setter'
 		}
 
 		let property = descriptor.key

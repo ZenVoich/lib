@@ -55,6 +55,10 @@ export class TemplateRoot {
 		return !!this.#host
 	}
 
+	get template() {
+		return this.#template
+	}
+
 	get parts() {
 		return this.#parts
 	}

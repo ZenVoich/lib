@@ -36,6 +36,10 @@ export class Binding {
 		return this.#source.relatedPaths
 	}
 
+	get source() {
+		return this.#source
+	}
+
 	get targetUpdatePhase() {
 		return this.#target.constructor.updatePhase
 	}

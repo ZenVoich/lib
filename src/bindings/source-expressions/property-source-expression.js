@@ -5,6 +5,10 @@ let regex = new RegExp(`^(${varNameRegex})$`, 'ig')
 
 export class PropertySourceExpression extends SourceExpression {
 	static parse(text) {
+		if (text === 'true' || text === 'false') {
+			return
+		}
+
 		let match = regex.exec(text)
 		regex.lastIndex = 0
 

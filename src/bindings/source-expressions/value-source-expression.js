@@ -6,7 +6,11 @@ export class ValueSourceExpression extends SourceExpression {
 		let value
 		let match = /^[0-9]+(?:\.[0-9]+)?$/.exec(text)
 
-		if (match) {
+		if (text === 'true' || text === 'false') {
+			match = true
+			value = text === 'true'
+		}
+		else if (match) {
 			value = parseFloat(text)
 		}
 		else {

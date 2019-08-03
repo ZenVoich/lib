@@ -17,8 +17,8 @@ class RepeatExample extends HTMLElement {
 
 	constructor() {
 		super()
-		this.items = proxyArray([])
-		// this.items = [{
+		this.obj = {items: []}
+		// this.obj.items = [{
 		// 		show: true,
 		// 		key: 0,
 		// 		value: 0,
@@ -45,7 +45,7 @@ class RepeatExample extends HTMLElement {
 
 	onClick(e) {
 		e.currentTarget.item.value += 10
-		// this.items = this.items
+		// this.obj.items = this.obj.items
 	}
 
 	slide(element) {
@@ -117,8 +117,8 @@ class RepeatExample extends HTMLElement {
 		perf.markStart('add')
 
 		for (let i = 0; i < count; i++) {
-			this.items[toStart ? 'unshift' : 'push'](this.createItem())
-			// this.items = this.items
+			this.obj.items[toStart ? 'unshift' : 'push'](this.createItem())
+			// this.obj.items = this.obj.items
 		}
 
 		requestAnimationFrame(() => {
@@ -159,30 +159,30 @@ class RepeatExample extends HTMLElement {
 	}
 
 	removeFirst() {
-		this.items.shift()
+		this.obj.items.shift()
 	}
 
 	removeLast() {
-		this.items.pop()
+		this.obj.items.pop()
 	}
 
 	removeAll() {
-		this.items = proxyArray([])
+		this.obj.items = []
 	}
 
 	swapFirstTwo() {
-		if (this.items.length < 2) {
+		if (this.obj.items.length < 2) {
 			return
 		}
-		var tmp = this.items[0]
-		this.items[0] = this.items[1]
-		this.items[1] = tmp
-		// this.items = this.items.slice()
+		var tmp = this.obj.items[0]
+		this.obj.items[0] = this.obj.items[1]
+		this.obj.items[1] = tmp
+		this.obj.items = this.obj.items.slice()
 	}
 
 	replaceSecond() {
-		if (this.items.length > 1) {
-			this.items[1] = this.createItem()
+		if (this.obj.items.length > 1) {
+			this.obj.items[1] = this.createItem()
 		}
 	}
 
@@ -191,17 +191,17 @@ class RepeatExample extends HTMLElement {
 	}
 
 	updateFirstItemProp() {
-		this.items[0].nested.items[0].val++
-		this.items[0].nested.items[1].val++
-		this.items[0].nested.items[2].val++
+		this.obj.items[0].nested.items[0].val++
+		this.obj.items[0].nested.items[1].val++
+		this.obj.items[0].nested.items[2].val++
 	}
 
 	toggleFirstItemVisibility() {
-		this.items[0].show = !this.items[0].show
+		this.obj.items[0].show = !this.obj.items[0].show
 	}
 
 	clearSecondItem() {
-		this.items[1].nested.items = []
+		this.obj.items[1].nested.items = []
 	}
 }
 
