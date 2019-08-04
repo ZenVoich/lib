@@ -2,12 +2,16 @@ export let createScheduler = (schedule) => {
 	let queue = []
 	let queued = false
 	let enqueue = (fn) => {
-		queue.push(fn)
+		let index = queue.push(fn) - 1
+		let dequeue = () => {
+			queue.splice(index, 1)
+		}
 		if (queued) {
-			return
+			return dequeue
 		}
 		schedule(flush)
 		queued = true
+		return dequeue
 	}
 
 	let flush = () => {
@@ -30,27 +34,11 @@ export let createScheduler = (schedule) => {
 		// }
 	}
 
-	let throttles = new Set
-	let throttle = (id, fn) => {
-		if (id && throttles.has(id)) {
-			return id
-		}
-		if (!id) {
-			id = Symbol()
-		}
-		throttles.add(id)
-		enqueue(() => {
-			throttles.delete(id)
-			fn()
-		})
-		return id
-	}
-
 	let requestsByHost = new WeakMap
 	let request = (host, id, fn) => {
 		let requests = requestsByHost.get(host)
 		if (requests && requests.has(id)) {
-			return
+			return () => {}
 		}
 		if (!requests) {
 			requests = new Set
@@ -58,8 +46,7 @@ export let createScheduler = (schedule) => {
 		}
 		requests.add(id)
 
-		// throttle(null, () => {
-		enqueue(() => {
+		return enqueue(() => {
 			requests.delete(id)
 			fn()
 			if (!requests.size) {
@@ -94,5 +81,5 @@ export let createScheduler = (schedule) => {
 		}
 	}
 
-	return {enqueue, throttle, request, afterNext, waitForNext}
+	return {enqueue, request, afterNext, waitForNext}
 }

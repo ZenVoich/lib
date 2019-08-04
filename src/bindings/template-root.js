@@ -39,6 +39,8 @@ export class TemplateRoot {
 	#renderPendingPaths = new Set
 	#updateThrottler = Symbol()
 	#renderThrottler = Symbol()
+	#cancelMicrotask
+	#cancelRender
 
 	constructor({skeletonTemplate, partSkeletons, relatedPaths, relatedProps}, template) {
 		this.#template = template || skeletonTemplate.cloneNode(true)
@@ -73,9 +75,6 @@ export class TemplateRoot {
 
 	connect(host, dirtyCheck = false) {
 		this.#host = host
-		this.#parts.forEach((part) => {
-			part.connect(host, {dirtyCheck})
-		})
 
 		if (dirtyCheck) {
 			this.#unobserveList = [...this.#relatedPaths].map((path) => {
@@ -107,6 +106,10 @@ export class TemplateRoot {
 				})
 			})
 		}
+
+		this.#parts.forEach((part) => {
+			part.connect(host, {dirtyCheck})
+		})
 	}
 
 	_getState() {
@@ -125,6 +128,14 @@ export class TemplateRoot {
 		this.#unobserveList.forEach((unobserve) => {
 			unobserve()
 		})
+		if (this.#cancelMicrotask) {
+			this.#cancelMicrotask()
+			this.#cancelMicrotask = null
+		}
+		if (this.#cancelRender) {
+			this.#cancelRender()
+			this.#cancelRender = null
+		}
 		this.#unobserveList = []
 	}
 
@@ -158,15 +169,21 @@ export class TemplateRoot {
 
 	requestUpdatePath(path) {
 		this.#updatePendingPaths.add(path)
-		requestMicrotask(this.#host, this.#updateThrottler, () => {
-			this.update(this.#updatePendingPaths)
+		this.#cancelMicrotask = requestMicrotask(this.#host, this.#updateThrottler, () => {
+			this.#cancelMicrotask = null
+			let paths = new Set(this.#updatePendingPaths)
+			this.#updatePendingPaths.clear()
+			this.update(paths)
 		})
 	}
 
 	requestRenderPath(path) {
 		this.#renderPendingPaths.add(path)
-		requestRender(this.#host, this.#renderThrottler, () => {
-			this.render(this.#renderPendingPaths)
+		this.#cancelRender = requestRender(this.#host, this.#renderThrottler, () => {
+			this.#cancelRender = null
+			let paths = new Set(this.#renderPendingPaths)
+			this.#renderPendingPaths.clear()
+			this.render(paths)
 		})
 	}
 
