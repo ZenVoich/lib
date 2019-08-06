@@ -1,6 +1,5 @@
 import {tag, template, styles, watch, debounce, attr, computed, type, listen} from '../../src/lib.js'
 import {TemplateRoot} from '../../src/bindings.js'
-import {proxyObject} from '../../src/data-flow/proxy-object.js'
 
 @tag('test-element')
 @template(import('./test-element.html'))
@@ -14,12 +13,12 @@ class TestElement extends HTMLElement {
 	@attr
 	prop = 3
 
-	obj = proxyObject({val: 5})
-	proxy = proxyObject({
+	obj = {val: 5}
+	proxy = {
 		p: 1,
-		nested: proxyObject({n: 5})
-	})
-	array = proxyObject([])
+		nested: {n: 5}
+	}
+	array = []
 
 	constructor() {
 		super()
@@ -35,7 +34,7 @@ class TestElement extends HTMLElement {
 
 	@computed('y')
 	get yy() {
-		// console.trace('yy', this.y)
+		// console.log('yy', this.y)
 		return this.y + 1
 	}
 
@@ -103,10 +102,10 @@ class TestElement extends HTMLElement {
 			this.proxy.nested.n++
 		}
 		else {
-			this.proxy = proxyObject({
+			this.proxy = {
 				p: this.proxy.p + 1,
-				nested: proxyObject({n: this.proxy.nested.n + 1})
-			})
+				nested: {n: this.proxy.nested.n + 1}
+			}
 		}
 		// }
 	}

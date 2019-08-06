@@ -41,7 +41,7 @@ export class Binding {
 	}
 
 	get targetUpdatePhase() {
-		return this.#target.constructor.updatePhase
+		return this.#target.updatePhase || this.#target.constructor.updatePhase
 	}
 
 	connect(host) {

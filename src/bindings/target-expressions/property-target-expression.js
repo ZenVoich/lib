@@ -15,17 +15,20 @@ export class PropertyTargetExpression extends TargetExpression {
 		}
 		return {
 			propertyName,
+			updatePhase: ['innerHTML', 'innerText', 'textContent'].includes(propertyName) ? 'render' : 'microtask',
 			twoWayBind: attribute[0] === ':',
 		}
 	}
 
 	element = null
 	propertyName = ''
+	updatePhase = ''
 
-	constructor({propertyName}, element) {
+	constructor({propertyName, updatePhase}, element) {
 		super()
 		this.element = element
 		this.propertyName = propertyName
+		this.updatePhase = updatePhase
 	}
 
 	setValue(value) {

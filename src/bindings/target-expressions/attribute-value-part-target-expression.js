@@ -2,7 +2,7 @@ import {TargetExpression} from './target-expression.js'
 
 export class AttributeValuePartTargetExpression extends TargetExpression {
 	static parseType = 'attribute'
-	static updatePhase = 'animationFrame'
+	static updatePhase = 'render'
 
 	static parseSkeleton(attribute) {
 		if (!attribute.includes('|')) {

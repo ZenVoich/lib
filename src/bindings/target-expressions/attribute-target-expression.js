@@ -3,7 +3,7 @@ import {TargetExpression} from './target-expression.js'
 export class AttributeTargetExpression extends TargetExpression {
 	static parsePrecedence = 0 // parse last
 	static parseType = 'attribute'
-	static updatePhase = 'animationFrame'
+	static updatePhase = 'render'
 
 	static parseSkeleton(attribute) {
 		if (attribute[0] === '#') {

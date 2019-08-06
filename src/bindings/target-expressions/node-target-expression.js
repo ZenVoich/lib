@@ -2,7 +2,7 @@ import {TargetExpression} from './target-expression.js'
 
 export class NodeTargetExpression extends TargetExpression {
 	static parseType = 'node'
-	static updatePhase = 'animationFrame'
+	static updatePhase = 'render'
 
 	static parseSkeleton(node) {
 		return {

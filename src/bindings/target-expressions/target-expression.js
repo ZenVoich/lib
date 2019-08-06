@@ -1,7 +1,7 @@
 export class TargetExpression {
 	static parseType = 'attribute' // attribute, node
 	static parsePrecedence = 5
-	static updatePhase = 'animationFrame' // microtask, animationFrame
+	static updatePhase = 'render' // microtask, render
 	static parse(element, attribute) {}
 
 	setValue(value) {}

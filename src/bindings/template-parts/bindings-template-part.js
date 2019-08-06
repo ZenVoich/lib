@@ -39,7 +39,7 @@ export class BindingsTemplatePart extends TemplatePart {
 	}
 
 	render(state, paths, ignoreUndefined) {
-		this.action('animationFrame', state, paths, ignoreUndefined)
+		this.action('render', state, paths, ignoreUndefined)
 	}
 
 	action(phase, state, paths, ignoreUndefined) {
