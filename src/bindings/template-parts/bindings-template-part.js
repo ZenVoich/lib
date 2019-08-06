@@ -53,7 +53,7 @@ export class BindingsTemplatePart extends TemplatePart {
 			}
 			if (paths) {
 				for (let path of paths) {
-					if (this._isBindingRelated(binding, path, phase)) {
+					if (this._isBindingRelated(binding, path)) {
 						binding.pushValue(state, ignoreUndefined)
 						break
 					}
@@ -65,10 +65,7 @@ export class BindingsTemplatePart extends TemplatePart {
 		})
 	}
 
-	_isBindingRelated(binding, path, phase) {
-		if (binding.targetUpdatePhase !== phase) {
-			return false
-		}
+	_isBindingRelated(binding, path) {
 		if (this.dirtyCheck) {
 			for (let p of binding.relatedPaths) {
 				if (p === path || p.startsWith(path + '.')) {

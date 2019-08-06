@@ -103,11 +103,11 @@ class RepeatExample extends HTMLElement {
 			nested: {
 				val: 'aaa',
 				items: [
-					{id: 1, val: 1},
-					{id: 2, val: 2},
-					{id: 3, val: 3},
-					{id: 4, val: 4},
-					{id: 5, val: 5},
+				{id: 1, val: 1},
+				{id: 2, val: 2},
+				{id: 3, val: 3},
+				{id: 4, val: 4},
+				{id: 5, val: 5},
 				]
 			},
 		}
@@ -183,6 +183,7 @@ class RepeatExample extends HTMLElement {
 	replaceSecond() {
 		if (this.obj.items.length > 1) {
 			this.obj.items[1] = this.createItem()
+			this.obj.items = this.obj.items.slice()
 		}
 	}
 
