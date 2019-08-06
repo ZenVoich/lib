@@ -19,9 +19,9 @@ export let computed = (...paths) => {
 			pathsInfo.push(info)
 		})
 
-		let canCall = (state) => {
+		let canCall = (host) => {
 			return pathsInfo.every((info) => {
-				return !info.mandatory || getByPath(state, info.path) != null
+				return !info.mandatory || getByPath(host, info.path) != null
 			})
 		}
 
@@ -29,14 +29,23 @@ export let computed = (...paths) => {
 			...descriptor,
 			finisher(Class) {
 				let getter = Class.prototype.__lookupGetter__(descriptor.key)
+				let value
+				let updateValue = (host) => {
+					if (canCall(host)) {
+						value = getter.call(host)
+					}
+				}
 
 				return class extends Class {
 					constructor() {
 						super()
 
+						updateValue(this)
+
 						pathsInfo.forEach((info) => {
 							observe(this, info.path, () => {
 								requestMicrotask(this, 'computed:' + descriptor.key, () => {
+									updateValue(this)
 									notifyProp(this, descriptor.key)
 								})
 							})
@@ -44,9 +53,7 @@ export let computed = (...paths) => {
 					}
 
 					get [descriptor.key]() {
-						if (canCall(this)) {
-							return getter.call(this)
-						}
+						return value
 					}
 				}
 			}
