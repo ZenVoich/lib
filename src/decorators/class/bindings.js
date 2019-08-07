@@ -1,6 +1,16 @@
 import {TemplateRoot} from '../../bindings/template-root.js'
 import {perf} from '../../utils/perf.js'
 
+let connectTemplateRoot = (host) => {
+	if (host.__templateRootConnected) {
+		return
+	}
+	host.__templateRootConnected = true
+	host.__templateRoot.connect(host, host.constructor.dirtyCheck)
+	host.__templateRoot.update(null, true)
+	host.__templateRoot.render(null, true)
+}
+
 export let bindings = (descriptor) => {
 	let templateRootSkeleton
 
@@ -15,26 +25,23 @@ export let bindings = (descriptor) => {
 						return
 					}
 
-					let templateRoot
-					// if (templateRootSkeleton) {
-					// 	templateRoot = new TemplateRoot(templateRootSkeleton)
-					// }
-					// else {
-					// 	templateRootSkeleton = TemplateRoot.parseSkeleton(this.__templateElement)
-					// 	templateRoot = new TemplateRoot(templateRootSkeleton, this.__templateElement.cloneNode(true))
-					// }
 					if (!templateRootSkeleton) {
 						templateRootSkeleton = TemplateRoot.parseSkeleton(this.__templateElement)
 					}
-					templateRoot = new TemplateRoot(templateRootSkeleton)
+					this.__templateRoot = new TemplateRoot(templateRootSkeleton)
+					this.shadowRoot.append(this.__templateRoot.content)
+					connectTemplateRoot(this)
+				}
 
-					this.shadowRoot.append(templateRoot.content)
+				connectedCallback() {
+					super.connectedCallback && super.connectedCallback()
+					connectTemplateRoot(this)
+				}
 
-					templateRoot.connect(this, this.constructor.dirtyCheck)
-					templateRoot.update(null, true)
-					templateRoot.render(null, true)
-
-					this.__templateRoot = templateRoot
+				disconnectedCallback() {
+					super.disconnectedCallback && super.disconnectedCallback()
+					this.__templateRoot.disconnect()
+					this.__templateRootConnected = false
 				}
 			}
 		}

@@ -128,6 +128,8 @@ export class TemplateRoot {
 		this.#unobserveList.forEach((unobserve) => {
 			unobserve()
 		})
+		this.#unobserveList = []
+
 		if (this.#cancelMicrotask) {
 			this.#cancelMicrotask()
 			this.#cancelMicrotask = null
@@ -136,7 +138,6 @@ export class TemplateRoot {
 			this.#cancelRender()
 			this.#cancelRender = null
 		}
-		this.#unobserveList = []
 	}
 
 	update(paths, ignoreUndefined = false) {

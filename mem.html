@@ -1,0 +1,41 @@
+<script type="module">
+	import {observePath} from './build/src/data-flow/observe-path.js'
+
+	window.weakSet = new WeakSet
+	window.objects = []
+	let unobserveList = []
+
+	let create = () => {
+		for (let i = 0; i < 100000; i++) {
+			let obj = {a: 1, b: 2, nested: {x: 1}}
+			objects.push(obj)
+			weakSet.add(obj)
+			unobserveList.push(observePath(obj, 'nested.x', () => {}))
+		}
+	}
+
+	let remove = () => {
+		// window.first = objects[0]
+		window.objects = []
+		unobserveList.forEach((unobserve) => {
+			unobserve()
+		})
+		unobserveList = []
+	}
+
+
+	let interval
+
+	window.start = () => {
+		interval = setInterval(() => {
+			create()
+			remove()
+		}, 250)
+	}
+
+	window.stop = () => {
+		clearInterval(interval)
+	}
+
+	start()
+</script>

@@ -48,6 +48,18 @@ export let initTemplate = (descriptor) => {
 					this.__templateElement = templateEl
 					this.constructor.__templateElement = templateEl
 				}
+
+				connectedCallback() {
+					super.connectedCallback && super.connectedCallback()
+					if (this.constructor.__adoptedStyleSheets) {
+						this.shadowRoot.adoptedStyleSheets = this.constructor.__adoptedStyleSheets
+					}
+				}
+
+				disconnectedCallback() {
+					super.disconnectedCallback && super.disconnectedCallback()
+					this.shadowRoot.adoptedStyleSheets = []
+				}
 			}
 		}
 	}
