@@ -155,22 +155,6 @@ export class RepeatTemplatePart extends TemplatePart {
 
 	// ensure element count and update templates
 	_renderPlain(state) {
-		// update existing elements
-		this.#repeatObjectsByIndex.forEach((repeatObject, i) => {
-			let item = this.items[i]
-			if (repeatObject.item !== item) {
-				repeatObject.disconnect()
-				repeatObject.templateRoot.contextStates = [...this.parentTemplateRoot.contextStates, this._makeContextState(item, i)]
-				repeatObject.connect(this.#host, item, {dirtyCheck: this.#dirtyCheck})
-
-				// if (this.firstRendered) {
-				// 	pub(repeatObject.templateRoot, 'intro', repeatObject.fragmentContainer)
-				// }
-			}
-			repeatObject.update()
-			repeatObject.render()
-		})
-
 		// add new elements
 		let existingCount = this.#repeatObjectsByIndex.size
 		let diff = this.items.length - existingCount
@@ -187,6 +171,21 @@ export class RepeatTemplatePart extends TemplatePart {
 				this._removeElement(null, existingCount - 1 + i)
 			}
 		}
+		// update existing elements
+		this.#repeatObjectsByIndex.forEach((repeatObject, i) => {
+			let item = this.items[i]
+			if (repeatObject.item !== item) {
+				repeatObject.disconnect()
+				repeatObject.templateRoot.contextStates = [...this.parentTemplateRoot.contextStates, this._makeContextState(item, i)]
+				repeatObject.connect(this.#host, item, {dirtyCheck: this.#dirtyCheck})
+
+				// if (this.firstRendered) {
+				// 	pub(repeatObject.templateRoot, 'intro', repeatObject.fragmentContainer)
+				// }
+				repeatObject.update()
+				repeatObject.render()
+			}
+		})
 	}
 
 	// sort existing elements by key
