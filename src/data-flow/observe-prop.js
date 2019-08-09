@@ -35,7 +35,7 @@ export let notifyProp = (object, prop, oldVal, newVal) => {
 	}
 }
 
-let mutationMehtods = ['push', 'pop', 'shift', 'unshift', 'splice']
+let mutationMehtods = ['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse']
 
 let defineAccessors = (object, prop) => {
 	// array
@@ -47,11 +47,9 @@ let defineAccessors = (object, prop) => {
 				configurable: true,
 				value(...args) {
 					let oldLength = object.length
-					Array.prototype[method].call(object, ...args)
-					if (oldLength !== object.length || method === 'splice' && args.length > 2) {
-						notifyProp(object, prop, oldLength, object.length)
-					}
-					return object.length
+					let result = Array.prototype[method].call(object, ...args)
+					notifyProp(object, prop, oldLength, object.length)
+					return result
 				}
 			})
 		})

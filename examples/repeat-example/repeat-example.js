@@ -187,6 +187,16 @@ class RepeatExample extends HTMLElement {
 		}
 	}
 
+	sort() {
+		this.obj.items.sort((a, b) => {
+			return a.value - b.value
+		})
+	}
+
+	reverse() {
+		this.obj.items.reverse()
+	}
+
 	updateProp() {
 		this.pi++
 	}
