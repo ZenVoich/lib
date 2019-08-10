@@ -1,9 +1,8 @@
-import {tag} from '../../src/lib.js'
+import {tag, markup} from '../../src/lib.js'
 
 @tag('animation-example')
+@markup(import('./animation-example.html'))
 class AnimationExample extends HTMLElement {
-	static template = import('./animation-example.html')
-
 	shown = false
 
 	toggle() {

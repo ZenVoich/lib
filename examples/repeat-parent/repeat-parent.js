@@ -1,11 +1,10 @@
-import {tag} from '../../src/lib.js'
+import {tag, markup} from '../../src/lib.js'
 import {perf} from '../../src/utils.js'
 import {proxyObject} from '../../src/data-flow/proxy-object.js'
 
 @tag('repeat-parent')
+@markup(import('./repeat-parent.html'))
 class RepeatParent extends HTMLElement {
-	static template = import('./repeat-parent.html')
-
 	top = 0
 	items = proxyObject([
 		proxyObject({

@@ -1,13 +1,12 @@
-import {tag} from '../../src/decorators/class/tag.js'
+import {tag, markup, styles} from '../../src/lib.js'
 import {watch} from '../../src/decorators/method/watch.js'
 
 import './check-box.js'
 
 @tag('two-way-bindings-example')
+@markup(import('./two-way-bindings-example.html'))
+@styles(import('./two-way-bindings-example.css'))
 class A extends HTMLElement {
-	static template = import('./two-way-bindings-example.html')
-	static styles = import('./two-way-bindings-example.css')
-
 	// checked = false
 
 	// @watch('checked')

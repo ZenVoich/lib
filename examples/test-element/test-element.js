@@ -1,8 +1,8 @@
-import {tag, template, styles, watch, debounce, attr, computed, type, listen} from '../../src/lib.js'
+import {tag, markup, styles, watch, debounce, attr, computed, type, listen} from '../../src/lib.js'
 import {TemplateRoot} from '../../src/bindings.js'
 
 @tag('test-element')
-@template(import('./test-element.html'))
+@markup(import('./test-element.html'))
 @styles(import('./test-element.css'))
 class TestElement extends HTMLElement {
 	@type(Number)

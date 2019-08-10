@@ -1,5 +1,5 @@
 export {tag} from './decorators/class/tag.js'
-export {template} from './decorators/class/template.js'
+export {markup} from './decorators/class/markup.js'
 export {styles} from './decorators/class/styles.js'
 export {dirtyCheck} from './decorators/class/dirty-check.js'
 

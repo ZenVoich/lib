@@ -6,7 +6,7 @@ export let tag = (name) => {
 		return {
 			...descriptor,
 			finisher(Class) {
-				Promise.all([Class.template, Class.styles]).then(async () => {
+				Promise.all([Class.markup, Class.styles]).then(async () => {
 					@bindings
 					@initTemplate
 					class NewClass extends Class {
@@ -20,7 +20,7 @@ export let tag = (name) => {
 						}
 					}
 
-					NewClass.__staticTemplate = await Class.template
+					NewClass.__staticMarkup = await Class.markup
 					NewClass.__staticStyles = await Class.styles
 
 					customElements.define(name, NewClass)

@@ -1,4 +1,4 @@
-import {tag, template, styles} from '../../src/lib.js'
+import {tag, markup, styles} from '../../src/lib.js'
 
 let startTime
 let lastMeasure
@@ -15,7 +15,7 @@ let stopMeasure = function() {
 }
 
 @tag('krause-bench')
-@template(import('./krause-bench.html'))
+@markup(import('./krause-bench.html'))
 @styles(import('./krause-bench.css'))
 class KrauseBench extends HTMLElement {
 	data = []

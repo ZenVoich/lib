@@ -27,7 +27,7 @@ export let initTemplate = (descriptor) => {
 						this.attachShadow({mode: this.constructor.shadow || 'open'})
 					}
 
-					let template = this.constructor.__staticTemplate || ''
+					let template = this.constructor.__staticMarkup || ''
 
 					if (this.constructor.__staticStyles) {
 						if (canConstructStylesheets) {

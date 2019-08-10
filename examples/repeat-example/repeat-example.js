@@ -1,15 +1,13 @@
-import {tag} from '../../src/lib.js'
+import {tag, markup, styles} from '../../src/lib.js'
 import {perf} from '../../src/utils.js'
 import {proxyArray} from '../../src/data-flow/proxy-array.js'
 
 import './random-number.js'
 
 @tag('repeat-example')
+@markup(import('./repeat-example.html'))
+@styles(import('./repeat-example.css'))
 class RepeatExample extends HTMLElement {
-	static template = import('./repeat-example.html')
-	static styles = import('./repeat-example.css')
-	// static dirtyCheck = true
-
 	pi = Math.PI
 	secret = '1-1'
 	nested = {val: 'ppp'}
