@@ -90,14 +90,14 @@ export class RepeatTemplatePart extends TemplatePart {
 		// todo: clear physical elements?
 	}
 
-	render(state) {
-		this.items = this.#itemsSourceExpression.getValue(state) || []
+	render(states) {
+		this.items = this.#itemsSourceExpression.getValue(states) || []
 
 		if (this.#key) {
-			this._renderSorted(state)
+			this._renderSorted(states)
 		}
 		else {
-			this._renderPlain(state)
+			this._renderPlain(states)
 		}
 	}
 
@@ -154,14 +154,14 @@ export class RepeatTemplatePart extends TemplatePart {
 	}
 
 	// ensure element count and update templates
-	_renderPlain(state) {
+	_renderPlain(states) {
 		// add new elements
 		let existingCount = this.#repeatObjectsByIndex.size
 		let diff = this.items.length - existingCount
 		if (diff > 0) {
 			for (let i = 0; i < diff; i++) {
 				let item = this.items[existingCount + i]
-				let repeatObject = this._createRepeatObject(state, item, existingCount + i)
+				let repeatObject = this._createRepeatObject(states, item, existingCount + i)
 				this.#repeatContainer.append(repeatObject.fragmentContainer.content)
 			}
 		}
@@ -189,7 +189,7 @@ export class RepeatTemplatePart extends TemplatePart {
 	}
 
 	// sort existing elements by key
-	_renderSorted(state) {
+	_renderSorted(states) {
 		// update elements
 		if (this.#dirtyCheck) {
 			this.items.forEach((item, index) => {
@@ -214,7 +214,7 @@ export class RepeatTemplatePart extends TemplatePart {
 			let repeatObject = this.#repeatObjectsByKey.get(item[this.#key])
 			// add element
 			if (!repeatObject) {
-				repeatObject = this._createRepeatObject(state, item, index)
+				repeatObject = this._createRepeatObject(states, item, index)
 				this._placeElement(item, repeatObject.fragmentContainer, null, index)
 
 				if (this.firstRendered) {

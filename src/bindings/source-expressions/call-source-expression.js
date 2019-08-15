@@ -1,5 +1,6 @@
 import {SourceExpression} from './source-expression.js'
 import {varNameRegex, valueRegex} from './regex.js'
+import {findState} from './find-state.js'
 import {parse as parseSourceExpression} from './source-expression-parser.js'
 
 let argRegex = new RegExp(`${valueRegex}`, 'ig')
@@ -43,11 +44,14 @@ export class CallSourceExpression extends SourceExpression {
 		})
 	}
 
-	getValue(state) {
-		if (typeof state[this.functionName] !== 'function') {
+	getValue(states) {
+		let state = findState(states, this.functionName)
+		let func = state[this.functionName]
+
+		if (typeof func !== 'function') {
 			throw `there is no function '${this.functionName}'`
 		}
-		let value = state[this.functionName](...this.args.map(expr => expr.getValue(state)))
+		let value = func(...this.args.map(expr => expr.getValue(states)))
 		return this.negateValueIfNeeded(value)
 	}
 }

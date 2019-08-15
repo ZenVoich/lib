@@ -1,5 +1,6 @@
 import {SourceExpression} from './source-expression.js'
 import {varNameRegex} from './regex.js'
+import {findState} from './find-state.js'
 
 let regex = new RegExp(`^(${varNameRegex})$`, 'ig')
 
@@ -25,11 +26,12 @@ export class PropertySourceExpression extends SourceExpression {
 		this.relatedPaths = new Set([propertyName])
 	}
 
-	setValue(state, value) {
-		state[this.propertyName] = this.negateValueIfNeeded(value)
+	setValue(states, value) {
+		states[0][this.propertyName] = this.negateValueIfNeeded(value)
 	}
 
-	getValue(state) {
+	getValue(states) {
+		let state = findState(states, this.propertyName)
 		return this.negateValueIfNeeded(state[this.propertyName])
 	}
 }

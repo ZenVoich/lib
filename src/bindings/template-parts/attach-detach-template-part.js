@@ -56,7 +56,7 @@ export class AttachDetachTemplatePart extends TemplatePart {
 	connect(host) {
 		this.#host = host
 		this.#childTemplateRoot.contextStates = this.parentTemplateRoot.contextStates
-		this.render(this.parentTemplateRoot._getState())
+		this.render(this.parentTemplateRoot.getStates())
 	}
 
 	disconnect() {
@@ -72,8 +72,8 @@ export class AttachDetachTemplatePart extends TemplatePart {
 		}
 	}
 
-	async render(state) {
-		let value = this.#sourceExpression.getValue(state)
+	async render(states) {
+		let value = this.#sourceExpression.getValue(states)
 		let attach = this.#type === 'attach' ? !!value : !value
 
 		if (this.#attached == attach) {

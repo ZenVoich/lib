@@ -1,5 +1,6 @@
 import {SourceExpression} from './source-expression.js'
 import {varNameRegex, pathPartRegex} from './regex.js'
+import {findState} from './find-state.js'
 
 let regex = new RegExp(`^(${varNameRegex}(?:\\.${pathPartRegex})+)$`, 'ig')
 
@@ -21,9 +22,9 @@ export class PathSourceExpression extends SourceExpression {
 		this.relatedPaths = new Set([pathStr])
 	}
 
-	setValue(state, value) {
+	setValue(states, value) {
 		let path = this.path.slice(0, -1)
-		let object = state
+		let object = findState(states, this.path[0])
 
 		for (let prop of path) {
 			if (!object[prop]) {
@@ -35,12 +36,12 @@ export class PathSourceExpression extends SourceExpression {
 		object[this.path[this.path.length - 1]] = this.negateValueIfNeeded(value)
 	}
 
-	getValue(state) {
-		let value = state
+	getValue(states) {
+		let value = findState(states, this.path[0])
 
 		for (let [index, prop] of this.path.entries()) {
 			if (!value[prop] && index !== this.path.length - 1) {
-				return this.negateValueIfNeeded()
+				return this.negateValueIfNeeded(undefined)
 			}
 			value = value[prop]
 		}

@@ -112,12 +112,8 @@ export class TemplateRoot {
 		})
 	}
 
-	_getState() {
-		let hostState = {}
-		this.#relatedProps.forEach((prop) => {
-			hostState[prop] = this.#host[prop]
-		})
-		return Object.assign(hostState, ...this.contextStates)
+	getStates() {
+		return [this.#host, ...this.contextStates]
 	}
 
 	disconnect() {
@@ -152,7 +148,7 @@ export class TemplateRoot {
 		if (!this.#host) {
 			return
 		}
-		let state = this._getState()
+		let state = this.getStates()
 		this.#parts.forEach((part) => {
 			if (paths) {
 				for (let path of paths) {
@@ -192,7 +188,7 @@ export class TemplateRoot {
 	// 	if (!this.#host) {
 	// 		return
 	// 	}
-	// 	let state = this._getState()
+	// 	let state = this.getStates()
 	// 	this.#parts.forEach((part) => {
 	// 		for (let path of part.relatedPaths) {
 	// 			if (path === prop || path.startsWith(prop + '.')) {

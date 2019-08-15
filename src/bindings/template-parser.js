@@ -94,7 +94,7 @@ let isDirectiveElement = (element) => {
 }
 
 let ensureDirectiveTemplate = (element) => {
-	if (element.matches('template')) {
+	if (element.localName === 'template') {
 		return element
 	}
 

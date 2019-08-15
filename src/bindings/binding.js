@@ -27,7 +27,7 @@ export class Binding {
 				this.#backwardEvent = `${this.#target.propertyName}-changed`
 			}
 			this.#backwardListener = () => {
-				this.pullValue(this.#host)
+				this.pullValue(this.#host.__templateRoot.getStates())
 			}
 		}
 	}

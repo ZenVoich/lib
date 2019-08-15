@@ -34,15 +34,15 @@ export class BindingsTemplatePart extends TemplatePart {
 		this.host = null
 	}
 
-	update(state, paths, ignoreUndefined) {
-		this.action('microtask', state, paths, ignoreUndefined)
+	update(states, paths, ignoreUndefined) {
+		this.action('microtask', states, paths, ignoreUndefined)
 	}
 
-	render(state, paths, ignoreUndefined) {
-		this.action('render', state, paths, ignoreUndefined)
+	render(states, paths, ignoreUndefined) {
+		this.action('render', states, paths, ignoreUndefined)
 	}
 
-	action(phase, state, paths, ignoreUndefined) {
+	action(phase, states, paths, ignoreUndefined) {
 		if (!this.host) {
 			return
 		}
@@ -54,13 +54,13 @@ export class BindingsTemplatePart extends TemplatePart {
 			if (paths) {
 				for (let path of paths) {
 					if (this._isBindingRelated(binding, path)) {
-						binding.pushValue(state, ignoreUndefined)
+						binding.pushValue(states, ignoreUndefined)
 						break
 					}
 				}
 			}
 			else {
-				binding.pushValue(state, ignoreUndefined)
+				binding.pushValue(states, ignoreUndefined)
 			}
 		})
 	}

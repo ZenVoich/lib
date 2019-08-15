@@ -88,7 +88,7 @@ export class AnimationJsTemplatePart extends TemplatePart {
 
 		this.#activeAnimation = {phase, resolve}
 
-		let fn = this.#animationSourceExpr.getValue(this.#host)
+		let fn = this.#animationSourceExpr.getValue(this.#host.__templateRoot.getStates())
 		let {tick, finish = ()=>{}, duration = 300} = fn.call(this.#host, element)
 		this.#activeAnimation.finish = finish
 
