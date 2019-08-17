@@ -10,19 +10,10 @@ let stringToMs = (str) => {
 }
 
 export class AnimationCssTemplatePart extends TemplatePart {
-	static parseSkeleton(template, attribute) {
-		if (!['#animation', '#animation-in', '#animation-out'].includes(attribute)) {
-			return
-		}
-
-		let animationString = template.getAttribute(attribute)
-		if (!animationString) {
-			return
-		}
-
-		template.removeAttribute(attribute)
-
-		let type = attribute.split('-')[1]
+	static exclusive = false
+	static attributes = ['#animation', '#animation-in', '#animation-out']
+	static parseSkeleton(template, attrName, attrValue) {
+		let type = attrName.split('-')[1]
 		if (type === 'in') {
 			type ='intro'
 		}
@@ -32,7 +23,7 @@ export class AnimationCssTemplatePart extends TemplatePart {
 
 		return {
 			type,
-			animationString,
+			animationString: attrValue,
 			relatedPaths: new Set,
 		}
 	}

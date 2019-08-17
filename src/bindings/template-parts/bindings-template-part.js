@@ -3,15 +3,16 @@ import {parseSkeleton, fromSkeleton} from '../bindings-parser.js'
 import {perf} from '../../utils/perf.js'
 
 export class BindingsTemplatePart extends TemplatePart {
+	static attributes = []
+	static parseSkeleton(root) {
+		return parseSkeleton(root)
+	}
+
 	host = null
 	dirtyCheck = false
 	relatedPaths
 
 	bindings = [] // [Binding]
-
-	static parseSkeleton(root) {
-		return parseSkeleton(root)
-	}
 
 	constructor({bindingSkeletons, relatedPaths}, root) {
 		super()

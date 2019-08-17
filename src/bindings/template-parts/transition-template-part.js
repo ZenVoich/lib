@@ -3,19 +3,11 @@ import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 import {sub, unsub} from '../../utils/pub-sub.js'
 
 export class TransitionTemplatePart extends TemplatePart {
-	static parseSkeleton(template, attribute) {
-		if (!['#transition'].includes(attribute)) {
-			return
-		}
-
-		let name = template.getAttribute(attribute)
-		if (!name) {
-			return
-		}
-		template.removeAttribute(attribute)
-
+	static exclusive = false
+	static attributes = ['#transition']
+	static parseSkeleton(template, attrName, attrValue) {
 		return {
-			name,
+			name: attrValue,
 			relatedPaths: new Set,
 		}
 	}

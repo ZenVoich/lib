@@ -6,19 +6,18 @@ import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 import {pub} from '../../utils/pub-sub.js'
 
 export class RepeatTemplatePart extends TemplatePart {
-	static parseSkeleton(template, attribute) {
-		if (attribute !== '#repeat') {
-			return
-		}
-
-		let match = template.getAttribute(attribute).match(/\s*\{\s*(.+?)(?:\s*as\s+(.+?)(?:\s*,\s*(.+?))?\s*)?(?:\s*by\s+(.+?)\s*)?\s*\}\s*/)
+	static exclusive = true
+	static attributes = ['#repeat']
+	static parseSkeleton(template, attrName, attrValue) {
+		let match = attrValue.match(/\s*\{\s*(.+?)(?:\s*as\s+(.+?)(?:\s*,\s*(.+?))?\s*)?(?:\s*by\s+(.+?)\s*)?\s*\}\s*/)
 		let itemsSourceExpression = match && parseSourceExpressionMemoized(`{${match[1]}}`)
 
 		if (!itemsSourceExpression) {
-			throw `Invalid #repeat value: #repeat="${template.getAttribute(attribute)}"`
+			setTimeout(() => {
+				throw `Invalid value: #repeat="${attrValue}"`
+			})
+			return
 		}
-
-		template.removeAttribute('#repeat')
 
 		return {
 			as: match[2] || 'item',
@@ -228,14 +227,7 @@ export class RepeatTemplatePart extends TemplatePart {
 		})
 
 		// sort elements
-		let x = 0
 		let sort = () => {
-			x++
-			if (x > 10) {
-				console.log('loop')
-				return
-			}
-
 			let itemsInfo = this.items.map((item, newIndex) => {
 				let repeatObject = this.#repeatObjectsByKey.get(item[this.#key])
 				let oldIndex = this.#actualOrder.indexOf(item[this.#key])

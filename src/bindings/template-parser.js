@@ -106,7 +106,7 @@ let ensureDirectiveTemplate = (element) => {
 
 	// move directive attributes to <template> tag
 	element.getAttributeNames().forEach((attr) => {
-		if (attr.startsWith('#')) {
+		if (attr[0] === '#') {
 			template.attributes.setNamedItem(element.attributes[attr].cloneNode())
 			element.removeAttribute(attr)
 		}
@@ -123,52 +123,54 @@ let templatePartClasses = [
 	AnimationJsTemplatePart,
 	AnimationCssTemplatePart,
 ]
+let directives = new Set
+let exclusiveDirectives = new Set
+
+templatePartClasses.forEach((TemplatePartClass) => {
+	TemplatePartClass.attributes.forEach((attr) => {
+		directives.add(attr)
+		if (TemplatePartClass.exclusive) {
+			exclusiveDirectives.add(attr)
+		}
+	})
+})
+
 let parseDirectiveElement = (element) => {
 	let skeletons = []
 
 	let attrs = element.getAttributeNames()
 
-	let directiveWhitelist = [
-		'#show',
-		'#hide',
-		'#attach',
-		'#detach',
-		'#repeat',
-		'#transition',
-		'#animation',
-		'#animation-in',
-		'#animation-out',
-	]
-	let unknownDirective = attrs.find(attr => attr.startsWith('#') && !directiveWhitelist.includes(attr))
+	let unknownDirective = attrs.find(attr => attr[0] === '#' && !directives.has(attr))
 	if (unknownDirective) {
 		console.error(`Unknown directive '${unknownDirective}'`, element)
-		return
+		return []
 	}
 
-	let directives = attrs.filter(attr => attr.startsWith('#') && !attr.startsWith('#transition') && !attr.startsWith('#animation'))
-	if (directives.length > 1) {
-		console.error(`Directives ${directives[0]} and ${directives[1]} can't be used together`, element)
-		return
+	let exclDirectives = attrs.filter(attr => exclusiveDirectives.has(attr))
+	if (exclDirectives.length > 1) {
+		console.error(`Directives '${exclDirectives[0]}' and '${exclDirectives[1]}' cannot be used together`, element)
+		return []
 	}
 
 	attrs.find((attr) => {
 		if (attr[0] !== '#') {
 			return
 		}
+		let val = element.getAttribute(attr)
+		element.removeAttribute(attr)
+
 		return templatePartClasses.find((templatePartClass) => {
-			let val = element.getAttribute(attr)
-			let partSkeleton = templatePartClass.parseSkeleton(element, attr)
+			if (!templatePartClass.attributes.includes(attr)) {
+				return
+			}
+
+			let partSkeleton = templatePartClass.parseSkeleton(element, attr, val)
 
 			if (partSkeleton) {
 				skeletons.push({
 					partClass: templatePartClass,
 					partSkeleton: partSkeleton,
 				})
-
-				if (attr === '#repeat') {
-					return true
-				}
-				// return true
 			}
 		})
 	})

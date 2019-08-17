@@ -5,20 +5,14 @@ import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 import {pub} from '../../utils/pub-sub.js'
 
 export class AttachDetachTemplatePart extends TemplatePart {
-	static parseSkeleton(template, attribute) {
-		if (!['#attach', '#detach'].includes(attribute)) {
-			return
-		}
-
-		let sourceExpression = parseSourceExpressionMemoized(template.getAttribute(attribute))
-		template.removeAttribute(attribute)
-
-		let childTemplateRootSkeleton = TemplateRoot.parseSkeleton(template)
-
+	static exclusive = true
+	static attributes = ['#attach', '#detach']
+	static parseSkeleton(template, attrName, attrValue) {
+		let sourceExpression = parseSourceExpressionMemoized(attrValue)
 		return {
-			type: attribute.slice(1),
+			type: attrName.slice(1),
 			sourceExpression,
-			childTemplateRootSkeleton,
+			childTemplateRootSkeleton: TemplateRoot.parseSkeleton(template),
 			relatedPaths: sourceExpression.relatedPaths,
 		}
 	}

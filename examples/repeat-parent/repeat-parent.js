@@ -1,31 +1,30 @@
 import {tag, markup} from '../../src/lib.js'
 import {perf} from '../../src/utils.js'
-import {proxyObject} from '../../src/data-flow/proxy-object.js'
 
 @tag('repeat-parent')
 @markup(import('./repeat-parent.html'))
 class RepeatParent extends HTMLElement {
 	top = 0
-	items = proxyObject([
-		proxyObject({
+	items = [
+		{
 			key: 1,
 			x: 1,
 			y: 2,
-			nested: proxyObject([
-				proxyObject({n: 1}),
-				proxyObject({n: 2}),
-			])
-		}),
-		proxyObject({
+			nested: [
+				{n: 1},
+				{n: 2},
+			]
+		},
+		{
 			key: 2,
 			x: 1,
 			y: 2,
-			nested: proxyObject([
-				proxyObject({n: 1}),
-				proxyObject({n: 2}),
-			])
-		}),
-	])
+			nested: [
+				{n: 1},
+				{n: 2},
+			]
+		},
+	]
 
 	onClick(e) {
 		// this.top++

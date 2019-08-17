@@ -3,20 +3,15 @@ import {parseSourceExpressionMemoized} from '../bindings-parser.js'
 import {sub, unsub} from '../../utils/pub-sub.js'
 
 export class AnimationJsTemplatePart extends TemplatePart {
-	static parseSkeleton(template, attribute) {
-		if (!['#animation', '#animation-in', '#animation-out'].includes(attribute)) {
-			return
-		}
-
-		let animationSourceExpr = parseSourceExpressionMemoized(template.getAttribute(attribute))
-
+	static exclusive = false
+	static attributes = ['#animation', '#animation-in', '#animation-out']
+	static parseSkeleton(template, attrName, attrValue) {
+		let animationSourceExpr = parseSourceExpressionMemoized(attrValue)
 		if (!animationSourceExpr) {
 			return
 		}
 
-		template.removeAttribute(attribute)
-
-		let type = attribute.split('-')[1]
+		let type = attrName.split('-')[1]
 		if (type === 'in') {
 			type ='intro'
 		}
