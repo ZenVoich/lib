@@ -1,0 +1,86 @@
+<style>
+	:host {
+		display: block;
+		--fast: 0.2s;
+		--slow: 1s;
+	}
+
+	span {
+		display: inline-block;
+	}
+
+
+	/* fade */
+	.fade-active {
+		transition: opacity 0.5s;
+	}
+
+	.fade-in {
+		opacity: 1;
+	}
+
+	.fade-out {
+		opacity: 0;
+	}
+
+
+	/* fly */
+	.fly-active {
+		transition: opacity 1s, transform 1s;
+	}
+
+	.fly-in {
+		opacity: 1;
+		transform: translate(0);
+	}
+
+	.fly-out {
+		opacity: 0;
+		transform: translate(100%);
+	}
+
+
+	/* foo */
+	.foo-in-active {
+		transition: transform 3s;
+	}
+	.foo-in-start {
+		transform: translate(100%);
+	}
+	.foo-in {
+		transform: translate(0);
+	}
+
+	.foo-out-active {
+		transition: opacity 3s;
+	}
+	.foo-out-start {
+		opacity: 1;
+	}
+	.foo-out {
+		opacity: 0;
+	}
+</style>
+
+<b>#transition</b>
+<br>
+
+<button @click="{toggle}">Toggle</button>
+
+<div>
+	<span #attach="{shown}" #transition="fade">#attach fade</span>
+</div>
+
+<div>
+	<span #show="{shown}" #transition="fly">#show fly</span>
+</div>
+
+<div>
+	<span #show="{shown}" #transition="foo">#show foo</span>
+</div>
+
+<div>
+	<span #show="{shown}" #transition="bar">w/o transition</span>
+</div>
+
+<div>Static</div>

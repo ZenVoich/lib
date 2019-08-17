@@ -81,7 +81,10 @@ export class AnimationJsTemplatePart extends TemplatePart {
 		}
 	}
 
-	_animate(phase, resolve, element) {
+	async _animate(phase, resolve, element) {
+		// batch layout
+		await 0
+
 		if (this.#activeAnimation && !this.#type) {
 			this.#activeAnimation = {phase, resolve}
 		}

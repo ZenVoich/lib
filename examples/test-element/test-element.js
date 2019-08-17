@@ -45,7 +45,7 @@ class TestElement extends HTMLElement {
 
 	@computed('proxy.nested.n')
 	get pp() {
-		return `{${this.proxy.p}}`
+		return `[${this.proxy.p}]`
 	}
 
 	@computed('noProp')

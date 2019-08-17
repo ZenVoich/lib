@@ -2,6 +2,7 @@ import {BindingsTemplatePart} from './template-parts/bindings-template-part.js'
 import {ShowHideTemplatePart} from './template-parts/show-hide-template-part.js'
 import {AttachDetachTemplatePart} from './template-parts/attach-detach-template-part.js'
 import {RepeatTemplatePart} from './template-parts/repeat-template-part.js'
+import {TransitionTemplatePart} from './template-parts/transition-template-part.js'
 import {AnimationJsTemplatePart} from './template-parts/animation-js-template-part.js'
 import {AnimationCssTemplatePart} from './template-parts/animation-css-template-part.js'
 import {perf} from '../utils/perf.js'
@@ -118,6 +119,7 @@ let templatePartClasses = [
 	ShowHideTemplatePart,
 	AttachDetachTemplatePart,
 	RepeatTemplatePart,
+	TransitionTemplatePart,
 	AnimationJsTemplatePart,
 	AnimationCssTemplatePart,
 ]
@@ -132,6 +134,7 @@ let parseDirectiveElement = (element) => {
 		'#attach',
 		'#detach',
 		'#repeat',
+		'#transition',
 		'#animation',
 		'#animation-in',
 		'#animation-out',
@@ -142,7 +145,7 @@ let parseDirectiveElement = (element) => {
 		return
 	}
 
-	let directives = attrs.filter(attr => attr.startsWith('#') && !attr.startsWith('#animation'))
+	let directives = attrs.filter(attr => attr.startsWith('#') && !attr.startsWith('#transition') && !attr.startsWith('#animation'))
 	if (directives.length > 1) {
 		console.error(`Directives ${directives[0]} and ${directives[1]} can't be used together`, element)
 		return
