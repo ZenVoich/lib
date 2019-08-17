@@ -68,21 +68,24 @@ export class TransitionTemplatePart extends TemplatePart {
 			transitionStarted = true
 		}, {once: true})
 
+		let onTransitionEnd = (e) => {
+			if (e.target !== element) {
+				return
+			}
+			this._finish(element)
+		}
+
 		// if transition was not started
 		requestAnimationFrame(() => {
 			requestAnimationFrame(() => {
 				if (!transitionStarted) {
+					element.removeEventListener('transitionend', onTransitionEnd, {once: true})
 					this._finish(element)
 				}
 			})
 		})
 
-		element.addEventListener('transitionend', (e) => {
-			if (e.target !== element) {
-				return
-			}
-			this._finish(element)
-		}, {once: true})
+		element.addEventListener('transitionend', onTransitionEnd, {once: true})
 	}
 
 	_finish(element) {

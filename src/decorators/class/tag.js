@@ -6,25 +6,36 @@ export let tag = (name) => {
 		return {
 			...descriptor,
 			finisher(Class) {
-				Promise.all([Class.markup, Class.styles]).then(async () => {
-					@bindings
-					@initTemplate
-					class NewClass extends Class {
-						connectedCallback() {
-							super.connectedCallback && super.connectedCallback()
-							this.__isConnected = true
+				@bindings
+				@initTemplate
+				class NewClass extends Class {
+					connectedCallback() {
+						super.connectedCallback && super.connectedCallback()
+						this.__isConnected = true
+					}
+					disconnectedCallback() {
+						super.disconnectedCallback && super.disconnectedCallback()
+						this.__isConnected = false
+					}
+				}
+
+				(async () => {
+					let getString = async (stringOrModule) => {
+						if (!stringOrModule || typeof stringOrModule === 'string') {
+							return stringOrModule
 						}
-						disconnectedCallback() {
-							super.disconnectedCallback && super.disconnectedCallback()
-							this.__isConnected = false
+						let mod = await stringOrModule
+						if (typeof mod === 'string') {
+							return mod
 						}
+						return mod.default
 					}
 
-					NewClass.__staticMarkup = await Class.markup
-					NewClass.__staticStyles = await Class.styles
+					NewClass.__staticMarkup = await getString(Class.markup)
+					NewClass.__staticStyles = await getString(Class.styles)
 
 					customElements.define(name, NewClass)
-				})
+				})()
 			}
 		}
 	}

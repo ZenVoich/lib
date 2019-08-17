@@ -20,6 +20,12 @@
     "babel-plugin-inline-dynamic-import": "^1.1.0",
     "babel-plugin-inline-import": "^3.0.0",
     "chokidar": "^2.1.0",
-    "chokidar-cli": "^1.2.1"
+    "chokidar-cli": "^1.2.1",
+    "rollup": "^1.19.4",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-filesize": "^6.2.0",
+    "rollup-plugin-html": "^0.2.1",
+    "rollup-plugin-multi-entry": "^2.1.0",
+    "rollup-plugin-terser": "^5.1.1"
   }
 }
