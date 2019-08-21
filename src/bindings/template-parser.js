@@ -171,6 +171,7 @@ let parseDirectiveElement = (element) => {
 					partClass: templatePartClass,
 					partSkeleton: partSkeleton,
 				})
+				return true
 			}
 		})
 	})
