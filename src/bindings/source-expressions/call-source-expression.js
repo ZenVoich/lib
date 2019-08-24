@@ -46,12 +46,11 @@ export class CallSourceExpression extends SourceExpression {
 
 	getValue(states) {
 		let state = findState(states, this.functionName)
-		let func = state[this.functionName]
 
-		if (typeof func !== 'function') {
+		if (typeof state[this.functionName] !== 'function') {
 			throw `there is no function '${this.functionName}'`
 		}
-		let value = func(...this.args.map(expr => expr.getValue(states)))
+		let value = state[this.functionName](...this.args.map(expr => expr.getValue(states)))
 		return this.negateValueIfNeeded(value)
 	}
 }
