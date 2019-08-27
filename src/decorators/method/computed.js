@@ -30,30 +30,58 @@ export let computed = (...paths) => {
 			finisher(Class) {
 				let getter = Class.prototype.__lookupGetter__(descriptor.key)
 				let value
+				let invalidated = true
 				let updateValue = (host) => {
 					if (canCall(host)) {
 						value = getter.call(host)
+						invalidated = false
 					}
+				}
+
+				let unobserveList = []
+				let pathsObserved = false
+				let observePaths = (host) => {
+					if (pathsObserved) {
+						return
+					}
+					pathsObserved = true
+
+					pathsInfo.forEach((info) => {
+						let unobserve = observe(host, info.path, () => {
+							requestMicrotask(host, 'computed:' + descriptor.key, () => {
+								let oldValue = value
+								updateValue(host)
+								notifyProp(host, descriptor.key, oldValue, value)
+							})
+						})
+						unobserveList.push(unobserve)
+					})
 				}
 
 				return class extends Class {
 					constructor() {
 						super()
-
-						updateValue(this)
-
-						pathsInfo.forEach((info) => {
-							observe(this, info.path, () => {
-								requestMicrotask(this, 'computed:' + descriptor.key, () => {
-									updateValue(this)
-									notifyProp(this, descriptor.key)
-								})
-							})
-						})
+						observePaths(this)
 					}
 
 					get [descriptor.key]() {
+						if (invalidated) {
+							updateValue(this)
+						}
 						return value
+					}
+
+					connectedCallback() {
+						super.connectedCallback && super.connectedCallback()
+						observePaths(this)
+					}
+
+					disconnectedCallback() {
+						super.disconnectedCallback && super.disconnectedCallback()
+						invalidated = true
+						unobserveList.forEach(fn => fn())
+						unobserveList = []
+						pathsObserved = false
 					}
 				}
 			}
