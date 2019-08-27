@@ -70,6 +70,7 @@ export class ShowHideTemplatePart extends TemplatePart {
 
 		if (show) {
 			this.#element.style.removeProperty('display')
+			this.#element.hidden = false
 			if (this.firstRendered) {
 				pub(this.#template, 'intro', {simpleMode: true, element: this.#element})
 			}
@@ -79,6 +80,7 @@ export class ShowHideTemplatePart extends TemplatePart {
 				await pub(this.#template, 'outro', {simpleMode: true, element: this.#element})
 			}
 			this.#element.style.setProperty('display', 'none', 'important')
+			this.#element.hidden = true
 		}
 	}
 }
