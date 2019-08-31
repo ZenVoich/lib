@@ -2,7 +2,7 @@ import {perf} from '../utils/perf.js'
 import {enqueueMicrotask} from '../utils/microtask.js'
 
 export class Binding {
-	#host
+	#templateRoot
 	#direction = '' // downward | upward | two-way
 	#source // SourceExpression
 	#target // TargetExpression
@@ -27,7 +27,7 @@ export class Binding {
 				this.#backwardEvent = `${this.#target.propertyName}-changed`
 			}
 			this.#backwardListener = () => {
-				this.pullValue(this.#host.__templateRoot.getStates())
+				this.pullValue(this.#templateRoot.getStates())
 			}
 		}
 	}
@@ -45,10 +45,10 @@ export class Binding {
 	}
 
 	connect(host, templateRoot) {
-		if (this.#host) {
+		if (this.#templateRoot) {
 			return
 		}
-		this.#host = host
+		this.#templateRoot = templateRoot
 
 		if (this.#direction !== 'downward') {
 			this.#target.element.addEventListener(this.#backwardEvent, this.#backwardListener)
@@ -57,10 +57,10 @@ export class Binding {
 	}
 
 	disconnect() {
-		if (!this.#host) {
+		if (!this.#templateRoot) {
 			return
 		}
-		this.#host = null
+		this.#templateRoot = null
 
 		if (this.#direction !== 'downward') {
 			this.#target.element.removeEventListener(this.#backwardEvent, this.#backwardListener)

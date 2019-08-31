@@ -29,6 +29,7 @@ export class AnimationJsTemplatePart extends TemplatePart {
 	relatedPaths
 
 	#host
+	#templateRoot
 	#type = '' // '' | intro | outro
 	#animationSourceExpr
 	#activeAnimation // {phase, elapsed}
@@ -44,17 +45,19 @@ export class AnimationJsTemplatePart extends TemplatePart {
 		sub(template, (...args) => this._onAction(...args))
 	}
 
-	connect(host) {
+	connect(host, {templateRoot} = {}) {
 		if (!this.#parentSubscribed) {
 			this.#parentSubscribed = true
 			sub(this.parentTemplateRoot, (...args) => this._onAction(...args))
 		}
 
 		this.#host = host
+		this.#templateRoot = templateRoot
 	}
 
 	disconnect() {
 		this.#host = null
+		this.#templateRoot = null
 	}
 
 	_onAction(action, fragmentContainer) {
@@ -86,7 +89,7 @@ export class AnimationJsTemplatePart extends TemplatePart {
 
 		this.#activeAnimation = {phase, resolve}
 
-		let fn = this.#animationSourceExpr.getValue(this.#host.__templateRoot.getStates())
+		let fn = this.#animationSourceExpr.getValue(this.#templateRoot.getStates())
 		let {tick, finish = ()=>{}, duration = 300} = fn.call(this.#host, element)
 		this.#activeAnimation.finish = finish
 
