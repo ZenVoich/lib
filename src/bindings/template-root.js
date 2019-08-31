@@ -34,7 +34,7 @@ export class TemplateRoot {
 	#relatedPaths
 	#relatedProps
 
-	#unobserveList = []
+	#unobservers = []
 	#updatePendingPaths = new Set
 	#renderPendingPaths = new Set
 	#updateThrottler = Symbol()
@@ -77,7 +77,7 @@ export class TemplateRoot {
 		this.#host = host
 
 		if (dirtyCheck) {
-			this.#unobserveList = [...this.#relatedPaths].map((path) => {
+			this.#unobservers = [...this.#relatedPaths].map((path) => {
 				let prop = path.split('.')[0]
 				return observePath(host, prop, (oldVal, newVal) => {
 					this.updateProp(prop)
@@ -85,7 +85,7 @@ export class TemplateRoot {
 			})
 		}
 		else {
-			this.#unobserveList = [...this.#relatedPaths].map((path) => {
+			this.#unobservers = [...this.#relatedPaths].map((path) => {
 				let target = host
 
 				if (this.contextStates.length) {
@@ -121,10 +121,10 @@ export class TemplateRoot {
 		this.#parts.forEach((part) => {
 			part.disconnect()
 		})
-		this.#unobserveList.forEach((unobserve) => {
-			unobserve()
+		this.#unobservers.forEach((unobserver) => {
+			unobserver()
 		})
-		this.#unobserveList = []
+		this.#unobservers = []
 
 		if (this.#cancelMicrotask) {
 			this.#cancelMicrotask()

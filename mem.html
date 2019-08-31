@@ -3,24 +3,24 @@
 
 	window.weakSet = new WeakSet
 	window.objects = []
-	let unobserveList = []
+	let unobservers = []
 
 	let create = () => {
 		for (let i = 0; i < 100000; i++) {
 			let obj = {a: 1, b: 2, nested: {x: 1}}
 			objects.push(obj)
 			weakSet.add(obj)
-			unobserveList.push(observePath(obj, 'nested.x', () => {}))
+			unobservers.push(observePath(obj, 'nested.x', () => {}))
 		}
 	}
 
 	let remove = () => {
 		// window.first = objects[0]
 		window.objects = []
-		unobserveList.forEach((unobserve) => {
-			unobserve()
+		unobservers.forEach((unobserver) => {
+			unobserver()
 		})
-		unobserveList = []
+		unobservers = []
 	}
 
 

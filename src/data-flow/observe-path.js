@@ -3,7 +3,7 @@ import {getByPath} from '../utils/get-by-path.js'
 
 export let observePath = (object, path, fn) => {
 	let pathAr = path.split('.')
-	let unobserveList = []
+	let unobservers = []
 
 	let observeFromIndex = (fromIndex, checkInitial = false) => {
 		pathAr.slice(fromIndex).forEach((prop, index) => {
@@ -22,12 +22,11 @@ export let observePath = (object, path, fn) => {
 				let unobserversByItem = new WeakMap
 
 				let observeItem = (item) => {
-					let unobserve = observePath(item, itemPath, fn)
-					unobserversByItem.set(item, unobserve)
+					unobserversByItem.set(item, observePath(item, itemPath, fn))
 				}
 				let unobserveItem = (item) => {
-					let unobserve = unobserversByItem.get(item)
-					unobserve && unobserve()
+					let unobserver = unobserversByItem.get(item)
+					unobserver && unobserver()
 				}
 
 				currObject.forEach(observeItem)
@@ -41,7 +40,7 @@ export let observePath = (object, path, fn) => {
 					addedItems.forEach(observeItem)
 					fn()
 				})
-				unobserveList[i] = () => {
+				unobservers[i] = () => {
 					unobserveProp()
 					currObject.forEach(unobserveItem)
 				}
@@ -64,7 +63,7 @@ export let observePath = (object, path, fn) => {
 				// 	return
 				// }
 				if (canObserve(newVal)) {
-					if (unobserveList.length > i + 1) {
+					if (unobservers.length > i + 1) {
 						unobserveFromIndex(i + 1, oldVal)
 					}
 					observeFromIndex(i + 1, true)
@@ -74,13 +73,13 @@ export let observePath = (object, path, fn) => {
 				}
 			}
 
-			unobserveList[i] = observeProp(currObject, prop, observer)
+			unobservers[i] = observeProp(currObject, prop, observer)
 		})
 	}
 
 	let unobserveFromIndex = (index, oldVal) => {
-		unobserveList.splice(index).forEach((unobserve) => {
-			unobserve()
+		unobservers.splice(index).forEach((unobserver) => {
+			unobserver()
 		})
 		let path = pathAr.slice(index).join('.')
 		let lastOldVal = getByPath(oldVal, path)

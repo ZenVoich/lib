@@ -41,7 +41,7 @@ export let computed = (...paths) => {
 					}
 				}
 
-				let unobserveList = []
+				let unobservers = []
 				let pathsObserved = false
 				let observePaths = (host) => {
 					if (pathsObserved) {
@@ -50,14 +50,14 @@ export let computed = (...paths) => {
 					pathsObserved = true
 
 					pathsInfo.forEach((info) => {
-						let unobserve = observePath(host, info.path, () => {
+						let unobserver = observePath(host, info.path, () => {
 							requestMicrotask(host, 'computed:' + descriptor.key, () => {
 								let oldValue = value
 								updateValue(host)
 								notifyProp(host, descriptor.key, oldValue, value)
 							})
 						})
-						unobserveList.push(unobserve)
+						unobservers.push(unobserver)
 					})
 				}
 
@@ -82,8 +82,8 @@ export let computed = (...paths) => {
 					disconnectedCallback() {
 						super.disconnectedCallback && super.disconnectedCallback()
 						invalidated = true
-						unobserveList.forEach(fn => fn())
-						unobserveList = []
+						unobservers.forEach(unobserver => unobserver())
+						unobservers = []
 						pathsObserved = false
 					}
 				}
