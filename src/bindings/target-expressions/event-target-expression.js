@@ -1,4 +1,6 @@
 import {PropertySourceExpression} from '../source-expressions/property-source-expression.js'
+import {CallSourceExpression} from '../source-expressions/call-source-expression.js'
+import {ValueSourceExpression} from '../source-expressions/value-source-expression.js'
 import {TargetExpression} from './target-expression.js'
 
 export class EventTargetExpression extends TargetExpression {
@@ -9,40 +11,40 @@ export class EventTargetExpression extends TargetExpression {
 		if (!attribute.startsWith('@')) {
 			return
 		}
-		if (!(source instanceof PropertySourceExpression)) {
-			console.error('Provide function name expression for "@" binding', source)
-			return
-		}
 		return {
 			eventName: attribute.slice(1),
-			functionName: source.propertyName,
+			sourceExpr: source,
 		}
 	}
 
-	#element = null
-	#eventName = ''
-	#functionName = ''
+	#element
+	#eventName
 
-	#currentHandler = null
-	#isConnected = false
+	#sourceExpr
 
-	constructor({eventName, functionName}, element) {
+	#currentHandler
+	#isConnected
+
+	constructor({eventName, sourceExpr}, element) {
 		super()
 		this.#element = element
 		this.#eventName = eventName
-		this.#functionName = functionName
+		this.#sourceExpr = sourceExpr
 	}
 
-	connect(host) {
+	connect(host, templateRoot) {
 		if (this.#isConnected) {
 			return
 		}
 		this.#isConnected = true
-		if (typeof host[this.#functionName] !== 'function') {
-			console.error(`Trying to add '${this.#functionName}' listener that doesn't exist on '${host.localName}' element`)
+
+		let fn = this.#sourceExpr.getValue(templateRoot.getStates())
+		if (typeof fn !== 'function') {
+			console.error(`Trying to add listener that doesn't exist on '${host.localName}' element`, this.#sourceExpr)
 			return
 		}
-		this.#currentHandler = host[this.#functionName].bind(host)
+
+		this.#currentHandler = fn.bind(host)
 		this.#element.addEventListener(this.#eventName, this.#currentHandler)
 	}
 

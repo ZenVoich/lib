@@ -4,8 +4,8 @@ export class SourceExpression {
 
 	static parse(text) {}
 
-	setValue(state, value) {}
-	getValue(state) {}
+	setValue(states, value) {}
+	getValue(states) {}
 	negateValueIfNeeded(value) {
 		return this.negate ? !value : value
 	}

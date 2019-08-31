@@ -57,9 +57,8 @@ class RepeatExample extends HTMLElement {
 		}, {capture: true})
 	}
 
-	onClick(e) {
-		e.currentTarget.item.value += 10
-		// this.obj.items = this.obj.items
+	onItemClick(item) {
+		item.value += 10
 	}
 
 	slide(element) {

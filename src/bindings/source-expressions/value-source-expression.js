@@ -33,11 +33,11 @@ export class ValueSourceExpression extends SourceExpression {
 		this.relatedPaths = new Set
 	}
 
-	setValue(state, value) {
+	setValue(states, value) {
 		this.value = this.negateValueIfNeeded(value)
 	}
 
-	getValue(state) {
+	getValue(states) {
 		return this.negateValueIfNeeded(this.value)
 	}
 }

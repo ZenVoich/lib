@@ -20,9 +20,9 @@ export class BindingsTemplatePart extends TemplatePart {
 		this.relatedPaths = relatedPaths
 	}
 
-	connect(host, {dirtyCheck = false} = {}) {
+	connect(host, {templateRoot, dirtyCheck = false} = {}) {
 		this.bindings.forEach((binding) => {
-			binding.connect(host)
+			binding.connect(host, templateRoot)
 		})
 		this.host = host
 		this.dirtyCheck = dirtyCheck

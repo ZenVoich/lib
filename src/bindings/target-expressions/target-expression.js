@@ -6,6 +6,6 @@ export class TargetExpression {
 
 	setValue(value) {}
 	getValue() {}
-	connect(host) {}
+	connect(host, templateRoot) {}
 	disconnect() {}
 }

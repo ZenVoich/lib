@@ -3,6 +3,7 @@ import {PropertySourceExpression} from './property-source-expression.js'
 import {PathSourceExpression} from './path-source-expression.js'
 import {EqualitySourceExpression} from './equality-source-expression.js'
 import {CallSourceExpression} from './call-source-expression.js'
+import {ArgPlaceholderSourceExpression} from './arg-placeholder-source-expression.js'
 
 let sourceExprClasses = [
 	CallSourceExpression,
@@ -10,6 +11,7 @@ let sourceExprClasses = [
 	PathSourceExpression,
 	PropertySourceExpression,
 	ValueSourceExpression,
+	ArgPlaceholderSourceExpression,
 ]
 
 export let parse = (text, {negate = false} = {}) => {

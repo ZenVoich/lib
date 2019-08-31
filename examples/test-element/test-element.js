@@ -16,7 +16,8 @@ class TestElement extends HTMLElement {
 	obj = {val: 5}
 	proxy = {
 		p: 1,
-		nested: {n: 5}
+		nested: {n: 5},
+		fn: (a) => console.log('fn')
 	}
 	array = []
 

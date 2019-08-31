@@ -108,7 +108,7 @@ export class TemplateRoot {
 		}
 
 		this.#parts.forEach((part) => {
-			part.connect(host, {dirtyCheck})
+			part.connect(host, {dirtyCheck, templateRoot: this})
 		})
 	}
 

@@ -44,7 +44,7 @@ export class Binding {
 		return this.#target.updatePhase || this.#target.constructor.updatePhase
 	}
 
-	connect(host) {
+	connect(host, templateRoot) {
 		if (this.#host) {
 			return
 		}
@@ -53,7 +53,7 @@ export class Binding {
 		if (this.#direction !== 'downward') {
 			this.#target.element.addEventListener(this.#backwardEvent, this.#backwardListener)
 		}
-		this.#target.connect(host)
+		this.#target.connect(host, templateRoot)
 	}
 
 	disconnect() {

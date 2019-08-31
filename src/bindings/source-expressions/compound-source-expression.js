@@ -16,7 +16,7 @@ export class CompoundSourceExpression extends SourceExpression {
 		})
 	}
 
-	getValue(state) {
-		return this.chunks.map(expr => expr.getValue(state)).join('')
+	getValue(states) {
+		return this.chunks.map(expr => expr.getValue(states)).join('')
 	}
 }

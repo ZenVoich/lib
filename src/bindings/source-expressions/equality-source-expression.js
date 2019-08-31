@@ -36,9 +36,9 @@ export class EqualitySourceExpression extends SourceExpression {
 		this.relatedPaths = new Set([...leftExpr.relatedPaths, ...rightExpr.relatedPaths])
 	}
 
-	getValue(state) {
-		let leftValue = this.leftExpr.getValue(state)
-		let rightValue = this.rightExpr.getValue(state)
+	getValue(states) {
+		let leftValue = this.leftExpr.getValue(states)
+		let rightValue = this.rightExpr.getValue(states)
 
 		if (this.operator === '==') {
 			return leftValue == rightValue
