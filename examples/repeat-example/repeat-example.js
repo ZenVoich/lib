@@ -1,4 +1,4 @@
-import {tag, markup, styles} from '../../src/lib.js'
+import {tag, markup, styles, watch, computed} from '../../src/lib.js'
 import {perf} from '../../src/utils.js'
 import {proxyArray} from '../../src/data-flow/proxy-array.js'
 
@@ -28,6 +28,22 @@ class RepeatExample extends HTMLElement {
 		// 			{id: 5, val: 5},
 		// 		]},
 		// 	}]
+	}
+
+	@watch('obj.items.*.value')
+	_itemValueWatcher() {
+		console.log('obj.items.*.value watcher')
+	}
+
+	@computed('obj.items.*.nested.items.*.val')
+	get totalNestedVal() {
+		let val = 0
+		this.obj.items.forEach((item) => {
+			item.nested.items.forEach((itm) => {
+				val += itm.val
+			})
+		})
+		return val
 	}
 
 	connectedCallback() {

@@ -1,5 +1,5 @@
 import {parseSkeleton, fromSkeleton} from './template-parser.js'
-import {observe} from '../data-flow/observer.js'
+import {observePath} from '../data-flow/observer.js'
 import {requestMicrotask} from '../utils/microtask.js'
 import {requestRender} from '../utils/renderer.js'
 
@@ -79,7 +79,7 @@ export class TemplateRoot {
 		if (dirtyCheck) {
 			this.#unobserveList = [...this.#relatedPaths].map((path) => {
 				let prop = path.split('.')[0]
-				return observe(host, prop, (oldVal, newVal) => {
+				return observePath(host, prop, (oldVal, newVal) => {
 					this.updateProp(prop)
 				})
 			})
@@ -100,7 +100,7 @@ export class TemplateRoot {
 					}
 				}
 
-				return observe(target, path, (oldVal, newVal) => {
+				return observePath(target, path, (oldVal, newVal) => {
 					this.requestUpdatePath(path)
 					this.requestRenderPath(path)
 				})

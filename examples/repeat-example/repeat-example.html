@@ -24,7 +24,7 @@
 <br><br>
 
 
-
+Total nested val: {totalNestedVal}
 
 <div #repeat="{obj.items as item, i by key}" #animation="{slide}" class="item" .item="{item}">
 	<div class="div" #attach="{item.show}" .item="{item}" @click="{onClick}">
@@ -42,7 +42,7 @@
 		<div #hide="{_shouldHide(item.value)}">< 50</div>
 
 		<div class="nested-items">
-			<div #repeat="{item.nested.items as itm}">parent repeat item: {item.value}, parent binding: <span>{pi}</span> item: {itm.val}</div>
+			<div #repeat="{item.nested.items as itm}">parent repeat item: {item.value} <span>{pi}</span> item: {itm.val}</div>
 		</div>
 	</div>
 </div>

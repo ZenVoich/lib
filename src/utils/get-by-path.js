@@ -15,3 +15,5 @@ export let getByPath = (obj, path) => {
 	check()
 	return obj
 }
+
+window.getByPath = getByPath

@@ -1,6 +1,5 @@
 import {requestMicrotask} from '../../utils/microtask.js'
-import {observe} from '../../data-flow/observer.js'
-import {notifyProp} from '../../data-flow/observe-prop.js'
+import {observePath, notifyProp} from '../../data-flow/observer.js'
 import {getByPath} from '../../utils/get-by-path.js'
 
 export let computed = (...paths) => {
@@ -11,7 +10,11 @@ export let computed = (...paths) => {
 
 		let pathsInfo = []
 		paths.forEach((path) => {
-			let info = {path: path, mandatory: true}
+			let info = {
+				path: path,
+				mandatory: true,
+				hasAsterisk: path.includes('*'),
+			}
 			if (path.endsWith('?')) {
 				info.mandatory = false
 				info.path = path.slice(0, -1)
@@ -21,7 +24,7 @@ export let computed = (...paths) => {
 
 		let canCall = (host) => {
 			return pathsInfo.every((info) => {
-				return !info.mandatory || getByPath(host, info.path) != null
+				return info.hasAsterisk || !info.mandatory || getByPath(host, info.path) != null
 			})
 		}
 
@@ -47,7 +50,7 @@ export let computed = (...paths) => {
 					pathsObserved = true
 
 					pathsInfo.forEach((info) => {
-						let unobserve = observe(host, info.path, () => {
+						let unobserve = observePath(host, info.path, () => {
 							requestMicrotask(host, 'computed:' + descriptor.key, () => {
 								let oldValue = value
 								updateValue(host)

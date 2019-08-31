@@ -1,5 +1,5 @@
 import {requestMicrotask} from '../../utils/microtask.js'
-import {observe} from '../../data-flow/observer.js'
+import {observePath} from '../../data-flow/observer.js'
 import {getByPath} from '../../utils/get-by-path.js'
 
 export let watch = (...paths) => {
@@ -13,7 +13,11 @@ export let watch = (...paths) => {
 			if (path === 'isConnected') {
 				path = '__isConnected'
 			}
-			let info = {path: path, mandatory: true}
+			let info = {
+				path: path,
+				mandatory: true,
+				hasAsterisk: path.includes('*'),
+			}
 			if (path.endsWith('?')) {
 				info.mandatory = false
 				info.path = path.slice(0, -1)
@@ -29,8 +33,11 @@ export let watch = (...paths) => {
 						super()
 
 						pathsInfo.forEach((info) => {
-							observe(this, info.path, (oldVal, newVal, path) => {
+							observePath(this, info.path, (oldVal, newVal, path) => {
 								let canCall = pathsInfo.every((info) => {
+									if (info.hasAsterisk) {
+										return true
+									}
 									if (info.mandatory) {
 										return getByPath(this, info.path) != null
 									}
@@ -45,6 +52,9 @@ export let watch = (...paths) => {
 									}
 									else {
 										let oldValues = pathsInfo.map((info) => {
+											if (info.hasAsterisk) {
+												return
+											}
 											return info.path === path ? oldVal : getByPath(this, info.path)
 										})
 										this[descriptor.key].call(this, ...oldValues)

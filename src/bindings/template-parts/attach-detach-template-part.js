@@ -72,7 +72,7 @@ export class AttachDetachTemplatePart extends TemplatePart {
 
 		if (this.#attached == attach) {
 			if (attach) {
-				this._connectChildTemplateRoot();
+				this._connectChildTemplateRoot()
 			}
 			return
 		}
@@ -83,7 +83,7 @@ export class AttachDetachTemplatePart extends TemplatePart {
 			if (!this.#fragmentContainer.isConnected) {
 				this.#comment.replaceWith(this.#fragmentContainer.content)
 			}
-			this._connectChildTemplateRoot();
+			this._connectChildTemplateRoot()
 
 			if (this.firstRendered) {
 				pub(this.#template, 'intro', this.#fragmentContainer)

@@ -16,6 +16,38 @@ export let observePath = (object, path, fn) => {
 			}
 
 			let isLast = i === pathAr.length - 1
+
+			if (pathAr[i] === '*') {
+				let itemPath = pathAr.slice(i + 1).join('.')
+				let unobserversByItem = new WeakMap
+
+				let observeItem = (item) => {
+					let unobserve = observePath(item, itemPath, fn)
+					unobserversByItem.set(item, unobserve)
+				}
+				let unobserveItem = (item) => {
+					let unobserve = unobserversByItem.get(item)
+					unobserve && unobserve()
+				}
+
+				currObject.forEach(observeItem)
+
+				if (checkInitial) {
+					fn()
+				}
+
+				let unobserveProp = observeProp(currObject, 'length', (removedItems, addedItems) => {
+					removedItems.forEach(unobserveItem)
+					addedItems.forEach(observeItem)
+					fn()
+				})
+				unobserveList[i] = () => {
+					unobserveProp()
+					currObject.forEach(unobserveItem)
+				}
+				return
+			}
+
 			if (isLast && checkInitial) {
 				let lastPropVal = getByPath(object, path)
 				if (lastPropVal !== undefined) {
@@ -28,6 +60,9 @@ export let observePath = (object, path, fn) => {
 					fn(oldVal, newVal, path, object)
 					return
 				}
+				// if (oldVal === newVal) {
+				// 	return
+				// }
 				if (canObserve(newVal)) {
 					if (unobserveList.length > i + 1) {
 						unobserveFromIndex(i + 1, oldVal)
@@ -64,5 +99,3 @@ export let observePath = (object, path, fn) => {
 export let canObserve = (value) => {
 	return value !== null && typeof value === 'object'
 }
-
-window.observePath = observePath

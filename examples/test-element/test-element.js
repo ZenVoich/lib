@@ -43,7 +43,7 @@ class TestElement extends HTMLElement {
 		return this.tt + 1
 	}
 
-	@computed('proxy.nested.n')
+	@computed('proxy.nested')
 	get pp() {
 		return `[${this.proxy.p}]`
 	}

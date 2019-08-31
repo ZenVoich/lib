@@ -1,5 +1,5 @@
 import {requestMicrotask} from '../../utils/microtask.js'
-import {observe} from '../../data-flow/observer.js'
+import {observePath} from '../../data-flow/observer.js'
 import {getByPath} from '../../utils/get-by-path.js'
 
 export let listen = (selector, event, paths, options) => {
@@ -76,7 +76,7 @@ export let listen = (selector, event, paths, options) => {
 
 						if (pathsInfo.length) {
 							pathsInfo.forEach((info) => {
-								observe(this, info.path, (oldVal, newVal, path) => {
+								observePath(this, info.path, (oldVal, newVal, path) => {
 									requestMicrotask(this, 'listen:' + descriptor.key, () => {
 										checkState()
 									})

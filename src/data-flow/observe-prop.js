@@ -20,8 +20,6 @@ export let observeProp = (object, prop, fn) => {
 	}
 }
 
-window.observeProp = observeProp
-
 export let notifyProp = (object, prop, oldVal, newVal) => {
 	let observersByProp = observersByObject.get(object)
 	if (!observersByProp) {
@@ -35,6 +33,10 @@ export let notifyProp = (object, prop, oldVal, newVal) => {
 	}
 }
 
+
+window.notifyProp = notifyProp
+
+
 let mutationMehtods = ['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse']
 
 let defineAccessors = (object, prop) => {
@@ -47,8 +49,22 @@ let defineAccessors = (object, prop) => {
 				configurable: true,
 				value(...args) {
 					let oldLength = object.length
+					let removedItems = []
+					let addedItems = []
 					let result = Array.prototype[method].call(object, ...args)
-					notifyProp(object, prop, oldLength, object.length)
+
+					if (method === 'push' || method === 'unshift') {
+						addedItems = args
+					}
+					else if (method === 'pop' || method === 'shift') {
+						removedItems = [result]
+					}
+					else if (method === 'splice') {
+						removedItems = result
+						addedItems = args.slice(2)
+					}
+
+					notifyProp(object, prop, removedItems, addedItems)
 					return result
 				}
 			})

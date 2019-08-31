@@ -1,1 +1,2 @@
-export {observePath as observe} from '../data-flow/observe-path.js'
+export {observePath} from '../data-flow/observe-path.js'
+export {notifyProp} from '../data-flow/observe-prop.js'
